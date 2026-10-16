@@ -77,15 +77,15 @@ export default function CareFrame({ content, locale, current = 'home', alternate
     <footer className="care-footer"><div className="care-wrap"><div className="care-footer-top">
       <div>
         <a className="care-brand" href={home}>{brand}</a>
-        <p>{t('تقنية مدروسة. رعاية أقرب.', 'Considered technology. Closer care.')}</p>
+        <p>{t('منظومة صحية متكاملة. رعاية أقرب من أي وقت.', 'Integrated health technology. Closer care, every time.')}</p>
       </div>
       <div>
         <b>{t('استكشف', 'Explore')}</b>
         {links.map(link => <a key={link.id} href={link.href}>{link.label}</a>)}
       </div>
       <div>
-        <b>{t('خطوتك القادمة', 'Your next step')}</b>
-        <a href={`${home}#contact`}>{t('اطلب عرضًا توضيحيًا', 'Request a demonstration')}</a>
+        <b>{t('ابدأ اليوم', 'Start today')}</b>
+        <a href={`${home}#contact`}>{t('احجز جلسة استشارية', 'Book a consultation')}</a>
         <a href={`${prefix}/requests`}>{t('متابعة طلباتي', 'My requests')}</a>
         {content.contact.email && <a href={`mailto:${content.contact.email}`}>{content.contact.email}</a>}
         <form

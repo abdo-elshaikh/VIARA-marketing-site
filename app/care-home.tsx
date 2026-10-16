@@ -186,7 +186,7 @@ export default function CareHome({
       {/* Context bar with marquee */}
       <div className="care-context-bar">
         <div className="care-wrap">
-          <span>{t('لرعاية تتجاوز حدود القسم الواحد', 'CARE BEYOND A SINGLE DEPARTMENT')}</span>
+          <span>{t('منظومة رعاية متكاملة لكل مرحلة في منشأتك', 'AN INTEGRATED CARE ECOSYSTEM FOR YOUR FACILITY')}</span>
           <div className="care-marquee-track" aria-hidden="true">
             {marqueeLabels.map(label => <span key={label}>{label}</span>)}
             {marqueeLabels.map(label => <span key={`dup-${label}`}>{label}</span>)}
@@ -217,15 +217,15 @@ export default function CareHome({
           <div>
             <span className="care-eyebrow">{t('منظومة تستوعب طموحك', 'ROOM FOR YOUR AMBITION')}</span>
             <h2>
-              {t('كل تفاصيل الرعاية.', 'Every aspect of care.')}
+              {t('منظومة صحية متكاملة.', 'A complete health ecosystem.')}
               <br />
-              <span>{t('في صورة أوضح.', 'A clearer picture.')}</span>
+              <span>{t('مصممة لمنشأتك.', 'Built around your facility.')}</span>
             </h2>
           </div>
           <p>
             {t(
-              'أربعة مجالات تجمع احتياجات الرعاية السريرية والتشخيص والتشغيل وتجربة المريض. التفاصيل في دليل مستقل، لتصل مباشرة إلى ما يهمك.',
-              'Four areas bring clinical care, diagnostics, operations and the patient experience together. A dedicated directory helps you find what matters.'
+              'أربعة مجالات متكاملة تغطي الرعاية السريرية والتشخيص والتشغيل الإداري وتجربة المريض الرقمية. كل مجال يضم أنظمة متخصصة قابلة للربط ضمن منظومة واحدة مصممة لمنشأتك.',
+              'Four integrated domains covering clinical care, diagnostics, administrative operations, and the digital patient experience. Each domain offers specialized systems built to connect within one ecosystem tailored for your facility.'
             )}
           </p>
         </div>
@@ -376,16 +376,16 @@ export default function CareHome({
           <figcaption>{t('مشهد توضيحي مولد بالذكاء الاصطناعي', 'AI-generated illustrative scene')}</figcaption>
         </figure>
         <div className="animate-on-scroll">
-          <span className="care-eyebrow">{t('تفاصيل أقل تعقيداً', 'LESS COMPLEXITY, MORE CLARITY')}</span>
+          <span className="care-eyebrow">{t('شريك تقني بخبرة ميدانية', 'A TECHNOLOGY PARTNER WITH FIELD EXPERTISE')}</span>
           <h2>
-            {t('مساحة لفريقك.', 'Space for your team.')}
+            {t('أقل تعقيداً إدارياً.', 'Less administrative burden.')}
             <br />
-            <span>{t('واهتمام أكبر بالمريض.', 'More focus on patients.')}</span>
+            <span>{t('أكثر وقتاً للمريض.', 'More time for patients.')}</span>
           </h2>
           <p>
             {t(
-              'نبدأ بفهم طريقة عمل منشأتك: المواعيد، الفحوصات، التقارير، والحسابات. ثم نحدد معك الأنظمة والأدوار ونقاط الربط، في نطاق واضح وقابل للتنفيذ.',
-              'We start by understanding your appointments, examinations, reports and billing. Together, we define systems, roles and integration requirements in a clear, practical scope.'
+              'نبدأ بفهم طريقة عمل منشأتك: المواعيد، الفحوصات، التقارير، والحسابات. نحلل سير العمل الفعلي في كل قسم لنحدد نقاط الربط ونصمم نطاقاً يناسب بيئتك التشغيلية تماماً.',
+              'We start by mapping your actual clinical workflows across every department — appointments, diagnostics, reports, and billing — to identify integration points and design a scope that fits your operational environment precisely.'
             )}
           </p>
           <div className="care-values">
@@ -429,12 +429,12 @@ export default function CareHome({
       {/* Planning banner */}
       <section className="care-planning-banner care-wrap animate-on-scroll">
         <div>
-          <span className="care-eyebrow">{t('من الفكرة إلى خطة واضحة', 'FROM AN IDEA TO A CLEAR PLAN')}</span>
-          <h2>{t('ابدأ صغيراً. فكر أبعد.', 'Start focused. Think ahead.')}</h2>
+          <span className="care-eyebrow">{t('خطط تشغيلك الرقمي بثقة', 'PLAN YOUR DIGITAL OPERATIONS WITH CONFIDENCE')}</span>
+          <h2>{t('استكشف الباقات. قدّر الاحتياجات.', 'Explore tiers. Estimate needs.')}</h2>
           <p>
             {t(
-              'استكشف الباقات، وقدّر احتياجات الأرشفة، وافهم مراحل التنفيذ في صفحة واحدة مخصصة للتخطيط.',
-              'Explore packages, estimate archive needs and understand rollout stages in one dedicated planning page.'
+              'تصفح الباقات المتدرجة، وقدّر سعة أرشفة الصور الطبية المطلوبة، وتعرف على مراحل التنفيذ في صفحة تخطيط مخصصة تساعدك على فهم النطاق الكامل قبل الانطلاق.',
+              'Browse tiered packages, estimate your medical imaging archive capacity, and understand each rollout phase in one dedicated planning page that helps you scope your full deployment before day one.'
             )}
           </p>
         </div>
@@ -511,11 +511,11 @@ export default function CareHome({
       <section className="care-contact-section" id="contact">
         <div className="care-wrap care-contact-grid">
           <div className="animate-on-scroll">
-            <span className="care-eyebrow">{t('لنبنِ خطوتك القادمة', "LET'S SHAPE YOUR NEXT STEP")}</span>
+            <span className="care-eyebrow">{t('خطوتك الأولى تبدأ بمحادثة', "YOUR FIRST STEP STARTS WITH A CONVERSATION")}</span>
             <h2>
               {t('أخبرنا عن منشأتك.', 'Tell us about your facility.')}
               <br />
-              <span>{t('نبدأ بالاستماع.', 'We start by listening.')}</span>
+              <span>{t('نحدد النطاق معك.', 'We define the scope together.')}</span>
             </h2>
             <p>
               {t(
@@ -525,9 +525,9 @@ export default function CareHome({
             </p>
             <ol>
               {[
-                t('نفهم سير العمل وأولوياتك', 'Understand your workflows and priorities'),
-                t('نراجع الأنظمة ونقاط الربط', 'Review systems and integration requirements'),
-                t('نقترح نطاقاً وخطوات تنفيذ', 'Propose a scope and rollout steps'),
+                t('نحلل سير العمل وأولويات الربط الطبي', 'Analyze clinical workflows and integration priorities'),
+                t('نصمم نطاقاً مخصصاً للأنظمة والباقة المناسبة', 'Design a tailored system scope and the right package'),
+                t('نقترح خطة تنفيذ واضحة ومراحل تدريب الكوادر', 'Propose a clear implementation plan and staff training phases'),
               ].map((step, i) => (
                 <li key={step}>
                   <span>0{i + 1}</span>

@@ -208,19 +208,19 @@ export default function PlanningView({ content, locale = 'ar' }: { content: Site
           <div className="cp-hero-content">
             <span className="cp-eyebrow">
               <Sparkles size={13} />
-              {t('منهجية التخطيط والتشغيل الطبي', 'HEALTHCARE ROLLOUT & ARCHITECTURE')}
+              {t('منهجية تنفيذ معتمدة لمنشأتك', 'CERTIFIED IMPLEMENTATION METHODOLOGY FOR YOUR FACILITY')}
             </span>
 
             <h1 id="cp-heading">
-              {t('خطط مسار التحول الرقمي.', 'Plan your digital care rollout.')}
+              {t('خطط انتقالك الرقمي.', 'Plan your digital health rollout.')}
               <br />
-              <em>{t('بدقة سريرية وضمان تشغيلي.', 'With clinical precision & operational certainty.')}</em>
+              <em>{t('خطوة بخطوة، بلا انقطاع.', 'Step by step, with zero disruption.')}</em>
             </h1>
 
             <p>
               {t(
-                'استكشف الباقات المعتمدة، وافهم مراحل التنفيذ خطوة بخطوة، وقدّر سعة الأرشفة التخزينية المطلوبة لمنشأتك. نراجع معك كافة المتطلبات الهندسية لنضمن انتقالاً سلساً دون أدنى انقطاع لخدمة المرضى.',
-                'Explore certified tiers, understand our 4-phase rollout methodology, and estimate your archive storage needs. We engineer every deployment to ensure uninterrupted clinical workflows.'
+                'استكشف الباقات المعتمدة، وافهم مراحل التنفيذ خطوة بخطوة، وقدّر سعة الأرشفة التخزينية المطلوبة لمنشأتك. نوفر لك كل ما تحتاجه لاتخاذ قرار مدروس قبل الانطلاق دون أي انقطاع لخدمة المرضى.',
+                'Explore certified tiers, follow our phased rollout step by step, and estimate your archive storage needs. Everything you need to make an informed decision before go-live — with zero disruption to patient care.'
               )}
             </p>
 

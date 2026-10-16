@@ -205,7 +205,7 @@ export default function AboutView({ content, locale = 'ar' }: { content: SiteCon
           <div className="ca-hero-copy">
             <span className="ca-eyebrow">
               <Sparkles size={13} />
-              {t('رؤية VIARA للرعاية الصحية', 'THE VIARA HEALTHCARE VISION')}
+              {t('فريق ملتزم بتحول حقيقي في الرعاية', 'A TEAM COMMITTED TO REAL HEALTHCARE TRANSFORMATION')}
             </span>
 
             <h1 id="ca-heading">
@@ -322,7 +322,7 @@ export default function AboutView({ content, locale = 'ar' }: { content: SiteCon
             <div className="ca-story-copy">
               <span className="care-eyebrow">
                 <Workflow size={14} />
-                {t('في قلب الرعاية الطبية', 'AT THE HEART OF CARE')}
+                {t('مشكلة شهدناها في الميدان', 'A PROBLEM WE WITNESSED FIRSTHAND')}
               </span>
               <h2 id="ca-story-head">
                 {t('جسر يعبر بين الأنظمة المعقدة والتشغيل الهادئ.', 'Bridging complex technology & serene clinical care.')}
@@ -461,11 +461,11 @@ export default function AboutView({ content, locale = 'ar' }: { content: SiteCon
         {/* Executive CTA Banner */}
         <section className="ca-cta-banner">
           <div className="ca-cta-copy">
-            <h2>{t('جاهز لتطوير المنظومة التقنية في منشأتك؟', 'Ready to elevate your healthcare technology?')}</h2>
+            <h2>{t('جاهز للانتقال إلى منظومة رعاية متكاملة؟', 'Ready to transition to an integrated care ecosystem?')}</h2>
             <p>
               {t(
-                'تواصل مع فريقنا التقني والاستشاري لمناقشة احتياجات أقسامك، أو حجز عرض فني وتجربة محاكاة مباشرة لنظام العمل.',
-                'Schedule an executive consultation with our engineers to review your departmental workflows or book a live simulation.'
+                'تواصل مع فريقنا لجدولة محاكاة سريرية ميدانية وعرض توضيحي حي يغطي سير العمل الفعلي في منشأتك، ويجيب على كافة التساؤلات التقنية والتشغيلية.',
+                'Connect with our team to schedule a clinical simulation and a live demo that covers your facility\'s actual workflows and answers every technical and operational question.'
               )}
             </p>
           </div>
