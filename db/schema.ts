@@ -22,6 +22,7 @@ export const siteSettings = sqliteTable('site_settings', {
   updatedBy: text('updated_by').notNull(), updatedAt: integer('updated_at').notNull(),
 });
 export const reviews = sqliteTable('reviews', {
+  systemId: text('system_id'),
   id: text('id').primaryKey(), userId: text('user_id').notNull(), name: text('name').notNull(), role: text('role').notNull(),
   organization: text('organization').notNull(), quote: text('quote').notNull(), rating: integer('rating').notNull(),
   locale: text('locale').notNull().default('ar'), status: text('status').notNull().default('pending'),

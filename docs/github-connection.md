@@ -1,28 +1,41 @@
-# GitHub connection
+# Standalone & Production Architecture
 
-The VIARA marketing Site source is stored in `abdo-elshaikh/VIARA-RCMS` under
-`marketing-site/`, on branch `site/marketing-site`.
+The VIARA marketing site source is located in `d:/VIARA/marketing-site`. It is completely decoupled from ChatGPT and operates as an independent, production-grade Next.js / Vinext web application.
 
-- Live Site: https://viara-healthcare.plus-0952.chatgpt.site
-- Sites project: `appgprj_6acfb69903c08191b30ab016881c13ee`
-- Imported Sites source commit: `99939db6b2ad50294fa3b5b98be243074f1380c9`
+- Primary Site Domain: `https://viara.health`
+- Technology Stack: Next.js (App Router), React 19, TypeScript, Drizzle ORM, Cloudflare D1 (`DB`) and R2 (`BUCKET`).
 
-## Development and deployment
+## Authentication & Security Model
 
-Work from `marketing-site/` when running the package scripts. This code uses
-Node.js 22.13 or newer, pnpm, Vinext, Cloudflare D1 (`DB`) and R2 (`BUCKET`).
-The admin requires the server-side `VIARA_ADMIN_EMAIL` secret and platform
-identity headers supplied by Sites. Configure secrets in the hosting environment.
+The website features a dual-tier standalone security architecture:
 
-GitHub stores source code. Production deployment remains managed by Sites; a
-GitHub commit or merge does not automatically publish a Site version.
-Future website changes should be copied into this folder and committed on a
-branch before opening a pull request. Publish website changes separately through
-the existing Sites project using its supported source and deployment workflow.
+1. **Public Visitor / Lead Flow (Zero Barriers):**
+   - Public visitors (hospital directors, radiologists, clinic managers) can submit inquiries directly without registration or external authentication.
+   - Submissions are tracked per-client using a signed `viara_uid` session cookie.
+   - Visitors can visit `/requests` (Arabic) or `/en/requests` (English) to review their active inquiries, download request summaries, or remove requests.
+   - Automated spam protection is enforced via Honeypot detection and hourly rate limiting (10 requests/hour per email).
 
-## Included data
+2. **Administrative Control Center (`/admin`):**
+   - Protected by a standalone, token-based session cookie (`viara_admin_session`).
+   - Admins log in via a dedicated, branded login portal at `/admin`.
+   - Credentials configured via environment variables:
+     - `VIARA_ADMIN_EMAIL`: Configured admin email (default: `admin@viara.health`).
+     - `VIARA_ADMIN_PASSWORD`: Configured admin password or key.
+   - The admin panel allows managing marketing copy, revising pricing packages, reviewing leads, and approving customer reviews.
 
-Source, database migrations, bundled fonts, logos and illustrative photos are
-included. Runtime secrets, live inquiries, reviews, database rows and uploaded R2
-files are not part of this source snapshot. Generated compiler cache files and
-build output are excluded. Applied migrations must remain unchanged.
+## Environment Variables
+
+Configure the following secrets in your hosting environment (`.env` or deployment secrets):
+
+```env
+VIARA_ADMIN_EMAIL=admin@viara.health
+VIARA_ADMIN_PASSWORD=your_secure_password_here
+NEXT_PUBLIC_SITE_URL=https://viara.health
+```
+
+## Running & Building
+
+- Local development server: `npm run dev`
+- Production build: `npm run build`
+- Type checking: `npm run typecheck`
+- Automated test suites: `npm test`

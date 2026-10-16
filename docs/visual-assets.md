@@ -20,3 +20,8 @@ Use case: photorealistic-natural. Asset type: editorial hero photograph for VIAR
 
 Use case: photorealistic-natural. Asset type: supporting editorial photograph for VIARA healthcare technology website. Create an inviting and realistic photograph in a contemporary medical center: a Middle Eastern female doctor wearing a white coat over neutral teal clothing collaborates with a male medical administrator in a pale sand shirt while reviewing a tablet at a bright reception workstation. Both around their thirties or forties, calm friendly engaged expressions, candid working moment, no one looking at camera. Elegant warm ivory architecture, pale oak desk, a plant, soft daylight, subtle forest green accents, natural textures and soft depth of field, human centered premium editorial healthcare photography. Horizontal 3:2 composition with people centered, suitable for a 4:5 crop. No logos, no text, no watermark, no readable patient information on any screen, no exaggerated smiles. Clearly an illustrative professional environment.
 
+
+## Arabic editorial photography — October 16, 2026
+
+The active homepage uses public/assets/scenes/arab-care-team.webp and public/assets/scenes/arab-diagnostics.webp. Both are fictional illustrative scenes produced with the built-in ImageGen tool. Full prompts, paths and encoding details: [care-redesign-2026-10-16.md](care-redesign-2026-10-16.md).
+

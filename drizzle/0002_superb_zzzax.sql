@@ -1,0 +1,1 @@
+ALTER TABLE `reviews` ADD `system_id` text;

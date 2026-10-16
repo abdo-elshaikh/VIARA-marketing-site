@@ -3,7 +3,19 @@ import assert from 'node:assert/strict';
 import {siteContentSchema,defaultContent,isOfferActive,cairoDay,offerSchema,L} from '../lib/site-content.ts';
 import {reviewSchema} from '../lib/review.ts';
 import {matchesAdmin} from '../lib/access.ts';
+import {jsonLd,organizationSchema} from '../lib/seo.ts';
 const copy=()=>structuredClone(defaultContent);
+test('structured data escapes script boundaries and includes only supplied organization details',()=>{
+ const content=copy();content.brand.name='</script><script>1</script>';
+ content.contact.email='sales@example.com';content.contact.linkedin='https://www.linkedin.com/company/example';
+ const schema=organizationSchema(content);const serialized=jsonLd(schema);
+ assert.equal(serialized.includes('</script>'),false);
+ assert.equal(JSON.parse(serialized).name,content.brand.name);
+ assert.equal(schema.email,'sales@example.com');
+ assert.deepEqual(schema.sameAs,['https://www.linkedin.com/company/example']);
+ assert.equal('telephone' in schema,false);
+ assert.equal('aggregateRating' in schema,false);
+});
 test('default content is bilingual, valid and free of fabricated testimonials or offers',()=>{
  assert.equal(siteContentSchema.safeParse(defaultContent).success,true);
  assert.equal(defaultContent.offers.length,0);
@@ -41,4 +53,12 @@ test('existing saved content gains default page imagery without losing customize
  assert.equal(parsed.imagery.hero,'/assets/scenes/radiology-care.webp');
  assert.equal(parsed.imagery.care,'/assets/scenes/medical-team.webp');
  assert.equal(siteContentSchema.safeParse({...legacy,imagery:{hero:'javascript:alert(1)',care:'/assets/scenes/medical-team.webp'}}).success,false);
+});
+
+test('reviews can be linked only to a known system without granting moderation privileges',()=>{
+ const review={id:'6933fe22-93d5-405f-8e40-70b6b63f37db',name:'Test reviewer',quote:'A genuine experience for validation only',rating:4,locale:'en',consent:true};
+ for(const systemId of ['HIS','EHR','PACS','LIS','AI'])assert.equal(reviewSchema.parse({...review,systemId}).systemId,systemId);
+ assert.equal(reviewSchema.safeParse({...review,systemId:'UNKNOWN'}).success,false);
+ assert.equal(reviewSchema.parse({...review,systemId:null}).systemId,null);
+ assert.equal(reviewSchema.parse({...review,systemId:'PACS',status:'approved'}).status,undefined);
 });
