@@ -1,0 +1,476 @@
+/* ==========================================================================
+   VIARA Healthcare - Executive Planning & Rollout Styles
+   ========================================================================== */
+
+.cp-page-wrap {
+  padding-block: 40px 95px;
+}
+
+/* Executive Planning Hero Banner */
+.cp-hero {
+  position: relative;
+  background: linear-gradient(135deg, #132b1f 0%, #1e3f2e 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  color: #fff;
+  padding: 55px 48px;
+  margin-bottom: 50px;
+  box-shadow: 0 16px 45px rgba(18, 38, 27, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.cp-hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.22;
+  mix-blend-mode: luminosity;
+  pointer-events: none;
+}
+.cp-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 780px;
+}
+.cp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+  color: #a7f3d0;
+  background: rgba(167, 243, 208, 0.12);
+  border: 1px solid rgba(167, 243, 208, 0.25);
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 22px;
+}
+.cp-hero h1 {
+  font-size: clamp(36px, 4.2vw, 56px);
+  line-height: 1.25;
+  letter-spacing: -1.5px;
+  color: #ffffff;
+  margin-bottom: 18px;
+}
+.cp-hero h1 em {
+  font-style: normal;
+  color: #6ee7b7;
+}
+.cp-hero p {
+  font-size: 16.5px;
+  line-height: 1.95;
+  color: #d1fae5;
+  max-width: 680px;
+  margin-bottom: 32px;
+}
+
+/* Key Metrics Telemetry Strip */
+.cp-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 30px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+.cp-telemetry-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cp-telemetry-val {
+  font-family: Manrope, Arial, sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+.cp-telemetry-lbl {
+  font-size: 12px;
+  color: #a7d8be;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Section Headings */
+.cp-section-head {
+  margin-bottom: 36px;
+}
+.cp-section-head h2 {
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1.35;
+  color: #192f23;
+  letter-spacing: -0.8px;
+  margin-top: 10px;
+}
+.cp-section-head p {
+  font-size: 16px;
+  line-height: 1.85;
+  color: #556754;
+  max-width: 650px;
+  margin-top: 10px;
+}
+
+/* Plans & Packages Grid */
+.cp-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 26px;
+  margin-bottom: 65px;
+}
+.cp-plan-card {
+  background: #ffffff;
+  border: 1px solid #dbe4d5;
+  border-radius: 14px;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 6px 20px rgba(35, 55, 40, 0.03);
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.cp-plan-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 24px 55px rgba(35, 55, 40, 0.12);
+  border-color: #9cb592;
+}
+.cp-plan-card.is-featured {
+  border-color: #2b5638;
+  box-shadow: 0 0 0 2px #2b5638, 0 18px 45px rgba(43, 86, 56, 0.12);
+  background: #fdfefe;
+}
+.cp-plan-card.is-featured::before {
+  content: '';
+  display: block;
+  height: 4px;
+  background: var(--care-green);
+  border-radius: 14px 14px 0 0;
+  position: absolute;
+  top: -1px;
+  inset-inline: -1px;
+}
+.cp-plan-card-head {
+  background: linear-gradient(180deg, #f7faf4 0%, transparent 100%);
+  margin: -32px -28px 16px;
+  padding: 24px 28px 16px;
+  border-radius: 14px 14px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.cp-plan-featured-tag {
+  position: absolute;
+  top: -12px;
+  inset-inline-end: 24px;
+  background: #2b5638;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.cp-plan-code {
+  font-family: Manrope, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: #edf5eb;
+  color: #2b5638;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid #d4e2ce;
+}
+.cp-plan-card h3 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #172d20;
+  margin-bottom: 8px;
+}
+.cp-plan-desc {
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: #556952;
+  margin-bottom: 20px;
+}
+.cp-plan-price-wrap {
+  padding-block: 16px;
+  margin-bottom: 22px;
+  border-block: 1px solid #e7efe1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.cp-plan-price {
+  font-size: 22px;
+  font-weight: 800;
+  color: #20412b;
+}
+.cp-plan-sla {
+  font-size: 11.5px;
+  color: #63775f;
+  font-weight: 600;
+}
+.cp-plan-meta-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.cp-plan-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #3b5840;
+  background: #f5f9f2;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #e3ebe0;
+}
+.cp-plan-pill svg {
+  color: #2e7d32;
+  flex-shrink: 0;
+}
+.cp-plan-features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+.cp-plan-features-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #495e46;
+}
+.cp-plan-features-list svg {
+  color: #2e7d32;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.cp-plan-card .care-btn {
+  width: 100%;
+  min-height: 48px;
+  font-size: 14.5px;
+  margin-top: auto;
+}
+
+/* 4-Phase Rollout Timeline */
+.cp-rollout-section {
+  padding-block: 20px 70px;
+}
+.cp-timeline {
+  position: relative;
+  padding-block: 10px 20px;
+}
+.cp-timeline::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--care-green) 0%, #8db89a 100%);
+  z-index: 0;
+}
+.cp-timeline-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  position: relative;
+  z-index: 1;
+}
+.cp-tl-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-inline: 12px;
+}
+.cp-tl-dot {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--care-green);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Manrope, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 0 0 5px #e6efe4;
+  flex-shrink: 0;
+}
+.cp-tl-body {
+  padding-top: 4px;
+}
+.cp-tl-time {
+  font-size: 11px;
+  color: var(--care-green);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.cp-tl-step h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #172d20;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.cp-tl-step p {
+  font-size: 13px;
+  color: var(--care-muted);
+  line-height: 1.75;
+  margin-bottom: 12px;
+}
+.cp-tl-deliverable {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2b583a;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: center;
+}
+
+/* Animate-on-scroll: timeline step overrides */
+.cp-tl-step.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.cp-tl-step.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Estimator Container Box */
+.cp-estimator-section {
+  padding-block: 20px 80px;
+}
+.cp-estimator-box {
+  background: #ffffff;
+  border: 1px solid #d7e2ce;
+  border-radius: 14px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(35, 55, 40, 0.04);
+}
+
+/* Rollout FAQs */
+.cp-faq-section {
+  padding-block: 20px 70px;
+}
+.cp-faq-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 70px;
+  align-items: flex-start;
+}
+.cp-faq-list {
+  display: flex;
+  flex-direction: column;
+}
+.cp-faq-item {
+  border-bottom: 1px solid #dae5d4;
+}
+.cp-faq-item summary {
+  display: flex;
+  list-style: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 0;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 700;
+  color: #182e21;
+}
+.cp-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.cp-faq-item summary svg {
+  flex-shrink: 0;
+  color: #556952;
+  transition: transform 0.2s;
+}
+.cp-faq-item[open] summary svg {
+  transform: rotate(45deg);
+}
+.cp-faq-item p {
+  padding-bottom: 24px;
+  font-size: 14.5px;
+  line-height: 1.9;
+  color: #556754;
+}
+
+/* Responsive Queries for Planning */
+@media (max-width: 1150px) {
+  .cp-plans-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .cp-timeline-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px 0;
+  }
+  .cp-faq-grid {
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+}
+@media (max-width: 768px) {
+  .cp-hero {
+    padding: 36px 24px;
+  }
+  .cp-hero h1 {
+    font-size: 32px;
+  }
+  .cp-hero p {
+    font-size: 15px;
+  }
+  .cp-telemetry-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  .cp-timeline::before {
+    display: none;
+  }
+  .cp-timeline-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .cp-tl-step {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: start;
+    gap: 16px;
+    padding-inline: 0;
+    padding-block: 0 28px;
+    border-inline-start: 2px solid #d0e4d4;
+    padding-inline-start: 20px;
+  }
+  .cp-tl-dot {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  .cp-tl-deliverable {
+    justify-content: flex-start;
+  }
+  .cp-estimator-box {
+    padding: 24px 18px;
+  }
+}
