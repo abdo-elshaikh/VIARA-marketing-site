@@ -47,6 +47,11 @@
 .care-hiw-step p{font-size:14px;color:var(--care-muted);line-height:1.85}
 @media(max-width:700px){.care-hiw-grid{grid-template-columns:1fr}.care-hiw-step::after{display:none!important}}
 
+/* ── Domain card gradient overlay ──────────────────────────────────────── */
+.care-domain-gradient{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(36,90,69,0.06) 0%,rgba(36,90,69,0) 60%);opacity:0;transition:opacity 0.25s ease;pointer-events:none}
+.care-domain{position:relative}
+.care-domain:hover .care-domain-gradient{opacity:1}
+
 /* ── Reviews slider ─────────────────────────────────────────────────────── */
 .care-reviews-slider{overflow:hidden;position:relative}
 .care-reviews-track{display:flex;gap:28px;transition:transform 0.4s cubic-bezier(0.4,0,0.2,1)}

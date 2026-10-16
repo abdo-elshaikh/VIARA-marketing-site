@@ -451,7 +451,7 @@ export default function CareHome({
           <div className="care-reviews-slider">
             <div
               className="care-reviews-track"
-              style={{ transform: `translateX(${en ? '' : '-'}${currentSlide * (100 / reviews.length)}%)` }}
+              style={{ transform: `translateX(calc(${en ? '' : '-'}${currentSlide} * (min(520px, 85vw) + 28px)))` }}
             >
               {reviews.map(review => (
                 <div key={review.id} className="care-review-slide">
