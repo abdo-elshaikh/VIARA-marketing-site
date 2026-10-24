@@ -1,473 +1,451 @@
 'use client';
-
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 import {
-  Search,
-  Plus,
-  Check,
   ArrowUpLeft,
   ArrowUpRight,
   ArrowLeft,
   ArrowRight,
-  X,
-  Hospital,
-  Stethoscope,
-  Building2,
-  Activity,
-  HeartPulse,
-  Workflow,
-  Cpu,
   ScanLine,
-  Eye,
-  TestTube2,
-  Microscope,
-  ShieldCheck,
   Layers3,
-  DollarSign,
+  Building2,
+  Search,
+  X,
+  Check,
+  Plus,
+  SlidersHorizontal,
   Users,
-  Smartphone,
-  Video,
-  Route,
-  Share2,
-  Network,
   Sparkles,
-  Filter,
-  Layers
+  FileText,
+  ShieldCheck,
+  Monitor,
+  HardDrive,
+  Calendar,
+  Receipt,
+  QrCode,
+  Smartphone,
 } from 'lucide-react';
-import {
-  healthcareCategories,
-  healthcareSystems,
-  facilityProfiles,
-  normalizeCatalogSearch
-} from '../lib/healthcare-catalog.mjs';
-import { txt, type Locale, type SiteContent } from '../lib/site-content';
-import { findSolution, solutionPath, solutionSlugs } from '../lib/solutions';
-import { systemImage } from '../lib/system-stories';
+import { careCatalog, txt, type Locale, type SiteContent } from '../lib/site-content';
+import { marketingSystemIds, normalizeCatalogSearch } from '../lib/healthcare-catalog.mjs';
+import { useSiteText } from '../lib/site-copy';
+import { solutionPath } from '../lib/solutions';
+import { systemCaptures } from '../lib/system-captures';
 import CareFrame from './care-frame';
+import SystemComparison from './system-comparison';
+import BrandPageHero from './brand-page-hero';
+import SystemSynergyMap from './system-synergy-map';
+import './systems-directory.css';
+import './systems-usability.css';
+import './systems-enhanced.css';
 
-interface SystemMeta {
-  badge: { ar: string; en: string };
-  highlight: { ar: string; en: string };
-  icon: any;
-}
+const MAX_SCOPE_SYSTEMS = 6;
 
-const systemMetadata: Record<string, SystemMeta> = {
-  HIS: {
-    badge: { ar: 'HL7 FHIR · ADT', en: 'HL7 FHIR · ADT' },
-    highlight: { ar: 'تنسيق التنويم وإدارة الأسرّة وغرف العمليات', en: 'Inpatient, Bed Census & Surgical Coordination' },
-    icon: Hospital,
-  },
-  EHR: {
-    badge: { ar: 'SNOMED-CT · CPOE', en: 'SNOMED-CT · CPOE' },
-    highlight: { ar: 'الملف السريري الذكي وتنبيه التداخلات الدوائية', en: 'Clinical SOAP, E-Rx & Allergy Safety Checks' },
-    icon: Stethoscope,
-  },
-  CMS: {
-    badge: { ar: 'Saudi EHR · E-Rx', en: 'Saudi EHR · E-Rx' },
-    highlight: { ar: 'مواعيد العيادات والتدفق السلس للمراجعين والفروع', en: 'Outpatient Scheduling & Multi-Branch Flow' },
-    icon: Building2,
-  },
-  DENTAL: {
-    badge: { ar: '3D Charting · Dental', en: '3D Charting · Dental' },
-    highlight: { ar: 'مخطط الأسنان الرقمي وجلسات العلاج والمتابعة', en: '3D Odontogram & Dental Treatment Plans' },
-    icon: Activity,
-  },
-  REHAB: {
-    badge: { ar: 'Physio · Milestones', en: 'Physio · Milestones' },
-    highlight: { ar: 'برامج التأهيل وقياس التقدم الحركي والوظيفي', en: 'Rehabilitation Protocols & Progress Tracking' },
-    icon: HeartPulse,
-  },
-  NURSING: {
-    badge: { ar: 'eMAR · Shift Handover', en: 'eMAR · Shift Handover' },
-    highlight: { ar: 'إعطاء الأدوية بالباركود وتسليم الورديات الرقمي', en: 'Bedside Barcode eMAR & Digital Handovers' },
-    icon: Workflow,
-  },
-  OR: {
-    badge: { ar: 'WHO Safety · Scheduling', en: 'WHO Safety · Scheduling' },
-    highlight: { ar: 'جدولة العمليات وقائمة التحقق الجراحية المعتمدة', en: 'Surgical Theater Booking & Safety Checklists' },
-    icon: Cpu,
-  },
-  RIS: {
-    badge: { ar: 'DICOM MWL · MPPS', en: 'DICOM MWL · MPPS' },
-    highlight: { ar: 'إدارة مواعيد الأشعة وقوائم عمل الأجهزة الطبية', en: 'Modality Worklist & Radiology Scheduling' },
-    icon: ScanLine,
-  },
-  PACS: {
-    badge: { ar: 'DICOM 3.0 · Web 3D', en: 'DICOM 3.0 · Web 3D' },
-    highlight: { ar: 'أرشفة سحابية وهجينة وعارض 3D فائق السرعة', en: 'Cloud/Hybrid Archive & Sub-second 3D Review' },
-    icon: Eye,
-  },
-  LIS: {
-    badge: { ar: 'ASTM E1381 · LOINC', en: 'ASTM E1381 · LOINC' },
-    highlight: { ar: 'أتمتة المحللات المخبرية وتتبع الباركود الدقيق', en: 'Bidirectional Analyzers & Sample Barcoding' },
-    icon: TestTube2,
-  },
-  PATH: {
-    badge: { ar: 'Digital Histology', en: 'Digital Histology' },
-    highlight: { ar: 'تتبع الشرائح النسيجية والفحص المجهري الرقمي', en: 'Histopathology Slide Tracking & Telepathology' },
-    icon: Microscope,
-  },
-  BLOOD: {
-    badge: { ar: 'ISBT 128 · Cold Chain', en: 'ISBT 128 · Cold Chain' },
-    highlight: { ar: 'تتبع وحدات الدم وسلسلة التبريد الموثوقة للتبرع', en: 'Blood Donation Tracking & Cold Chain Security' },
-    icon: ShieldCheck,
-  },
-  PHARM: {
-    badge: { ar: 'Barcode Dispensing', en: 'Barcode Dispensing' },
-    highlight: { ar: 'الصرف الآلي للمستودعات وتواريخ الصلاحية والوصفات', en: 'Automated Pharmacy Dispensing & Stock Expiry' },
-    icon: Layers3,
-  },
-  RCM: {
-    badge: { ar: 'NPHIES v1.3 · Clean Claims', en: 'NPHIES v1.3 · Clean Claims' },
-    highlight: { ar: 'التحقق اللحظي من الأهلية وتدقيق المطالبات التأمينية', en: 'Instant Eligibility & Claim Scrubber Engine' },
-    icon: DollarSign,
-  },
-  ERP: {
-    badge: { ar: 'Supply Chain · Finance', en: 'Supply Chain · Finance' },
-    highlight: { ar: 'الحسابات والمشتريات الطبية وسلاسل إمداد المستشفيات', en: 'Hospital Accounting & Medical Procurement' },
-    icon: Building2,
-  },
-  HR: {
-    badge: { ar: 'Clinical Rostering', en: 'Clinical Rostering' },
-    highlight: { ar: 'جداول الكوادر الطبية والمناوبات والامتيازات السريرية', en: 'Physician Rostering & Credentialing' },
-    icon: Users,
-  },
-  ASSET: {
-    badge: { ar: 'Biomedical Maintenance', en: 'Biomedical Maintenance' },
-    highlight: { ar: 'الصيانة الوقائية للأجهزة الطبية وتتبع الأعطال', en: 'Preventive Calibration & Equipment Uptime' },
-    icon: Cpu,
-  },
-  BI: {
-    badge: { ar: 'FHIR Analytics · OMOP', en: 'FHIR Analytics · OMOP' },
-    highlight: { ar: 'لوحات قيادة المؤشرات الحيوية والتشغيلية للإدارة', en: 'Executive Dashboards & Clinical KPI Analytics' },
-    icon: Activity,
-  },
-  PORTAL: {
-    badge: { ar: 'Mobile App · Booking', en: 'Mobile App · Booking' },
-    highlight: { ar: 'حجز المواعيد والوصول للأشعة والنتائج فورا عبر الجوال', en: 'Self-Service Booking, Reports & Imaging App' },
-    icon: Smartphone,
-  },
-  TELE: {
-    badge: { ar: 'WebRTC AES-256', en: 'WebRTC AES-256' },
-    highlight: { ar: 'عيادات افتراضية مشفرة واستشارات مرئية عالية الدقة', en: 'Encrypted HD Video Care & Remote Consultations' },
-    icon: Video,
-  },
-  HOME: {
-    badge: { ar: 'GPS Route · Field Care', en: 'GPS Route · Field Care' },
-    highlight: { ar: 'تنسيق زيارات الرعاية المنزلية والفرق الطبية المتنقلة', en: 'Mobile Care Team Dispatch & Home Visit EHR' },
-    icon: Route,
-  },
-  REFERRAL: {
-    badge: { ar: 'Care Continuity', en: 'Care Continuity' },
-    highlight: { ar: 'إدارة الإحالات الطبية بين المراكز والمستشفيات بسلاسة', en: 'Cross-Facility Referrals & Closed-Loop Care' },
-    icon: Share2,
-  },
-  INTEROP: {
-    badge: { ar: 'HL7 v2/v3 · FHIR · API', en: 'HL7 v2/v3 · FHIR · API' },
-    highlight: { ar: 'محرك الربط الشامل ومزامنة البيانات بين كافة الأنظمة', en: 'Enterprise Integration Bus & Data Exchange' },
-    icon: Network,
-  },
-  AI: {
-    badge: { ar: 'STAT CAD · CE-MDR', en: 'STAT CAD · CE-MDR' },
-    highlight: { ar: 'فرز الحالات الحرجة والإملاء الصوتي الطبي الذكي', en: 'STAT Emergency Triage & Clinical Voice Dictation' },
-    icon: Sparkles,
-  },
+const techSpecs: Record<string, { label: { ar: string; en: string }; icon: typeof ScanLine }[]> = {
+  RIS: [
+    { label: { ar: 'تكامل DICOM MWL', en: 'DICOM MWL Integration' }, icon: ScanLine },
+    { label: { ar: 'تقارير وفحوصات الأشعة', en: 'Radiology Reporting' }, icon: FileText },
+    { label: { ar: 'ربط الفوترة والتعاقدات', en: 'Billing & Payer Sync' }, icon: ShieldCheck },
+  ],
+  PACS: [
+    { label: { ar: 'تكاملات DICOM: MWL وC-STORE وC-FIND', en: 'DICOM MWL, C-STORE & C-FIND Integration' }, icon: Layers3 },
+    { label: { ar: 'عارض ويب تشخيصي متقدم', en: 'Diagnostic Web Viewer' }, icon: Monitor },
+    { label: { ar: 'أرشفة سحابية / محلية مشفرة', en: 'Hybrid Encrypted Archive' }, icon: HardDrive },
+  ],
+  CMS: [
+    { label: { ar: 'ملف طبي إلكتروني EMR', en: 'Clinical EMR Records' }, icon: Building2 },
+    { label: { ar: 'جدولة العيادات والمواعيد', en: 'Multi-clinic Scheduling' }, icon: Calendar },
+    { label: { ar: 'فواتير ودفع إلكتروني', en: 'Insurance & POS Billing' }, icon: Receipt },
+  ],
+  PORTAL: [
+    { label: { ar: 'بوابات المرضى والأطباء', en: 'Patient & Doctor Portals' }, icon: Users },
+    { label: { ar: 'تحقق إلكتروني فوري بالـ QR', en: 'Instant QR Verification' }, icon: QrCode },
+    { label: { ar: 'عرض الصور والتقارير بالموبايل', en: 'Mobile DICOM & Reports' }, icon: Smartphone },
+  ],
+  AI: [
+    { label: { ar: 'فرز الحالات حسب الأولوية', en: 'Priority-based case triage' }, icon: Sparkles },
+    { label: { ar: 'مسودات تقارير بمراجعة الطبيب', en: 'Radiologist-reviewed report drafts' }, icon: FileText },
+    { label: { ar: 'مساندة القرار وليست بديلاً عن الطبيب', en: 'Decision support, not a replacement for clinicians' }, icon: ShieldCheck },
+  ],
 };
 
-export default function CareDirectory({ content, locale }: { content: SiteContent; locale: Locale }) {
+function getSynergyInsight(selectedIds: string[], locale: Locale) {
   const en = locale === 'en';
-  const home = en ? '/en' : '/';
-  const t = (ar: string, english: string) => (en ? english : ar);
-  const Arrow = en ? ArrowUpRight : ArrowUpLeft;
+  if (selectedIds.length === 0) return null;
+  const hasRis = selectedIds.includes('RIS');
+  const hasPacs = selectedIds.includes('PACS');
+  const hasCms = selectedIds.includes('CMS');
+  const hasPortal = selectedIds.includes('PORTAL');
 
-  const [query, setQuery] = useState('');
-  const [area, setArea] = useState('all');
-  const [activeProfile, setActiveProfile] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [ready, setReady] = useState(false);
+  if (hasRis && hasPacs && hasCms && hasPortal) {
+    return {
+      text: en
+        ? 'Comprehensive Healthcare Ecosystem: Full coverage from clinic bookings to diagnostic imaging and digital patient delivery.'
+        : 'المنظومة الرقمية الشاملة: تغطية متكاملة تبدأ من العيادات وحجز المواعيد حتى الفحص التشخيصي والتسليم الرقمي للمراجع.',
+      recommended: null,
+    };
+  }
+  if (hasRis && hasPacs && hasPortal) {
+    return {
+      text: en
+        ? 'Complete Digital Radiology Workflow: Modality worklists, DICOM archiving and direct report/image access.'
+        : 'منظومة الأشعة الرقمية المتكاملة: جدولة الأجهزة، الأرشفة التشخيصية وتسليم التقارير والصور للمراجع والطبيب.',
+      recommended: !hasCms ? 'CMS' : null,
+    };
+  }
+  if (hasRis && hasPacs) {
+    return {
+      text: en
+        ? 'Full Radiology & Archive Pairing: Worklists matched directly with DICOM studies and diagnostic viewing.'
+        : 'تناغم الأشعة والأرشفة: ربط مباشر بين قوائم عمل الفحص ودراسات DICOM والعارض التشخيصي.',
+      recommended: !hasPortal ? 'PORTAL' : null,
+    };
+  }
+  if (hasCms && hasPortal) {
+    return {
+      text: en
+        ? 'Modern Clinic Operations: Smooth clinic appointments and verified digital patient results.'
+        : 'تشغيل متقدم للمركز: إدارة العيادات والمواعيد مع تسليم النتائج الطبية رقمياً.',
+      recommended: !hasRis ? 'RIS' : null,
+    };
+  }
+  if (hasRis) {
+    return {
+      text: en
+        ? 'Radiology Suite selected: Best paired with PACS for seamless DICOM study storage and viewing.'
+        : 'نظام الأشعة RIS: يُنصح بدمجه مع PACS لربط الفحوصات مباشرة بأرشفة وعارض الصور الطبية.',
+      recommended: 'PACS',
+    };
+  }
+  if (hasPacs) {
+    return {
+      text: en
+        ? 'PACS Archive selected: Pair with RIS to generate Modality Worklists (MWL) for imaging devices.'
+        : 'أرشفة صور PACS: يُنصح بدمجها مع RIS لربط الأجهزة التشخيصية بقوائم العمل التلقائية (MWL).',
+      recommended: 'RIS',
+    };
+  }
+  if (hasCms) {
+    return {
+      text: en
+        ? 'Medical Center CMS selected: Pair with PORTAL to let patients and doctors access results online.'
+        : 'إدارة المركز CMS: يُنصح بدمجه مع PORTAL لإتاحة حجز المواعيد وتسليم النتائج للمراجعين إلكترونياً.',
+      recommended: 'PORTAL',
+    };
+  }
+  if (hasPortal) {
+    return {
+      text: en
+        ? 'Digital Portals selected: Pair with RIS or CMS to connect with your center’s actual clinical records.'
+        : 'بوابات PORTAL: يُنصح بربطها مع RIS أو CMS للتكامل مع المواعيد وسجلات الفحوصات الفعلية.',
+      recommended: 'RIS',
+    };
+  }
+  return null;
+}
+
+export default function CareDirectory({ content, locale }: { content: SiteContent; locale: Locale }) {
+  const en = locale === 'en', home = en ? '/en' : '/', t = useSiteText(locale, content);
+  const Arrow = en ? ArrowUpRight : ArrowUpLeft, Forward = en ? ArrowRight : ArrowLeft;
+  const icons: Record<string, typeof ScanLine> = { RIS: ScanLine, PACS: Layers3, AI: Sparkles, CMS: Building2, PORTAL: Users };
+  const allowed = careCatalog(content).sort((a, b) => marketingSystemIds.indexOf(a.id) - marketingSystemIds.indexOf(b.id));
+  const categories = content.catalog.categories.filter(category => allowed.some(system => system.category === category.id));
+  const profiles = content.catalog.facilities.filter(profile => ['radiology', 'medical'].includes(profile.id)).map(profile => ({ ...profile, systems: profile.systems.filter(id => allowed.some(system => system.id === id)) })).filter(profile => profile.systems.length);
+
+  const [query, setQuery] = useState(''), [area, setArea] = useState('all');
+  const [selected, setSelected] = useState<string[]>([]), [activeProfile, setActiveProfile] = useState<string | null>(null), [ready, setReady] = useState(false);
+  const [activeCaptures, setActiveCaptures] = useState<Record<string, number>>({});
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       const params = new URLSearchParams(location.search);
       setQuery(params.get('q') || '');
       const requested = params.get('area');
-      if (healthcareCategories.some(c => c.id === requested)) setArea(requested!);
+      if (content.catalog.categories.some(category => category.id === requested)) setArea(requested!);
+      try {
+        const saved = JSON.parse(sessionStorage.getItem('viara-system-selection') || '[]');
+        if (Array.isArray(saved)) setSelected([...new Set(saved.filter((id): id is string => typeof id === 'string' && marketingSystemIds.includes(id) && content.products.some(product => product.id === id && product.enabled)))].slice(0, MAX_SCOPE_SYSTEMS));
+      } catch { /* Scope selection is optional when browser storage is unavailable. */ }
       setReady(true);
     });
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [content.catalog.categories, content.products]);
 
   useEffect(() => {
     if (!ready) return;
     const url = new URL(location.href);
-    if (query) url.searchParams.set('q', query);
-    else url.searchParams.delete('q');
-    if (area !== 'all') url.searchParams.set('area', area);
-    else url.searchParams.delete('area');
+    if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
+    if (area !== 'all') url.searchParams.set('area', area); else url.searchParams.delete('area');
     history.replaceState(null, '', url);
   }, [query, area, ready]);
 
-  const allowed = healthcareSystems.filter(
-    s => !content.products.some(p => p.id === s.id && !p.enabled)
-  );
+  useEffect(() => {
+    if (!ready) return;
+    try { sessionStorage.setItem('viara-system-selection', JSON.stringify(selected)); } catch { /* Selection still works without storage. */ }
+  }, [selected, ready]);
 
-  const results = allowed.filter(
-    s =>
-      (area === 'all' || s.category === area) &&
-      normalizeCatalogSearch(
-        `${s.id} ${s.name.ar} ${s.name.en} ${s.description.ar} ${s.description.en} ${
-          systemMetadata[s.id]?.badge.ar || ''
-        } ${systemMetadata[s.id]?.badge.en || ''}`
-      ).includes(normalizeCatalogSearch(query))
-  );
+  // Keyboard shortcut '/' to focus search input
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
-  // Quick preset apply
-  const applyProfile = (profileId: string) => {
-    const profile = facilityProfiles.find(p => p.id === profileId);
-    if (!profile) return;
-    setActiveProfile(profileId);
-    const validIds = profile.systems.filter(id => allowed.some(s => s.id === id)).slice(0, 6);
-    setSelected(validIds);
+  const results = allowed.filter(system => (area === 'all' || system.category === area) && normalizeCatalogSearch(`${system.id} ${system.name.ar} ${system.name.en} ${system.description.ar} ${system.description.en}`).includes(normalizeCatalogSearch(query)));
+
+  const toggle = (id: string) => {
+    setActiveProfile(null);
+    setSelected(ids => ids.includes(id) ? ids.filter(item => item !== id) : (ids.length >= MAX_SCOPE_SYSTEMS ? ids : [...ids, id]));
   };
 
-  const getSystemMeta = (id: string): SystemMeta => {
-    return (
-      systemMetadata[id] || {
-        badge: { ar: 'معيار معتمد', en: 'Certified Protocol' },
-        highlight: { ar: 'تكامل سريري وإداري موحد', en: 'Integrated Clinical Workflow' },
-        icon: Sparkles,
-      }
-    );
+  const reset = () => { setQuery(''); setArea('all'); };
+
+  const handleSynergySelect = (id: string) => {
+    const el = document.getElementById(`system-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('is-highlighted');
+      setTimeout(() => el.classList.remove('is-highlighted'), 2000);
+    }
+  };
+
+  const roles: Record<string, [string, string]> = {
+    RIS: ['من الحجز إلى التقرير', 'From booking to reporting'],
+    PACS: ['الصور في سياق أوضح', 'Imaging in clearer context'],
+    CMS: ['يوم عمل منظم لمركزك', 'A more organized center day'],
+    PORTAL: ['بوابات تفاعلية للمرضى والأطباء', 'Interactive patient and doctor portals'],
+  };
+
+  const fits: Record<string, [string, string]> = {
+    RIS: ['لفرق الاستقبال والأشعة والتقارير', 'For reception, radiology and reporting teams'],
+    PACS: ['لفرق التصوير ومراجعة الدراسات', 'For imaging and study review teams'],
+    CMS: ['لإدارة المراكز الطبية والعيادات', 'For medical center and clinic management'],
+    PORTAL: ['للمرضى والأطباء المحيلين وفرق المتابعة', 'For patients, referring doctors and follow-up teams'],
   };
 
   return (
     <CareFrame content={content} locale={locale} current="systems">
-      <div className="care-wrap cd-page-wrap">
-        {/* Executive Directory Header */}
-        <section className="cd-header" aria-labelledby="cd-heading">
-          <div className="cd-header-copy">
-            <span className="cd-eyebrow">
-              <i className="cd-pulse-dot" />
-              {t('دليل منظومة أنظمة الرعاية الصحية', 'HEALTHCARE SYSTEMS DIRECTORY')} · {allowed.length} {t('نظاماً متخصصاً', 'SYSTEMS')}
-            </span>
+      <div className={`vsd-page ${selected.length ? 'has-selection' : ''}`}>
+        {/* ── Hero ── */}
+        <BrandPageHero
+          locale={locale}
+          kind="systems"
+          eyebrow={t('حلول متخصصة. نطاق يناسب مركزك.', 'SPECIALIZED SYSTEMS. A SCOPE THAT FITS.')}
+          title={t('اختر النظام المناسب', 'Choose the right system')}
+          accent={t('لطريقة عمل مركزك.', 'for the way your center works.')}
+          description={t(
+            'إدارة رحلة الأشعة، وتنظيم الصور الطبية، وتشغيل المراكز والعيادات. تعرّف على حلول VIARA واختر الأنظمة التي تريد مناقشتها مع فريقنا.',
+            'Radiology workflows, medical imaging and daily center operations. Explore VIARA solutions and choose the systems you would like to discuss with our team.',
+          )}
+        >
+          <a className="care-btn" href="#system-directory">
+            {t('استكشف الأنظمة', 'Explore the systems')}
+            <Arrow size={18} />
+          </a>
+          <a
+            className="care-link"
+            href="#system-comparison"
+            onClick={() => {
+              const comparison = document.getElementById('system-comparison');
+              if (comparison instanceof HTMLDetailsElement) comparison.open = true;
+            }}
+          >
+            {t('قارن بين الأنظمة', 'Compare systems')}
+            <Forward size={17} />
+          </a>
+        </BrandPageHero>
 
-            <h1 id="cd-heading">
-              {t('منظومة رعاية متكاملة.', 'A complete healthcare ecosystem.')}
-              <br />
-              <em>{t('24 نظاماً لكل قسم في منشأتك.', '24 systems for every department in your facility.')}</em>
-            </h1>
+        {/* ── Connected Healthcare Synergy Map ── */}
+        <SystemSynergyMap
+          locale={locale}
+          activeId={selected[0] || null}
+          onSelectSystem={handleSynergySelect}
+        />
 
-            <p>
-              {t(
-                'استكشف كافة الحلول السريرية والتشخيصية والإدارية والرقمية. يمكنك تحديد حتى 6 أنظمة لتصميم نطاق متكامل يناسب احتياجات منشأتك، ومناقشته مع فريقنا الهندسي والاستشاري في عرض فني مخصص.',
-                'Browse clinical, diagnostic, operational, and digital healthcare solutions. Select up to 6 systems to configure a tailored scope for your facility, then discuss it with our engineering team in a dedicated technical demonstration.'
-              )}
-            </p>
+        {/* ── Systems Directory ── */}
+        <section className="care-wrap vsd-directory" id="system-directory" aria-labelledby="vsd-directory-title">
+          <div className="vsd-section-heading">
+            <div>
+              <span className="vsd-kicker">{t('حلول VIARA', 'THE VIARA SYSTEMS')}</span>
+              <h2 id="vsd-directory-title">{t('حلول متخصصة. أدوار واضحة.', 'Specialized systems. Clear roles.')}</h2>
+            </div>
+            <p>{t('استعرض دور كل نظام وقدراته، ثم أضفه إلى نطاقك المبدئي. يمكنك اختيار أكثر من نظام.', 'Review each system’s role and capabilities, then add it to your initial scope. You can select more than one.')}</p>
           </div>
 
-          {/* Quick Facility Profiles Preset Bar */}
-          <div className="cd-presets-strip" aria-label={t('نطاقات جاهزة حسب نوع المنشأة', 'Facility presets')}>
-            <span className="cd-presets-label">
-              <Building2 size={15} />
-              {t('نطاقات مقترحة حسب المنشأة:', 'Suggested facility scopes:')}
-            </span>
-            <div className="cd-presets-buttons">
-              {facilityProfiles.map(p => {
-                const isActive = activeProfile === p.id;
-                return (
-                  <button
-                    type="button"
-                    key={p.id}
-                    className={`cd-preset-pill ${isActive ? 'is-active' : ''}`}
-                    onClick={() => applyProfile(p.id)}
-                  >
-                    <span>{txt(p.name, locale)}</span>
-                    <bdi>({p.systems.length})</bdi>
-                  </button>
-                );
-              })}
-              {selected.length > 0 && (
+          {/* Interactive Comparison Tool */}
+          <SystemComparison content={content} locale={locale} selected={selected} onToggle={toggle} />
+
+          {/* Toolbar: Filters and Search */}
+          <div className="vsd-toolbar">
+            <div className="vsd-filters" role="group" aria-label={t('تصفية الأنظمة', 'Filter systems')}>
+              <SlidersHorizontal size={16} aria-hidden="true" />
+              <button type="button" aria-pressed={area === 'all'} onClick={() => setArea('all')}>
+                {t('كل الأنظمة', 'All systems')}
+                <bdi>{allowed.length}</bdi>
+              </button>
+              {categories.map(category => (
                 <button
                   type="button"
-                  className="cd-preset-clear"
-                  onClick={() => {
-                    setSelected([]);
-                    setActiveProfile(null);
-                  }}
+                  key={category.id}
+                  aria-pressed={area === category.id}
+                  onClick={() => setArea(category.id)}
                 >
-                  <X size={13} />
-                  <span>{t('مسح التحديد', 'Clear')}</span>
+                  {txt(category.name, locale)}
                 </button>
-              )}
+              ))}
             </div>
-          </div>
-        </section>
 
-        {/* Search & Category Filter Controls */}
-        <section className="cd-controls-section" aria-label={t('أدوات التصفية والبحث', 'Filter and search')}>
-          <div className="cd-controls-bar">
-            {/* Search Input */}
-            <label className="cd-search">
-              <Search size={19} className="cd-search-icon" />
+            <div className="vsd-search">
+              <Search size={17} aria-hidden="true" />
               <input
-                aria-label={t('ابحث عن نظام بالاسم أو الاختصار أو المعيار', 'Search by name, code or protocol')}
-                placeholder={t(
-                  'ابحث عن نظام (مثال: HIS, PACS, LIS, تأمين, نفيز, أشعة…)',
-                  'Search system (e.g. HIS, PACS, LIS, NPHIES, Radiology…)'
-                )}
+                ref={searchInputRef}
                 type="search"
+                aria-label={t('ابحث عن نظام (اضغط / للتركيز)', 'Search systems (press / to focus)')}
+                placeholder={t('ابحث باسم النظام أو اختصاره (اضغط /)', 'Search by system name or code (/ to focus)')}
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={event => setQuery(event.target.value)}
               />
               {query && (
-                <button
-                  type="button"
-                  className="cd-search-clear"
-                  onClick={() => setQuery('')}
-                  aria-label={t('مسح البحث', 'Clear search')}
-                >
+                <button type="button" aria-label={t('مسح البحث', 'Clear search')} onClick={() => setQuery('')}>
                   <X size={15} />
                 </button>
               )}
-            </label>
-
-            {/* Category Pills */}
-            <div className="cd-categories-tabs" role="tablist" aria-label={t('تصفية حسب المجال', 'Filter by area')}>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={area === 'all'}
-                className={area === 'all' ? 'is-active' : ''}
-                onClick={() => setArea('all')}
-              >
-                <span>{t('كل الأنظمة', 'All systems')}</span>
-                <bdi>({allowed.length})</bdi>
-              </button>
-
-              {healthcareCategories.map(c => {
-                const count = allowed.filter(s => s.category === c.id).length;
-                return (
-                  <button
-                    type="button"
-                    role="tab"
-                    key={c.id}
-                    aria-selected={area === c.id}
-                    className={area === c.id ? 'is-active' : ''}
-                    onClick={() => setArea(c.id)}
-                  >
-                    <span>{txt(c.name, locale)}</span>
-                    <bdi>({count})</bdi>
-                  </button>
-                );
-              })}
             </div>
           </div>
 
-          <div className="cd-results-meta">
-            <span role="status">
-              <strong>{results.length}</strong> {t('نظاماً مطابقاً للبحث', 'matching systems found')}
-            </span>
+          <div className="vsd-results" role="status" aria-live="polite">
+            <span>{results.length} {t('أنظمة متاحة للاستكشاف', 'systems to explore')}</span>
             <span>
-              {t(
-                'يمكنك اختيار حتى 6 أنظمة لإرسالها مباشرة مع طلبك الاستشاري',
-                'Select up to 6 systems to attach to your consultation request'
+              {selected.length ? (
+                <>{selected.length} {t('أنظمة في نطاقك المختار', 'systems in your selected scope')}</>
+              ) : (
+                t('اختر ما يناسب طريقة عملك', 'Choose what fits the way you work')
               )}
             </span>
           </div>
-        </section>
 
-        {/* Enhanced System Cards Grid */}
-        <section className="cd-grid-section" aria-label={t('شبكة أنظمة الرعاية', 'Care systems grid')}>
-          <div className="cd-system-grid">
+          {/* Grid of System Cards */}
+          <div className="vsd-grid">
             {results.map(system => {
+              const product = content.products.find(item => item.id === system.id)!;
+              const Icon = icons[system.id] || Building2;
               const chosen = selected.includes(system.id);
-              const solution = solutionSlugs[system.id] && findSolution(content, solutionSlugs[system.id]);
-              const meta = getSystemMeta(system.id);
-              const Icon = meta.icon;
-              const imgSrc = systemImage(system.id, system.category);
-              const categoryObj = healthcareCategories.find(c => c.id === system.category);
+              const captures = systemCaptures[system.id] || [];
+              const captureIdx = activeCaptures[system.id] || 0;
+              const currentCapture = captures[captureIdx] || captures[0];
+              const specs = techSpecs[system.id] || [];
 
               return (
                 <article
+                  className={`vsd-card ${chosen ? 'is-selected' : ''}`}
+                  data-system={system.id}
                   key={system.id}
-                  className={`cd-card ${chosen ? 'is-selected' : ''}`}
-                  data-category={system.category}
+                  id={`system-${system.id}`}
                 >
-                  {/* Expressive System Image Banner */}
-                  <div className="cd-card-media">
-                    <img src={imgSrc} alt={txt(system.name, locale)} loading="lazy" />
-                    <div className="cd-card-overlay" />
+                  {/* Interactive Screenshot Preview */}
+                  {currentCapture && (
+                    <div className="vsd-capture-wrapper">
+                      <Link
+                        className="vsd-product-preview"
+                        href={solutionPath(system.id, locale)}
+                        aria-label={`${t('تفاصيل وواجهات', 'Details and interfaces for')} ${txt(product.name, locale)}`}
+                      >
+                        <img
+                          src={currentCapture.thumbnail || currentCapture.image}
+                          width={840}
+                          height={525}
+                          alt={txt(currentCapture.title, locale)}
+                          loading="lazy"
+                        />
+                      </Link>
 
-                    <div className="cd-card-top-tags">
-                      <bdi className="cd-code-pill">{system.id}</bdi>
-                      <span className="cd-category-pill">
-                        {categoryObj ? txt(categoryObj.name, locale) : system.category}
-                      </span>
+                      <div className="vsd-capture-nav">
+                        <span className="vsd-capture-badge">
+                          <ScanLine size={13} />
+                          {txt(currentCapture.title, locale)}
+                        </span>
+
+                        {captures.length > 1 && (
+                          <div className="vsd-capture-tabs" role="tablist" aria-label={t('واجهات النظام', 'System screens')}>
+                            {captures.map((c, i) => (
+                              <button
+                                key={c.id}
+                                type="button"
+                                className={`vsd-capture-tab ${i === captureIdx ? 'is-active' : ''}`}
+                                onClick={e => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setActiveCaptures(prev => ({ ...prev, [system.id]: i }));
+                                }}
+                                title={txt(c.title, locale)}
+                                aria-label={`${t('واجهة', 'Screen')} 0${i + 1}`}
+                              >
+                                0{i + 1}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
+                  )}
 
-                    <div className="cd-card-icon-bubble">
-                      <Icon size={19} />
-                    </div>
-
-                    {chosen && (
-                      <span className="cd-chosen-check" aria-hidden="true">
-                        <Check size={16} />
-                      </span>
-                    )}
+                  <div className="vsd-card-top">
+                    <span className="vsd-system-icon">
+                      <Icon size={30} strokeWidth={1.4} />
+                    </span>
+                    <bdi>{system.id}</bdi>
+                    <span className="vsd-card-index">0{allowed.findIndex(item => item.id === system.id) + 1}</span>
                   </div>
 
-                  {/* Card Content */}
-                  <div className="cd-card-body">
-                    {/* Protocol Badge */}
-                    <div className="cd-protocol-row">
-                      <span className="cd-protocol-tag">
-                        <Sparkles size={11} />
-                        {txt(meta.badge, locale)}
-                      </span>
+                  <div className="vsd-card-body">
+                    <span className="vsd-role">{t(...(roles[system.id] || ['', '']))}</span>
+                    <h3>{txt(product.name, locale)}</h3>
+                    <p>{txt(product.description, locale)}</p>
+
+                    {/* Technical Specifications Pills */}
+                    {specs.length > 0 && (
+                      <div className="vsd-tech-strip" aria-label={t('المعايير الفنية', 'Technical specifications')}>
+                        {specs.map((spec, i) => {
+                          const SpecIcon = spec.icon;
+                          return (
+                            <span key={i} className="vsd-tech-badge">
+                              <SpecIcon size={12} aria-hidden="true" />
+                              <span>{en ? spec.label.en : spec.label.ar}</span>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <div className="vsd-audience">
+                      <Icon size={15} />
+                      <span>{t(...(fits[system.id] || ['', '']))}</span>
                     </div>
 
-                    <h2>{txt(system.name, locale)}</h2>
+                    <span className="vsd-feature-label">{t('ضمن قدرات النظام', 'SYSTEM CAPABILITIES')}</span>
+                    <ul className="vsd-features">
+                      {product.features.slice(0, 3).map((feature, index) => (
+                        <li key={index}>
+                          <Check size={15} />
+                          <span>{txt(feature, locale)}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-                    {/* Operational Highlight */}
-                    <div className="cd-highlight-row">
-                      <Check size={13} className="cd-check-icon" />
-                      <span>{txt(meta.highlight, locale)}</span>
-                    </div>
-
-                    <p className="cd-description">{txt(system.description, locale)}</p>
-
-                    {/* Card Actions Footer */}
-                    <div className="cd-card-footer">
-                      <button
-                        className={`cd-select-btn ${chosen ? 'is-chosen' : ''}`}
-                        type="button"
-                        aria-pressed={chosen}
-                        aria-label={`${chosen ? t('إزالة', 'Remove') : t('إضافة', 'Add')} ${txt(
-                          system.name,
-                          locale
-                        )}`}
-                        disabled={!chosen && selected.length >= 6}
-                        onClick={() =>
-                          setSelected(ids => (chosen ? ids.filter(id => id !== system.id) : [...ids, system.id]))
-                        }
-                      >
-                        {chosen ? <Check size={15} /> : <Plus size={15} />}
-                        <span>
-                          {chosen ? t('ضمن نطاقك المختار', 'In Your Scope') : t('أضف إلى نطاقك', 'Add to Scope')}
-                        </span>
+                    <div className="vsd-card-actions">
+                      <Link href={solutionPath(system.id, locale)}>
+                        {t('التفاصيل والواجهات', 'Details and interfaces')}
+                        <Arrow size={17} />
+                      </Link>
+                      <button type="button" aria-pressed={chosen} onClick={() => toggle(system.id)}>
+                        {chosen ? <Check size={16} /> : <Plus size={16} />}
+                        {chosen ? t('تمت الإضافة', 'Added to scope') : t('أضف إلى نطاقك', 'Add to scope')}
                       </button>
-
-                      {solution ? (
-                        <a className="cd-details-link" href={solutionPath(system.id, locale)}>
-                          <span>{t('صفحة النظام والمحاكاة', 'Explore & Simulate')}</span>
-                          <Arrow size={14} />
-                        </a>
-                      ) : (
-                        <a className="cd-details-link" href={`${home}?systems=${system.id}#contact`}>
-                          <span>{t('ناقش المتطلبات', 'Discuss Needs')}</span>
-                          <Arrow size={14} />
-                        </a>
-                      )}
                     </div>
                   </div>
                 </article>
@@ -475,73 +453,159 @@ export default function CareDirectory({ content, locale }: { content: SiteConten
             })}
           </div>
 
-          {/* Empty Results State */}
-          {results.length === 0 && (
-            <div className="cd-empty-state">
-              <Search size={38} />
-              <h2>{t('لم نعثر على أنظمة مطابقة لبحثك.', 'No matching healthcare systems found.')}</h2>
-              <p>
-                {t(
-                  'جرب البحث بكلمات أخرى أو أعد ضبط تصنيف التصفية للاطلاع على كافة الأنظمة.',
-                  'Try searching with other medical keywords or reset your filters to see all available systems.'
-                )}
-              </p>
-              <button
-                className="care-btn"
-                type="button"
-                onClick={() => {
-                  setQuery('');
-                  setArea('all');
-                }}
-              >
-                <span>{t('عرض كل الأنظمة الـ 24', 'View all 24 systems')}</span>
-                <Arrow size={17} />
+          {!results.length && (
+            <div className="vsd-empty">
+              <Search size={32} />
+              <h3>{t('لم نجد نظاماً يطابق بحثك.', 'No systems match your search.')}</h3>
+              <p>{t('جرّب RIS أو PACS أو AI أو CMS أو PORTAL، أو أعد عرض جميع الأنظمة.', 'Try RIS, PACS, AI, CMS or PORTAL, or view all systems again.')}</p>
+              <button type="button" className="care-btn" onClick={reset}>
+                {t('عرض كل الأنظمة', 'Show all systems')}
+                <Forward size={17} />
               </button>
             </div>
           )}
+        </section>
 
-          {/* Floating Selected Scope Drawer */}
-          {selected.length > 0 && (
-            <aside className="cd-selection-drawer" aria-label={t('نطاقك المختار', 'Your selected scope')}>
-              <div className="cd-drawer-left">
-                <span className="cd-drawer-counter">
-                  <b>{selected.length} / 6</b> {t('أنظمة محددة في نطاقك', 'systems in your scope')}
-                </span>
-                <div className="cd-drawer-chips">
-                  {selected.map(id => (
-                    <button
-                      type="button"
-                      key={id}
-                      className="cd-chip-btn"
-                      onClick={() => setSelected(ids => ids.filter(i => i !== id))}
-                      title={t('إزالة هذا النظام من النطاق', 'Remove from scope')}
-                    >
-                      <bdi>{id}</bdi>
-                      <X size={11} />
-                    </button>
-                  ))}
+        {/* ── Facility Profiles Presets ── */}
+        {profiles.length > 0 && (
+          <section className="vsd-facilities" id="facility-scope" aria-labelledby="vsd-facility-title">
+            <div className="care-wrap">
+              <div className="vsd-section-heading">
+                <div>
+                  <span className="vsd-kicker">{t('ابدأ من منشأتك', 'START WITH YOUR FACILITY')}</span>
+                  <h2 id="vsd-facility-title">{t('نقطة بداية تناسب مركزك.', 'A starting point for your center.')}</h2>
                 </div>
+                <p>{t('اختر نوع المنشأة لإضافة نطاق مبدئي، ثم عدّل اختيارك حسب احتياجاتك. المتطلبات والربط تُراجع في العرض الفني.', 'Select your facility type to add an initial scope, then adjust it to your needs. Requirements and integrations are reviewed in the technical proposal.')}</p>
               </div>
 
-              <div className="cd-drawer-actions">
+              <div className="vsd-profile-grid">
+                {profiles.map(profile => {
+                  const Icon = profile.id === 'radiology' ? ScanLine : Building2;
+                  return (
+                    <button
+                      type="button"
+                      key={profile.id}
+                      className={`vsd-profile ${activeProfile === profile.id ? 'is-active' : ''}`}
+                      aria-pressed={activeProfile === profile.id}
+                      onClick={() => {
+                        setActiveProfile(profile.id);
+                        setSelected(profile.systems);
+                      }}
+                    >
+                      <span className="vsd-profile-icon">
+                        <Icon size={27} strokeWidth={1.5} />
+                      </span>
+                      <span className="vsd-profile-copy">
+                        <strong>{txt(profile.name, locale)}</strong>
+                        <small>
+                          {profile.id === 'radiology'
+                            ? t('لتنظيم الفحوصات والتقارير والصور الطبية.', 'For examinations, reporting and medical imaging.')
+                            : t('لتنظيم المواعيد والزيارات وإدارة المركز.', 'For appointments, visits and center operations.')}
+                          <span>
+                            {profile.systems.map(id => (
+                              <bdi key={id}>{id}</bdi>
+                            ))}
+                          </span>
+                        </small>
+                      </span>
+                      <span className="vsd-profile-check">
+                        {activeProfile === profile.id ? <Check size={18} /> : <Plus size={18} />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── Next Step Call to Action ── */}
+        <section className="care-wrap vsd-next" aria-labelledby="vsd-next-title">
+          <div className="vsd-next-inner">
+            <div>
+              <span className="vsd-kicker">{t('الخطوة التالية', 'YOUR NEXT STEP')}</span>
+              <h2 id="vsd-next-title">{t('لنحوّل احتياجك إلى نطاق واضح.', 'Turn your needs into a clear scope.')}</h2>
+              <p>{t('نراجع طريقة العمل الحالية، والأدوار والفروع، والبيانات والتكاملات المطلوبة، ثم نحدد معك خطة التنفيذ المناسبة.', 'We review your current workflow, roles, branches, data and integration needs, then define a suitable rollout plan with you.')}</p>
+            </div>
+            <div className="vsd-next-actions">
+              <Link
+                className="care-btn"
+                href={selected.length ? `${home}?systems=${encodeURIComponent(selected.join(','))}#contact` : `${home}#contact`}
+              >
+                {t('ناقش احتياجات مركزك', 'Discuss your center’s needs')}
+                <Arrow size={18} />
+              </Link>
+              <Link href={`${en ? '/en' : ''}/planning`}>
+                {t('تعرّف على خطوات التنفيذ', 'See the rollout process')}
+                <Forward size={16} />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Floating Smart Scope Builder Drawer ── */}
+        {selected.length > 0 && (() => {
+          const insight = getSynergyInsight(selected, locale);
+          return (
+            <aside className="vsd-selection" aria-label={t('نطاقك المختار', 'Your selected scope')}>
+              <div className="vsd-selection-main">
+                <div className="vsd-selection-chips-row">
+                  <span className="vsd-selection-label">
+                    <Sparkles size={14} className="vsd-sparkle" aria-hidden="true" />
+                    {t('نطاقك المبدئي', 'Your initial scope')}:
+                  </span>
+                  <div className="vsd-selected-chips">
+                    {selected.map(id => (
+                      <button
+                        type="button"
+                        key={id}
+                        onClick={() => toggle(id)}
+                        aria-label={`${t('إزالة', 'Remove')} ${id}`}
+                        title={txt(allowed.find(system => system.id === id)?.name || { ar: id, en: id }, locale)}
+                      >
+                        <bdi>{id}</bdi>
+                        <X size={13} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {insight && (
+                  <div className="vsd-selection-synergy">
+                    <span className="vsd-selection-hint">{insight.text}</span>
+                    {insight.recommended && !selected.includes(insight.recommended) && (
+                      <span className="vsd-selection-recommend">
+                        {t('اقتراح مكمل:', 'Suggested addition:')}{' '}
+                        <button type="button" onClick={() => toggle(insight.recommended!)}>
+                          <Plus size={11} /> {insight.recommended}
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="vsd-selection-actions">
                 <button
                   type="button"
-                  className="cd-drawer-clear"
                   onClick={() => {
                     setSelected([]);
                     setActiveProfile(null);
                   }}
                 >
-                  {t('مسح الاختيارات', 'Clear all')}
+                  {t('مسح', 'Clear')}
                 </button>
-                <a className="care-btn cd-drawer-submit" href={`${home}?systems=${selected.join(',')}#contact`}>
-                  <span>{t('ناقش هذا النطاق المخصص', 'Discuss this custom scope')}</span>
+                <Link
+                  href={`${home}?systems=${encodeURIComponent(selected.join(','))}#contact`}
+                  className="care-btn"
+                >
+                  {t('ناقش هذا النطاق', 'Discuss this scope')} ({selected.length})
                   <Arrow size={17} />
-                </a>
+                </Link>
               </div>
             </aside>
-          )}
-        </section>
+          );
+        })()}
       </div>
     </CareFrame>
   );

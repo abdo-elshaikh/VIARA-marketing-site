@@ -1,9 +1,13 @@
 'use client';
+import Link from 'next/link';
+import { useSiteText } from '../lib/site-copy';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
-import { CalendarDays, ArrowUpLeft, LoaderCircle, Download, CheckCircle2, ShieldCheck, X, ChevronDown } from 'lucide-react';
+import { CalendarDays, ArrowUpLeft, ArrowUpRight, LoaderCircle, Download, CheckCircle2, ShieldCheck, X, ChevronDown, Sparkles } from 'lucide-react';
 import { txt, type Locale, type SiteContent } from '../lib/site-content';
 import { branchBand, formatScopeSummary, formatInquiryMessage, type ScopeEstimate } from '../lib/inquiry';
-import { formatSystemsSummary } from '../lib/healthcare-catalog.mjs';
+import { formatSystemsSummary, marketingSystemIds } from '../lib/healthcare-catalog.mjs';
+import './forms.css';
+import { trackMarketingEvent } from '../lib/marketing-analytics';
 
 export default function LeadForm({
   locale,
@@ -39,23 +43,57 @@ export default function LeadForm({
   onPrivacy: () => void;
 }) {
   const en = locale === 'en';
-  const t = (ar: string, enText: string) => en ? enText : ar;
+  const t = useSiteText(locale, content);
+  const Arrow = en ? ArrowUpRight : ArrowUpLeft;
   const formRef = useRef<HTMLFormElement>(null);
-  const [id, setId] = useState('');
+  const successRef = useRef<HTMLDivElement>(null);
+  const [id, setId] = useState(() => crypto.randomUUID());
   const [state, setState] = useState('idle');
+  useEffect(() => {
+    if (state === 'success') successRef.current?.focus();
+  }, [state]);
   const [error, setError] = useState('');
+  const invalidFields = useRef<string[]>([]);
   const [reference, setReference] = useState('');
   const [receipt, setReceipt] = useState('');
+  useEffect(() => { trackMarketingEvent('start_inquiry', { locale }); }, [locale]);
+
+  function markInvalid(fields: string[]) {
+    invalidFields.current = fields;
+    const form = formRef.current;
+    if (!form) return;
+    let first: HTMLElement | null = null;
+    for (const name of fields) {
+      const field = form.elements.namedItem(name);
+      if (field instanceof HTMLElement) {
+        field.setAttribute('aria-invalid', 'true');
+        field.setAttribute('aria-describedby', 'lead-form-error');
+        const details = field.closest('details');
+        if (details) details.open = true;
+        first ||= field;
+      }
+    }
+    first?.focus();
+  }
+
+  function clearInvalid() {
+    invalidFields.current = [];
+    const form = formRef.current;
+    if (!form) return;
+    for (const field of Array.from(form.elements)) {
+      if (field instanceof HTMLElement) { field.removeAttribute('aria-invalid'); field.removeAttribute('aria-describedby'); }
+    }
+  }
 
   const systems = [
-    ...content.products.filter(p => p.enabled).map(p => ({ id: p.id, label: txt(p.name, locale) })),
-    { id: 'SUITE', label: t('الحل المتكامل', 'Integrated solution') },
+    ...content.products.filter(p => p.enabled && marketingSystemIds.includes(p.id)).map(p => ({ id: p.id, label: txt(p.name, locale) })),
+   { id: 'SUITE', label: t('الحل المتكامل', 'Integrated solution') },
     { id: 'CONSULT', label: t('مساعدة في اختيار النظام', 'Help me choose a system') }
   ];
 
   useEffect(() => {
     const facility = formRef.current?.elements.namedItem('facility');
-    const labels: Record<string,string> = {hospital:'مستشفى',medical:'مركز طبي',radiology:'مركز أشعة',laboratory:'مختبر تحاليل',network:'مجموعة فروع'};
+    const labels: Record<string,string> = {medical:'مركز طبي',radiology:'مركز أشعة',network:'مجموعة فروع'};
     if (requestedFacility && labels[requestedFacility] && facility instanceof HTMLSelectElement) facility.value = labels[requestedFacility];
   }, [requestedFacility, requestedSystems]);
 
@@ -68,25 +106,28 @@ export default function LeadForm({
   }, [scope]);
 
   useEffect(() => {
-    setId(crypto.randomUUID());
-    try {
-      const raw = sessionStorage.getItem('viara-request-draft');
-      if (!raw) return;
-      const draft = JSON.parse(raw);
-      if (draft.interest) setInterest(draft.interest);
-      if (draft.plan) setPlan(draft.plan);
-      if (draft.offer) setOffer(draft.offer);
-      for (const [key, value] of Object.entries(draft)) {
-        const f = formRef.current?.elements.namedItem(key);
-        if (f instanceof HTMLInputElement || f instanceof HTMLSelectElement || f instanceof HTMLTextAreaElement) {
-          if (f instanceof HTMLInputElement && f.type === 'checkbox') f.checked = value === true;
-          else f.value = String(value);
+    const frame = requestAnimationFrame(() => {
+      try {
+        const raw = sessionStorage.getItem('viara-request-draft');
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+        if (draft.interest && systems.some(system => system.id === draft.interest)) setInterest(draft.interest);
+        if (draft.plan && (draft.plan === 'لم أحدد بعد' || content.plans.some(item => item.enabled && item.id === draft.plan))) setPlan(draft.plan);
+        if (draft.offer) setOffer(draft.offer);
+        for (const [key, value] of Object.entries(draft)) {
+          if (key === 'interest' || key === 'plan') continue;
+          const f = formRef.current?.elements.namedItem(key);
+          if (f instanceof HTMLInputElement || f instanceof HTMLSelectElement || f instanceof HTMLTextAreaElement) {
+            if (f instanceof HTMLInputElement && f.type === 'checkbox') f.checked = value === true;
+            else f.value = String(value);
+          }
         }
+        sessionStorage.removeItem('viara-request-draft');
+      } catch {
+        // Ignore draft read errors
       }
-      sessionStorage.removeItem('viara-request-draft');
-    } catch {
-      // Ignore draft read errors
-    }
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -115,17 +156,20 @@ export default function LeadForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      const result = await response.json() as { reference?: string; error?: string };
+      const result = await response.json() as { reference?: string; error?: string; fields?: string[] };
       if (!response.ok) {
+        if (Array.isArray(result.fields) && result.fields.length) markInvalid(result.fields);
         throw new Error(
-          en
+          result.error ||
+          (en
             ? (response.status === 429 ? 'You have reached the request limit. Please try later.' : 'We could not save your request. Check your details and try again.')
-            : result.error || 'تعذر حفظ طلبك. حاول مجددًا.'
+            : 'تعذر حفظ طلبك. حاول مجددًا.')
         );
       }
       if (!result.reference) {
         throw new Error(t('لم يتم تأكيد الحفظ. حاول مجددًا.', 'Saving was not confirmed. Please try again.'));
       }
+      clearInvalid();
       setReference(result.reference);
       setReceipt(
         `${content.brand.name} — ${result.reference}\n` +
@@ -138,13 +182,16 @@ export default function LeadForm({
         `${formatInquiryMessage(String(f.get('message') || ''), scope || undefined, locale, requestedSystems)}\n`
       );
       setState('success');
+      trackMarketingEvent('submit_inquiry_success', { locale, product: interest });
     } catch (err) {
       setError(err instanceof Error ? err.message : t('حدث خطأ. حاول مجددًا.', 'Something went wrong. Try again.'));
       setState('error');
+      trackMarketingEvent('submit_inquiry_failure', { locale, product: interest });
     }
   }
 
   function download() {
+    trackMarketingEvent('download_request_receipt', { locale });
     const url = URL.createObjectURL(new Blob(['\uFEFF' + receipt], { type: 'text/plain;charset=utf-8' }));
     const a = document.createElement('a');
     a.href = url;
@@ -155,19 +202,19 @@ export default function LeadForm({
 
   if (state === 'success') {
     return (
-      <div className="form-success" role="status">
+      <div className="form-success" role="status" ref={successRef} tabIndex={-1}>
         <span className="success-icon"><CheckCircle2 size={42} /></span>
         <h3>{t('تم حفظ طلبك بنجاح.', 'Your request is saved.')}</h3>
-        <p>{t('احتفظ بالرقم المرجعي. يمكنك مراجعة الطلب من هذا المتصفح ما دامت بيانات الموقع محفوظة؛ إرسال الطلب لا يؤكد موعدًا تلقائيًا.', 'Keep your reference number. You can review this request in this browser while its site data is retained. Submitting a request does not automatically book an appointment.')}</p>
+        <p>{t('تم تسجيل طلبك للمراجعة والتواصل عبر البيانات التي أدخلتها. احتفظ بالرقم المرجعي؛ يمكنك مراجعة الطلب من هذا المتصفح ما دامت بيانات الموقع محفوظة، وإرسال الطلب لا يؤكد موعدًا تلقائيًا.', 'Your request has been recorded for review and follow-up using your contact details. Keep your reference number; you can review this request in this browser while its site data is retained, and submitting a request does not automatically book an appointment.')}</p>
         <strong dir="ltr">{reference}</strong>
         <button type="button" className="button" onClick={download}>
           <Download size={17} />
           {t('تنزيل ملخص الطلب', 'Download request summary')}
         </button>
-        <a className="text-link" href={en ? '/en/requests' : '/requests'}>
+        <Link className="text-link" href={en ? '/en/requests' : '/requests'}>
           {t('مراجعة طلباتي', 'View my requests')}
-          <ArrowUpLeft size={17} />
-        </a>
+          <Arrow size={17} />
+        </Link>
         <button
           className="plain-button"
           type="button"
@@ -184,15 +231,58 @@ export default function LeadForm({
     );
   }
 
+  const selectedPlanObj = content.plans.find(p => p.id === plan);
+
   return (
-    <form ref={formRef} onSubmit={submit}>
+    <form ref={formRef} onSubmit={submit} aria-busy={state === 'sending'} onInput={clearInvalid}>
       <div className="form-heading">
         <span className="form-icon"><CalendarDays size={22} /></span>
         <div>
-          <h3>{t('لنبدأ الحديث.', 'Let’s start a conversation.')}</h3>
-          <p>{t('طلب عرض توضيحي يناسب احتياجاتك.', 'A demonstration shaped around your needs.')}</p>
+          <h3>
+            {selectedPlanObj
+              ? t(`طلب مناقشة باقة ${txt(selectedPlanObj.name, locale)}`, `Discuss the ${txt(selectedPlanObj.name, locale)} package`)
+              : t('اطلب عرضاً توضيحياً', 'Book a demonstration')}
+          </h3>
+          <p>
+            {selectedPlanObj
+              ? t('راجعنا تفاصيل الباقة المبدئية؛ سنناقش معك نطاق العمل والتجهيز بما يلائم منشأتك.', 'We noted your selected tier; we will tailor the rollout scope to your facility.')
+              : t('ابدأ ببيانات التواصل؛ تفاصيل الأنظمة اختيارية.', 'Start with your contact details; system details are optional.')}
+          </p>
         </div>
       </div>
+      {selectedPlanObj && (
+        <div className="selected-plan-badge" role="status">
+          <div className="selected-plan-content">
+            <div className="selected-plan-top-row">
+              <span className="selected-plan-kicker">
+                <Sparkles size={14} />
+                {t('الباقة المحددة للمناقشة', 'Selected Package for Discussion')}
+              </span>
+              <span className="selected-plan-edition">
+                <ShieldCheck size={13} />
+                {selectedPlanObj.id === 'مؤسسات'
+                  ? t('ترخيص المؤسسات والشبكات', 'Enterprise Multi-Branch License')
+                  : selectedPlanObj.id === 'نمو'
+                  ? t('ترخيص المركز المتكامل', 'Integrated Facility License')
+                  : t('ترخيص العيادة والفرع', 'Standard Branch License')}
+              </span>
+            </div>
+            <div className="selected-plan-name-row">
+              <strong>{txt(selectedPlanObj.name, locale)}</strong>
+            </div>
+            <p>{txt(selectedPlanObj.description, locale)}</p>
+          </div>
+          <button
+            type="button"
+            className="selected-plan-clear"
+            onClick={() => setPlan('لم أحدد بعد')}
+            title={t('إلغاء تحديد الباقة', 'Clear selected package')}
+            aria-label={t('إلغاء تحديد الباقة', 'Clear selected package')}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
       {offer && (
         <div className="selected-offer">
           <span>{t('العرض المختار: ', 'Selected offer: ')}{offer}</span>
@@ -233,14 +323,26 @@ export default function LeadForm({
               ['مركز أشعة', 'Radiology center'],
               ['مركز طبي', 'Medical center'],
               ['عيادات تخصصية', 'Specialty clinics'],
-              ['مجموعة فروع', 'Branch network'],
-              ['مستشفى', 'Hospital'], ['مختبر تحاليل', 'Laboratory'], ['منشأة أخرى', 'Other healthcare facility']
+              ['مجموعة فروع', 'Radiology / medical center group']
+              
             ].map(([ar, eng]) => (
               <option value={ar} key={ar}>{en ? eng : ar}</option>
             ))}
           </select>
         </label>
-        <details className="form-extra"><summary>{t('تفاصيل إضافية — اختياري','Additional details — optional')}<ChevronDown size={16}/></summary><div className="form-extra-fields">
+        <details className="form-extra" open={Boolean(selectedPlanObj || requestedSystems.length > 0 || scope)}>
+          <summary>
+            <span>
+              {t('تفاصيل إضافية — اختياري', 'Additional details — optional')}
+              {selectedPlanObj && (
+                <span style={{ marginInlineStart: '8px', fontSize: '12px', fontWeight: 600, color: '#245a45' }}>
+                  ({txt(selectedPlanObj.name, locale)})
+                </span>
+              )}
+            </span>
+            <ChevronDown size={16}/>
+          </summary>
+          <div className="form-extra-fields">
         <label>
           {t('عدد الفروع', 'Number of branches')}
           <select name="branches" defaultValue="فرع واحد" onChange={() => setScope(null)}>
@@ -283,13 +385,13 @@ export default function LeadForm({
       <label className="consent">
         <input type="checkbox" name="consent" required />
         <span>
-          {t('أوافق على استخدام بياناتي لمعالجة طلبي وفق ', 'I agree to the use of my contact details to process this request under the ')}
-          <button type="button" onClick={onPrivacy}>{t('سياسة الخصوصية', 'privacy policy')}</button>.
+          {t('أوافق على استخدام بياناتي لمعالجة طلبي، وربط هذا الطلب بمعرّف خاص بهذا المتصفح دون بيانات مرضى، وفق ', 'I agree to the use of my details to process this request, linked to an identifier specific to this browser without patient data, under the ')}
+          <button type="button" onClick={onPrivacy}>{t('سياسة الخصوصية', 'privacy policy')}</button>{' '}(<a href={en ? '/en/privacy' : '/privacy'} target="_blank" rel="noopener noreferrer" style={{color: 'inherit'}}>{t('عرض الصفحة', 'view page')}</a>).
         </span>
       </label>
-      {error && <div className="form-error" role="alert">{error}</div>}
+      {error && <div className="form-error" id="lead-form-error" role="alert">{error}</div>}
       <button className="button submit-button" type="submit" disabled={state === 'sending'}>
-        {state === 'sending' ? <LoaderCircle className="spin" size={18} /> : <ArrowUpLeft size={18} />}
+        {state === 'sending' ? <LoaderCircle className="spin" size={18} /> : <Arrow size={18} />}
         {' '}
         {state === 'sending' ? t('جارٍ حفظ طلبك…', 'Saving your request…') : t('إرسال طلب العرض', 'Request a demonstration')}
       </button>

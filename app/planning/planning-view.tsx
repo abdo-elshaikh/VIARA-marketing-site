@@ -1,436 +1,658 @@
 'use client';
-
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import BrandPageHero from '../brand-page-hero';
+import { useSiteText } from '../../lib/site-copy';
+import { useState, useRef, useEffect } from 'react';
 import {
   ArrowUpLeft,
   ArrowUpRight,
   Check,
-  Sparkles,
-  Building2,
-  Clock,
-  ShieldCheck,
-  Server,
-  Layers,
-  Activity,
   Plus,
-  Route,
-  Stethoscope,
-  Users,
-  Cpu
+  Building2,
+  Network,
+  ShieldCheck,
+  ArrowLeft,
+  ArrowRight,
+  ScanLine,
+  Sparkles,
+  ChevronDown,
+  TrendingUp,
+  X
 } from 'lucide-react';
 import { txt, type Locale, type SiteContent } from '../../lib/site-content';
 import ScopeCalculator from '../scope-calculator';
+import RoiCalculator from '../roi-calculator';
 import type { ScopeEstimate } from '../../lib/inquiry';
 import CareFrame from '../care-frame';
+import LeadForm from '../lead-form';
+import '../care-planning.css';
+import '../planning-enhanced.css';
+import PlanningGovernanceCard from '../planning-governance-card';
+import PlanningPackagesMatrix from '../planning-packages-matrix';
+import PlanningRolloutRoadmap from '../planning-rollout-roadmap';
+import packageCatalog from '../../../backend/src/config/packageCatalog.json';
 
-interface PlanDetail {
-  id: string;
-  facilityScope: { ar: string; en: string };
-  timeline: { ar: string; en: string };
-  sla: { ar: string; en: string };
-  highlights: { ar: string; en: string }[];
-}
+type FacilityFilter = 'all' | 'single' | 'radiology' | 'network';
 
-const planDetails: Record<string, PlanDetail> = {
+const planLicenseDetails = Object.fromEntries(
+  Object.values(packageCatalog.packages).map(plan => [
+    plan.id,
+    {
+      edition: { ar: `الإعداد التقني: ${plan.edition}`, en: `Technical baseline: ${plan.edition}` },
+      details: [
+        {
+          ar: `المستخدمون: ${plan.defaultMaxUsers === -1 ? 'بلا حد مسبق' : plan.defaultMaxUsers}؛ الفروع: ${plan.defaultMaxBranches === -1 ? 'بلا حد مسبق' : plan.defaultMaxBranches}.`,
+          en: `Users: ${plan.defaultMaxUsers === -1 ? 'unlimited' : plan.defaultMaxUsers}; branches: ${plan.defaultMaxBranches === -1 ? 'unlimited' : plan.defaultMaxBranches}.`
+        },
+        {
+          ar: plan.defaultDays
+            ? `مدة الإصدار الافتراضية ${plan.defaultDays} يوماً؛ مدة العقد تعتمد منفصلة.`
+            : 'الإصدار الافتراضي دون تاريخ انتهاء؛ الدعم والتجديد وفق العقد.',
+          en: plan.defaultDays
+            ? `Default issuance: ${plan.defaultDays} days; contract term is agreed separately.`
+            : 'Default issuance has no expiry; support and renewal follow the contract.'
+        },
+        {
+          ar: `الوحدات التقنية المشمولة: ${plan.modules.join('، ')}`,
+          en: `Included technical modules: ${plan.modules.join(', ')}`
+        }
+      ]
+    }
+  ])
+);
+
+const quickSpecs: Record<
+  string,
+  {
+    branches: { ar: string; en: string };
+    users: { ar: string; en: string };
+    scopeSummary: { ar: string; en: string };
+    recommendationTag: { ar: string; en: string };
+  }
+> = {
   أساس: {
-    id: 'أساس',
-    facilityScope: { ar: 'العيادات والمراكز الأولية (1 - 3 فروع)', en: 'Clinics & Primary Care (1 - 3 Branches)' },
-    timeline: { ar: 'جاهزية خلال 2 - 3 أسابيع', en: 'Ready in 2 - 3 weeks' },
-    sla: { ar: 'دعم فني واستجابة سريعة في ساعات العمل', en: 'Standard Business Hours Support & SLA' },
-    highlights: [
-      { ar: 'الملف الطبي السريري وجدولة المواعيد الذكية', en: 'Core Electronic Medical Record & Smart Scheduling' },
-      { ar: 'إدارة الفواتير والتقارير المالية الأساسية', en: 'Essential Billing, Invoices & Financial Reports' },
-      { ar: 'إعداد قاعدة البيانات واستيراد سجلات المرضى', en: 'Initial Database Setup & Patient Data Import' },
-      { ar: 'تدريب تفاعلي للكوادر الطبية والاستقبال', en: 'Interactive Clinical & Reception Team Training' },
-    ],
+    branches: { ar: 'فرع واحد مرخص', en: '1 Licensed Branch' },
+    users: { ar: 'حتى 25 مستخدماً', en: 'Up to 25 Users' },
+    scopeSummary: { ar: 'استقبال، مواعيد، ورديات الصندوق، وملف طبي', en: 'Reception, booking, billing & EMR' },
+    recommendationTag: { ar: 'الخيار الأنسب للعيادات والمراكز بفرع واحد', en: 'Ideal for single-branch clinics' }
   },
   نمو: {
-    id: 'نمو',
-    facilityScope: { ar: 'المجمعات المتنامية ومراكز الأشعة والمختبر', en: 'Growing Polyclinics, Radiology & Labs' },
-    timeline: { ar: 'جاهزية خلال 3 - 5 أسابيع', en: 'Ready in 3 - 5 weeks' },
-    sla: { ar: 'دعم متقدم 24/7 مع مدير حساب سريري', en: '24/7 Priority Support & Dedicated Account Manager' },
-    highlights: [
-      { ar: 'جميع مزايا باقة أساس مع توسعة غير محدودة', en: 'All Essential features with multi-specialty expansion' },
-      { ar: 'ربط أجهزة الأشعة DICOM أو المحللات المخبرية', en: 'DICOM Modality Worklist or Analyzer Integration' },
-      { ar: 'بوابة المريض الرقمية لحجز المواعيد والنتائج', en: 'Patient Portal for Reports, Images & Mobile Booking' },
-      { ar: 'محرك التحقق اللحظي من الأهلية والمطالبات NPHIES', en: 'NPHIES Instant Eligibility & Clean Claim Scrubber' },
-      { ar: 'لوحات مؤشرات تشغيلية حية للإدارة والإنتاجية', en: 'Live Clinical & Financial Performance Dashboards' },
-    ],
+    branches: { ar: 'فرع واحد (توسعة موثقة)', en: '1 Branch (Expandable)' },
+    users: { ar: 'حتى 25 مستخدماً مرخصاً', en: 'Up to 25 Licensed Users' },
+    scopeSummary: { ar: 'تكامل كامل: RIS + PACS + بوابة المرضى QR', en: 'Full synergy: RIS + PACS + QR Portal' },
+    recommendationTag: { ar: 'الأكثر طلباً لمراكز الأشعة والتشخيص', en: 'Most Popular for Radiology Centers' }
   },
   مؤسسات: {
-    id: 'مؤسسات',
-    facilityScope: { ar: 'المستشفيات والشبكات الطبية والمراكز الكبرى', en: 'Hospitals, Multi-Hospital Networks & Enterprise' },
-    timeline: { ar: 'خطة تنفيذ مخصصة متعددة المراحل', en: 'Phased Enterprise Rollout Blueprint' },
-    sla: { ar: 'اتفاقية مستوى خدمة 99.98% مع مهندسي موقع', en: '99.98% High-Availability SLA & On-Site Engineers' },
-    highlights: [
-      { ar: 'نطاق استضافة مؤسسي كامل (سحابي خاص أو محلي On-Premise)', en: 'Enterprise Private Cloud or On-Premise Cluster' },
-      { ar: 'محرك الربط الشامل HL7 FHIR ومزامنة الأنظمة القائمة', en: 'HL7 FHIR Interoperability Bus & Legacy Data Migration' },
-      { ar: 'إدارة التنويم والأسرّة وغرف العمليات وبنوك الدم', en: 'Inpatient Census, OR Surgical Scheduling & Blood Bank' },
-      { ar: 'محاكاة سريرية ميدانية وتدريب شامل على الورديات', en: 'Clinical Simulation Dry-Runs & Shift Training' },
-      { ar: 'فريق دعم ومراقبة سيبرانية مخصص على مدار الساعة', en: 'Dedicated 24/7/365 Medical Ops & Cyber Defense' },
-    ],
-  },
+    branches: { ar: 'فروع متعددة بلا حد مسبق', en: 'Unlimited Branches' },
+    users: { ar: 'مستخدمون بلا حد مسبق', en: 'Unlimited Users' },
+    scopeSummary: { ar: 'Enterprise شامل مع SSO/OIDC وحوكمة مركزية', en: 'Full Enterprise with SSO/OIDC & Governance' },
+    recommendationTag: { ar: 'الخيار الأنسب للشبكات ومجموعات المستشفيات', en: 'Ideal for Healthcare Groups & Networks' }
+  }
 };
 
-const rolloutRoadmap = [
+const faqs = [
   {
-    num: '01',
-    time: { ar: 'الأسبوع الأول', en: 'Week 1' },
-    title: { ar: 'الاستكشاف وتحليل الفجوات السريرية', en: 'Discovery & Clinical Gap Analysis' },
-    body: {
-      ar: 'نجلس مع قيادات الأقسام الطبية والإدارية لفهم سير العمل القائم، فحص الأجهزة الطبية، وتحديد أولويات الربط ونطاق الصلاحيات بدقة.',
-      en: 'We consult with department heads to audit existing workflows, evaluate biomedical devices, and define integration priorities and security roles.',
-    },
-    deliverable: { ar: 'مخرجات: وثيقة النطاق المعماري وخطة الربط', en: 'Deliverable: Architectural Blueprint' },
+    q: { ar: 'هل تمنح الباقة صلاحيات تلقائياً؟', en: 'Does a package automatically grant permissions?' },
+    a: {
+      ar: 'لا. الترخيص يحدد الوحدات والحدود مثل المستخدمين والفروع، بينما تحدد صلاحيات RBAC ما يستطيع كل دور تنفيذه. نراجع مصفوفة الأدوار والصلاحيات ونختبرها قبل التشغيل.',
+      en: 'No. The license controls modules and limits such as users and branches; RBAC permissions determine what each role can do. We review and test the role-permission matrix before launch.'
+    }
   },
   {
-    num: '02',
-    time: { ar: 'الأسبوع الثاني والثالث', en: 'Weeks 2 - 3' },
-    title: { ar: 'هندسة التكامل والأمان السيبراني', en: 'Integration & Cyber-Architecture' },
-    body: {
-      ar: 'تهيئة الخوادم وقواعد البيانات، عزل السجلات الطبية وفق معايير الأمن السيبراني، وتفعيل قنوات الربط المعياري (HL7 FHIR, DICOM, NPHIES).',
-      en: 'Provisioning secure servers, data isolation per healthcare compliance, and enabling standard protocols (HL7 FHIR, DICOM, NPHIES).',
-    },
-    deliverable: { ar: 'مخرجات: بيئة تجريبية متصلة بالكامل', en: 'Deliverable: Staging Test Environment' },
+    q: { ar: 'هل تشمل باقة نمو فروعاً إضافية؟', en: 'Does Growth include additional branches?' },
+    a: {
+      ar: 'لا تضيف باقة نمو فروعاً بحد ذاتها. إعداد Standard الافتراضي يقتصر على فرع واحد؛ تشغيل عدة فروع يتطلب رخصة Enterprise أو توسعة موثقة في العرض.',
+      en: 'Growth does not add branches by itself. Standard defaults to one branch; multi-branch operation requires an Enterprise license or an expansion documented in the proposal.'
+    }
   },
   {
-    num: '03',
-    time: { ar: 'الأسبوع الرابع', en: 'Week 4' },
-    title: { ar: 'المحاكاة السريرية وتدريب الكوادر', en: 'Clinical Simulation & Staff Training' },
-    body: {
-      ar: 'تشغيل تجريبي يحاكي يوماً طبياً كاملاً، تدريب عملي للأطباء والتمريض وموظفي الاستقبال، والتأكد من سهولة استخدام كافة الواجهات.',
-      en: 'Conducting full-day clinical dry-runs, hands-on training for physicians, nurses, and reception, ensuring fluid daily workflows.',
-    },
-    deliverable: { ar: 'مخرجات: شهادة الجاهزية التشغيلية للفرق', en: 'Deliverable: Operational Readiness Sign-off' },
+    q: { ar: 'كيف تُحدد مدة الاشتراك والسعر؟', en: 'How are subscription term and price determined?' },
+    a: {
+      ar: 'السعر المعروض هو السعر المعتمد للباقة أو «عرض مخصص» عند غياب سعر منشور. مدد الرخص الافتراضية إعدادات إصدار فنية وليست مدة عقد؛ يحدد العرض التجاري المعتمد مدة الاشتراك والتجديد والحدود النهائية.',
+      en: 'The displayed amount is the approved package price, or “Tailored quote” when no price is published. Default license durations are technical issuance settings, not contract terms; the approved commercial proposal defines subscription term, renewal and final limits.'
+    }
   },
   {
-    num: '04',
-    time: { ar: 'الانطلاق وما بعده', en: 'Go-Live & Beyond' },
-    title: { ar: 'التشغيل الحي والرعاية الفائقة 24/7', en: 'Live Go-Live & 24/7 Hypercare' },
-    body: {
-      ar: 'بدء استقبال المرضى على النظام الجديد مع تواجد مباشر لمهندسينا، مراقبة حية لمعدلات الاستجابة والأرشفة، واستقرار تشغيلي تام بدون انقطاع.',
-      en: 'Commencing live patient admissions with on-site engineering presence, real-time telemetry monitoring, and zero clinical disruption.',
-    },
-    deliverable: { ar: 'مخرجات: تقرير الاستقرار ومتابعة SLA', en: 'Deliverable: Live Hypercare & SLA Assurance' },
-  },
-];
-
-const planningFaqs = [
-  {
-    id: 'pfaq-migration',
-    question: {
-      ar: 'هل يمكن نقل سجلات المرضى والأشعة من أنظمتنا القديمة؟',
-      en: 'Can we migrate patient records and imaging studies from our legacy systems?',
-    },
-    answer: {
-      ar: 'نعم بالتأكيد. لدينا محركات ترحيل متخصصة تستخرج السجلات وتفحص سلامتها وتطابقها مع معايير HL7 FHIR و DICOM Part 10 دون فقدان أي دراسات سابقة، مع توفير خطة تدريجية تضمن استمرار العمل دون توقف.',
-      en: 'Yes. We employ specialized healthcare ETL pipelines that extract, cleanse, and validate data against HL7 FHIR and DICOM Part 10 standards with zero study loss and zero clinic downtime.',
-    },
+    q: { ar: 'ما حدود النسخة التجريبية؟', en: 'What are the trial limits?' },
+    a: {
+      ar: 'إعداد التجربة الافتراضي 30 يوماً و3 مستخدمين، مع سقوف تشغيلية للمرضى والمواعيد والتقارير. نوضح الوحدات والحدود في مفتاح التجربة قبل تفعيله.',
+      en: 'The default trial is 30 days and 3 users, with operational quotas for patients, appointments and reports. Included modules and limits are confirmed before activation.'
+    }
   },
   {
-    id: 'pfaq-cloud-prem',
-    question: {
-      ar: 'هل يمكن الاستضافة محلياً (On-Premise) أم سحابياً فقط؟',
-      en: 'Do you offer On-Premise deployment or cloud-only hosting?',
-    },
-    answer: {
-      ar: 'ندعم كلا النموذجين بكفاءة متطابقة: استضافة سحابية خاصة معتمدة محلياً تلبي أعلى متطلبات حماية البيانات الصحية، أو تركيب محلي داخل مركز بيانات المستشفى (On-Premise Cluster) مع خيارات التكرار الجغرافي والنسخ الاحتياطي الهجين.',
-      en: 'We support both models: certified local private healthcare clouds meeting data sovereignty standards, or on-premise hospital clusters with automated geographic replication.',
-    },
+    q: { ar: 'كيف أختار الباقة المناسبة؟', en: 'How do I choose the right package?' },
+    a: {
+      ar: 'ابدأ بالأنظمة المطلوبة وعدد الفروع والأدوار وطريقة عمل فريقك. الباقات نقاط بداية للنقاش؛ نراجع المتطلبات معك قبل الاتفاق على النطاق والتكلفة.',
+      en: 'Start with the systems, branches, roles and workflows you need. Packages are starting points for discussion; requirements are reviewed before agreeing on scope and cost.'
+    }
   },
   {
-    id: 'pfaq-devices',
-    question: {
-      ar: 'كيف يتم ربط أجهزة الأشعة والمختبر القائمة؟',
-      en: 'How are existing radiology modalities and laboratory analyzers connected?',
-    },
-    answer: {
-      ar: 'يتكامل نظامنا مباشرة عبر بروتوكولات DICOM 3.0 (C-STORE, C-FIND, MWL, MPPS) لأجهزة الرنين والأشعة المقطعية والموجات الصوتية، وعبر ASTM / HL7 لمحللات الدم والمختبر بمجرد إعداد الشبكة الطبية الداخلية.',
-      en: 'Our platform interfaces natively via DICOM 3.0 (C-STORE, C-FIND, MWL, MPPS) for MRI, CT, and Ultrasound, and via ASTM / HL7 protocols for automated lab analyzers.',
-    },
+    q: { ar: 'هل يمكن نقل بيانات النظام الحالي؟', en: 'Can existing data be migrated?' },
+    a: {
+      ar: 'نراجع مصادر البيانات وصيغ التصدير وجودتها وحجم الأرشيف أولاً، ثم نحدد ما يمكن نقله واختبارات التحقق وخطة الانتقال ضمن العرض الفني.',
+      en: 'First review data sources, export formats, quality and archive size, then define what can be migrated, validation tests and a transition plan in the technical proposal.'
+    }
   },
   {
-    id: 'pfaq-pricing',
-    question: {
-      ar: 'كيف يتم احتساب تكلفة الباقات والمشاريع؟',
-      en: 'How is package and project pricing calculated?',
-    },
-    answer: {
-      ar: 'تعتمد التكلفة على عدد المستخدمين الفعالين، عدد الفروع، وحدات الأنظمة المطلوبة، وحجم تخزين الأرشفة. نقدم عروضاً مرنة تشمل نموذج الاشتراك التشغيلي (SaaS) أو الترخيص الدائم مع اتفاقيات صيانة سنوية محددة.',
-      en: 'Pricing is based on active users, branch volume, selected modules, and archive storage requirements. We offer flexible SaaS subscription models or perpetual enterprise licenses with maintenance SLAs.',
-    },
+    q: { ar: 'كيف نحدد الاستضافة وربط الأجهزة؟', en: 'How are hosting and device integrations defined?' },
+    a: {
+      ar: 'نحدد متطلبات الاستضافة والخصوصية والنسخ الاحتياطي، ونراجع واجهات الأجهزة والأنظمة المتاحة. تُوثق التكاملات المطلوبة وتوافقها في الدراسة الفنية.',
+      en: 'Define hosting, privacy and backup requirements and review available device and system interfaces. Required integrations and compatibility are documented during technical discovery.'
+    }
   },
+  {
+    q: { ar: 'هل التقدير في الحاسبة يشمل كل احتياجات التخزين؟', en: 'Does the calculator cover all storage needs?' },
+    a: {
+      ar: 'التقدير مبني على المدخلات الظاهرة فقط. لا يشمل الأرشيف السابق أو النمو المستقبلي أو مساحة تشغيل التخزين. نراجع هذه العوامل قبل اعتماد السعة والتكلفة.',
+      en: 'The estimate uses only the displayed inputs. Existing archives, future growth and storage overhead are excluded and reviewed before capacity and cost are agreed.'
+    }
+  }
 ];
 
 export default function PlanningView({ content, locale = 'ar' }: { content: SiteContent; locale?: Locale }) {
-  const en = locale === 'en';
-  const home = en ? '/en' : '/';
-  const t = (ar: string, english: string) => (en ? english : ar);
-  const Arrow = en ? ArrowUpRight : ArrowUpLeft;
-
+  const en = locale === 'en', home = en ? '/en' : '/', prefix = en ? '/en' : '';
+  const t = useSiteText(locale, content);
+  const Arrow = en ? ArrowUpRight : ArrowUpLeft, Forward = en ? ArrowRight : ArrowLeft;
+  const router = useRouter();
+  const [facilityFilter, setFacilityFilter] = useState<FacilityFilter>('all');
+  const [highlightedPlan, setHighlightedPlan] = useState<string | null>(null);
   const [storageError, setStorageError] = useState(false);
+  const enabledPlans = content.plans.filter(p => p.enabled);
+
+  function handleFilterChange(filter: FacilityFilter) {
+    setFacilityFilter(filter);
+    if (filter === 'single') setHighlightedPlan('أساس');
+    else if (filter === 'radiology') setHighlightedPlan('نمو');
+    else if (filter === 'network') setHighlightedPlan('مؤسسات');
+    else setHighlightedPlan(null);
+  }
+
+  function handleSelectPlan(planId: 'أساس' | 'نمو' | 'مؤسسات') {
+    setHighlightedPlan(planId);
+    const target = document.getElementById(`plan-${planId}`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
 
   function choose(estimate: ScopeEstimate) {
     try {
       sessionStorage.setItem('viara-planned-scope', JSON.stringify(estimate));
-      location.href = `${home}?interest=PACS#contact`;
+      router.push(`${home}?interest=PACS#contact`);
     } catch {
       setStorageError(true);
     }
   }
 
-  // Intersection Observer for scroll animations.
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries =>
-        entries.forEach(entry => {
-          if (entry.isIntersecting) entry.target.classList.add('is-visible');
-        }),
-      { threshold: 0.15 }
-    );
-    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+  const [calcTab, setCalcTab] = useState<'archive' | 'roi'>('archive');
 
-  const enabledPlans = content.plans.filter(p => p.enabled);
+  function attachRoi(summary: string) {
+    try {
+      sessionStorage.setItem('viara-roi-summary', summary);
+      router.push(`${home}?interest=CONSULT#contact`);
+    } catch {
+      setStorageError(true);
+    }
+  }
+
+  const [modalPlan, setModalPlan] = useState<string | null>(null);
+  const [interest, setInterest] = useState('CONSULT');
+  const [offer, setOffer] = useState('');
+  const [scope, setScope] = useState<ScopeEstimate | null>(null);
+  const [requestedSystems, setRequestedSystems] = useState<string[]>([]);
+  const [requestedFacility, setRequestedFacility] = useState('');
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+  const planDialogRef = useRef<HTMLDialogElement>(null);
+
+  function openPlanModal(planId: string) {
+    setModalPlan(planId);
+    if (planDialogRef.current) {
+      if (!planDialogRef.current.open) {
+        planDialogRef.current.showModal();
+      }
+    }
+  }
+
+  function closePlanModal() {
+    if (planDialogRef.current) {
+      planDialogRef.current.close();
+    }
+    setModalPlan(null);
+  }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const p = params.get('plan');
+    if (p && content.plans.some(item => item.enabled && item.id === p)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setModalPlan(p);
+      if (planDialogRef.current && !planDialogRef.current.open) {
+        planDialogRef.current.showModal();
+      }
+    }
+  }, [content.plans]);
 
   return (
     <CareFrame content={content} locale={locale} current="planning">
+      <BrandPageHero
+        locale={locale}
+        kind="planning"
+        eyebrow={t('بداية مدروسة. ونطاق يناسبك.', 'A CONSIDERED START. A SCOPE THAT FITS.')}
+        title={t('حل يناسب يومك.', 'A fit for today.')}
+        accent={t('وخطة لمستقبلك.', 'A plan for tomorrow.')}
+        description={t(
+          'قارن نقاط البداية، واستكشف مراحل التنفيذ، وقدّر سعة الأرشفة. نساعدك على تحويل احتياج مركزك إلى خطة واضحة وموثقة.',
+          'Compare starting scopes, explore rollout phases and estimate archive capacity. Turn your center’s needs into a clear, documented plan.'
+        )}
+      >
+        <a className="care-btn" href="#packages">
+          {t('استكشف الباقات والتراخيص', 'Explore packages')}
+          <Arrow size={18} />
+        </a>
+        <a className="care-link" href="#package-matrix">
+          {t('مصفوفة المقارنة الفنية', 'Comparison matrix')}
+          <Forward size={17} />
+        </a>
+        <a className="care-link" href="#archive">
+          {t('قدّر سعة الأرشفة', 'Estimate archive capacity')}
+          <Forward size={17} />
+        </a>
+      </BrandPageHero>
+
       <div className="care-wrap cp-page-wrap">
-        {/* Executive Planning Hero Banner */}
-        <section className="cp-hero" aria-labelledby="cp-heading">
-          <img
-            src="/assets/scenes/healthcare-command.jpg"
-            alt={t('غرفة قيادة وتحكم تقني صحي', 'Healthcare command center scene')}
-            className="cp-hero-bg"
-            loading="eager"
-          />
-          <div className="cp-hero-content">
-            <span className="cp-eyebrow">
-              <Sparkles size={13} />
-              {t('منهجية تنفيذ معتمدة لمنشأتك', 'CERTIFIED IMPLEMENTATION METHODOLOGY FOR YOUR FACILITY')}
-            </span>
+        {/* Navigation Bar */}
+        <nav className="cp-section-nav" aria-label={t('أقسام صفحة الخطط', 'Planning page sections')}>
+          <a href="#packages">
+            <span>01</span>
+            {t('الباقات والترخيص', 'Packages & Scope')}
+          </a>
+          <a href="#package-matrix">
+            <span>02</span>
+            {t('المقارنة الفنية', 'Comparison Matrix')}
+          </a>
+          <a href="#rollout">
+            <span>03</span>
+            {t('مراحل التنفيذ', 'Rollout Roadmap')}
+          </a>
+          <a href="#archive">
+            <span>04</span>
+            {t('حاسبة الأرشفة', 'Archive Estimator')}
+          </a>
+          <a href="#faq">
+            <span>05</span>
+            {t('الأسئلة الشائعة', 'FAQ')}
+          </a>
+        </nav>
 
-            <h1 id="cp-heading">
-              {t('خطط انتقالك الرقمي.', 'Plan your digital health rollout.')}
-              <br />
-              <em>{t('خطوة بخطوة، بلا انقطاع.', 'Step by step, with zero disruption.')}</em>
-            </h1>
-
-            <p>
-              {t(
-                'استكشف الباقات المعتمدة، وافهم مراحل التنفيذ خطوة بخطوة، وقدّر سعة الأرشفة التخزينية المطلوبة لمنشأتك. نوفر لك كل ما تحتاجه لاتخاذ قرار مدروس قبل الانطلاق دون أي انقطاع لخدمة المرضى.',
-                'Explore certified tiers, follow our phased rollout step by step, and estimate your archive storage needs. Everything you need to make an informed decision before go-live — with zero disruption to patient care.'
-              )}
-            </p>
-
-            <a className="care-btn" href="#packages">
-              <span>{t('استكشف الباقات ومراحل التنفيذ', 'Explore Packages & Roadmap')}</span>
-              <Arrow size={17} />
-            </a>
-          </div>
-
-          {/* Operational Metrics Telemetry Strip */}
-          <div className="cp-telemetry-grid" aria-label={t('مؤشرات الجاهزية التشغيلية', 'Operational readiness stats')}>
-            <div className="cp-telemetry-item">
-              <span className="cp-telemetry-val">99.98%</span>
-              <span className="cp-telemetry-lbl">{t('توافق تشغيلي معتمد (SLA Uptime)', 'Guaranteed SLA Uptime')}</span>
-            </div>
-            <div className="cp-telemetry-item">
-              <span className="cp-telemetry-val">100%</span>
-              <span className="cp-telemetry-lbl">{t('معايير HL7 FHIR و DICOM مفتوحة', 'Standard HL7 FHIR & DICOM')}</span>
-            </div>
-            <div className="cp-telemetry-item">
-              <span className="cp-telemetry-val">4 {t('مراحل', 'Phases')}</span>
-              <span className="cp-telemetry-lbl">{t('منهجية تدريجية بدون انقطاع', 'Seamless Phased Rollout')}</span>
-            </div>
-            <div className="cp-telemetry-item">
-              <span className="cp-telemetry-val">2 - 4 {t('أسابيع', 'Wks')}</span>
-              <span className="cp-telemetry-lbl">{t('متوسط مدة الإطلاق الأولي', 'Avg. Initial Deployment')}</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Plans & Packages Comparator Section */}
-        <section className="cp-plans-section" id="packages" aria-labelledby="cp-packages-head">
+        {/* ── 01. Unified Packages & Integrated Facility Filter ── */}
+        <section className="cp-section" id="packages" aria-labelledby="cp-packages-head">
           <div className="cp-section-head">
-            <span className="care-eyebrow">
-              <Layers size={14} />
-              {t('باقات النطاق والتشغيل', 'TIERS & SCOPES')}
-            </span>
-            <h2 id="cp-packages-head">{t('اختر النطاق الذي يلائم مرحلة منشأتك.', 'Select the scope that fits your stage.')}</h2>
+            <div>
+              <span className="care-eyebrow">
+                <Sparkles size={14} />
+                {t('01 / نقاط بداية مدروسة', '01 / SYSTEM PACKAGES & SCOPE')}
+              </span>
+              <h2 id="cp-packages-head">
+                {t('اختر النطاق الملائم لمركزك،', 'Choose the scope for your facility,')}
+                <br />
+                <span>{t('وابدأ بثقة تامة.', 'and launch with full confidence.')}</span>
+              </h2>
+            </div>
             <p>
               {t(
-                'باقات متدرجة مصممة هندسياً لتمنحك الأدوات الأساسية للتشغيل، مع قابلية توسع فورية لربط الفروع والأقسام الإضافية في أي وقت.',
-                'Engineered tiers providing core operational workflows with instant scalability to connect branches and modalities as you grow.'
+                'ثلاث باقات رئيسية تغطي كافة أحجام العمل السريري والتشخيصي، مع إمكانية التخصيص الكامل وفق متطلباتك التعاقدية.',
+                'Three core tiers covering all clinical and diagnostic workloads, fully customizable around your operational scale.'
               )}
             </p>
           </div>
 
-          <div className="cp-plans-grid">
-            {enabledPlans.map(p => {
-              const detail = planDetails[p.id];
-              const isGrowth = p.id === 'نمو';
+          {/* Integrated Facility Filter Strip (Eliminates Repetitive Recommender Block) */}
+          <div className="cpm-facility-filter-strip">
+            <div className="cpm-filter-heading">
+              <Sparkles size={15} />
+              <span>{t('طابق حجم منشأتك لتسليط الضوء على الباقة الأنسب:', 'Match your facility type to highlight the recommended tier:')}</span>
+            </div>
+            <div className="cpm-filter-pills" role="tablist">
+              <button
+                type="button"
+                className={`cpm-segment-pill ${facilityFilter === 'all' ? 'is-active' : ''}`}
+                onClick={() => handleFilterChange('all')}
+              >
+                {t('جميع الباقات', 'All Packages')}
+              </button>
+              <button
+                type="button"
+                className={`cpm-segment-pill ${facilityFilter === 'single' ? 'is-active' : ''}`}
+                onClick={() => handleFilterChange('single')}
+              >
+                <Building2 size={15} />
+                <span>{t('عيادة أو مركز بفرع واحد', 'Single Clinic / Branch')}</span>
+              </button>
+              <button
+                type="button"
+                className={`cpm-segment-pill ${facilityFilter === 'radiology' ? 'is-active' : ''}`}
+                onClick={() => handleFilterChange('radiology')}
+              >
+                <ScanLine size={15} />
+                <span>{t('مركز أشعة تشخيصي', 'Diagnostic Radiology')}</span>
+                <span className="cpm-badge-rec">{t('الأكثر طلباً', 'Most Popular')}</span>
+              </button>
+              <button
+                type="button"
+                className={`cpm-segment-pill ${facilityFilter === 'network' ? 'is-active' : ''}`}
+                onClick={() => handleFilterChange('network')}
+              >
+                <Network size={15} />
+                <span>{t('مجموعة مراكز وشبكات', 'Multi-site Groups')}</span>
+              </button>
+            </div>
 
+            {facilityFilter !== 'all' && (
+              <div className="cpm-filter-insight-pill">
+                <Sparkles size={15} />
+                <span>
+                  {facilityFilter === 'single' &&
+                    t(
+                      'التوصية التشغيلية: باقة أساس توفر ضبطاً كاملاً لعمليات الفرع المستقل من استقبال ومواعيد وفواتير بكفاءة وانضباط.',
+                      'Operational guidance: Essential covers all single-branch workflows (booking, reception, billing) with speed and discipline.'
+                    )}
+                  {facilityFilter === 'radiology' &&
+                    t(
+                      'التوصية التشغيلية: باقة نمو هي المعيار الأنسب لمراكز الأشعة لربط الأجهزة بقوائم العمل MWL وأرشفة PACS وتسليم التقارير الفورية بترميز QR.',
+                      'Operational guidance: Growth is the benchmark for radiology centers, unifying DICOM MWL, PACS archiving, and QR report delivery.'
+                    )}
+                  {facilityFilter === 'network' &&
+                    t(
+                      'التوصية التشغيلية: باقة مؤسسات تمنحك حوكمة سحابية موحدة لجميع الفروع مع دعم الدخول الموحد SSO وتحليلات مقارنة.',
+                      'Operational guidance: Multi-site delivers unified multi-branch governance, SSO/OIDC support, and comparative analytics.'
+                    )}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Cards Grid */}
+          <div className="cp-plans-grid">
+            {enabledPlans.map((plan, i) => {
+              const specs = quickSpecs[plan.id];
+              const isMatch = highlightedPlan === plan.id;
               return (
-                <article key={p.id} className={`cp-plan-card ${isGrowth ? 'is-featured' : ''}`}>
-                  {isGrowth && (
-                    <span className="cp-plan-featured-tag">
+                <article
+                  key={plan.id}
+                  id={`plan-${plan.id}`}
+                  className={`cp-plan-card ${plan.featured ? 'is-featured' : ''} ${isMatch ? 'is-highlighted' : ''}`}
+                >
+                  {isMatch && specs && (
+                    <div className="cp-plan-recommendation-tag">
                       <Sparkles size={12} />
-                      {t('الباقة الأكثر طلباً', 'Most Popular')}
-                    </span>
+                      <span>{txt(specs.recommendationTag, locale)}</span>
+                    </div>
                   )}
 
-                  <div className="cp-plan-card-head">
-                    <bdi className="cp-plan-code">{p.label}</bdi>
-                    <span className="cp-plan-sla">
-                      {detail ? txt(detail.sla, locale) : t('دعم فني معتمد', 'Standard SLA')}
-                    </span>
+                  <div className="cp-plan-top">
+                    <span className="cp-plan-label-badge">{plan.label}</span>
+                    <span className="cp-plan-num">0{i + 1}</span>
                   </div>
 
-                  <h3>{txt(p.name, locale)}</h3>
-                  <p className="cp-plan-desc">{txt(p.description, locale)}</p>
+                  <h3>{txt(plan.name, locale)}</h3>
+                  <p className="cp-plan-desc">{txt(plan.description, locale)}</p>
 
-                  <div className="cp-plan-price-wrap">
-                    <span className="cp-plan-price">{txt(p.price, locale)}</span>
-                    <span className="cp-plan-sla">{t('دراسة فنية مخصصة', 'Tailored proposal')}</span>
-                  </div>
-
-                  {/* Metadata Pills */}
-                  {detail && (
-                    <div className="cp-plan-meta-pills">
-                      <div className="cp-plan-pill">
-                        <Building2 size={14} />
-                        <span>{txt(detail.facilityScope, locale)}</span>
+                  {/* Micro Specs Grid */}
+                  {specs && (
+                    <div className="cp-plan-quick-specs">
+                      <div className="cp-spec-cell">
+                        <span className="cp-spec-lbl">{t('الفروع', 'Branches')}</span>
+                        <strong className="cp-spec-val">{txt(specs.branches, locale)}</strong>
                       </div>
-                      <div className="cp-plan-pill">
-                        <Clock size={14} />
-                        <span>{txt(detail.timeline, locale)}</span>
+                      <div className="cp-spec-cell">
+                        <span className="cp-spec-lbl">{t('المستخدمون', 'Users')}</span>
+                        <strong className="cp-spec-val">{txt(specs.users, locale)}</strong>
+                      </div>
+                      <div className="cp-spec-cell is-full">
+                        <span className="cp-spec-lbl">{t('التركيز التشغيلي', 'Core Focus')}</span>
+                        <strong className="cp-spec-val">{txt(specs.scopeSummary, locale)}</strong>
                       </div>
                     </div>
                   )}
 
-                  {/* Features List */}
-                  <ul className="cp-plan-features-list">
-                    {(detail?.highlights || p.features.map(f => ({ ar: txt(f, 'ar'), en: txt(f, 'en') }))).map(
-                      (item, i) => (
-                        <li key={i}>
-                          <Check size={16} />
-                          <span>{txt(item, locale)}</span>
-                        </li>
-                      )
-                    )}
+                  <ul className="cp-plan-features">
+                    {plan.features.slice(0, 5).map((feature, index) => (
+                      <li key={index}>
+                        <Check size={16} />
+                        <span>{txt(feature, locale)}</span>
+                      </li>
+                    ))}
                   </ul>
 
-                  <a
-                    className="care-btn"
-                    href={`${home}?plan=${encodeURIComponent(p.id)}#contact`}
-                  >
-                    <span>{t('ناقش هذه الباقة مع خبرائنا', 'Discuss this tier with our team')}</span>
-                    <Arrow size={16} />
-                  </a>
+                  {planLicenseDetails[plan.id] && (
+                    <div className="cp-plan-license-pill">
+                      <ShieldCheck size={15} />
+                      <span>{txt(planLicenseDetails[plan.id].edition, locale)}</span>
+                    </div>
+                  )}
+
+                  <div className="cp-plan-card-actions">
+                    <button
+                      type="button"
+                      className="care-btn"
+                      onClick={() => openPlanModal(plan.id)}
+                    >
+                      {t('ناقش هذه الباقة', 'Discuss this package')}
+                      <Arrow size={16} />
+                    </button>
+                    <a className="cp-plan-compare-jump" href="#package-matrix">
+                      <span>{t('عرض المواصفات في الجدول', 'View full specs in matrix')}</span>
+                      <ChevronDown size={14} />
+                    </a>
+                  </div>
                 </article>
               );
             })}
           </div>
+
+          {/* Compact Technical Governance & Security Card (Replaces Bulky Access Model) */}
+          <PlanningGovernanceCard locale={locale} />
         </section>
 
-        {/* 4-Phase Rollout Roadmap */}
-        <section className="cp-rollout-section" aria-labelledby="cp-roadmap-head">
-          <div className="cp-section-head">
-            <span className="care-eyebrow">
-              <Route size={14} />
-              {t('مسار التنفيذ المعتمد', 'THE CERTIFIED ROLLOUT PATH')}
-            </span>
-            <h2 id="cp-roadmap-head">{t('من دراسة الاحتياج إلى التشغيل الكامل.', 'From gap analysis to operational go-live.')}</h2>
-            <p>
-              {t(
-                'منهجية تدريجية في 4 محطات واضحة تضمن تدريب الكوادر، تكامل الأجهزة، وسلامة تدفق البيانات السريرية.',
-                'A rigorous 4-stage methodology guaranteeing clinical training, device interoperability, and data security.'
-              )}
-            </p>
-          </div>
+        {/* ── 02. Comprehensive Feature Comparison Matrix with Category Tabs ── */}
+        <PlanningPackagesMatrix
+          locale={locale}
+          onChoosePlan={handleSelectPlan}
+          onDiscussPlan={planId => openPlanModal(planId)}
+          activePlanId={highlightedPlan}
+        />
 
-          <div className="cp-timeline">
-            <div className="cp-timeline-grid">
-              {rolloutRoadmap.map(step => (
-                <div key={step.num} className="cp-tl-step animate-on-scroll">
-                  <div className="cp-tl-dot">{step.num}</div>
-                  <div className="cp-tl-body">
-                    <div className="cp-tl-time">{txt(step.time, locale)}</div>
-                    <h3>{txt(step.title, locale)}</h3>
-                    <p>{txt(step.body, locale)}</p>
-                    <div className="cp-tl-deliverable">
-                      <ShieldCheck size={13} />
-                      <span>{txt(step.deliverable, locale)}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+        {/* ── 03. Rollout Roadmap & Peace-of-Mind Guarantees ── */}
+        <PlanningRolloutRoadmap locale={locale} />
+
+        {/* ── 04. Medical Imaging Archive & Financial ROI Estimator ── */}
+        <section className="cp-section cp-estimator" id="archive" aria-labelledby="cp-calc-head">
+          <div className="cp-section-head">
+            <div>
+              <span className="care-eyebrow">
+                <Sparkles size={14} />
+                {t('04 / أدوات التخطيط وحساب الجدوى', '04 / PLANNING & ROI TOOLS')}
+              </span>
+              <h2 id="cp-calc-head">
+                {t('تخطيط السعة والعائد المالي،', 'Capacity & financial ROI,')}
+                <br />
+                <span>{t('بتقدير أقرب لواقع مركزك.', 'calculated around your operations.')}</span>
+              </h2>
             </div>
-          </div>
-        </section>
-
-        {/* Interactive Archive Storage Estimator */}
-        <section className="cp-estimator-section" aria-labelledby="cp-calc-head">
-          <div className="cp-section-head">
-            <span className="care-eyebrow">
-              <Cpu size={14} />
-              {t('أداة التخطيط السحابي والتخزين', 'STORAGE & ARCHIVE ESTIMATOR')}
-            </span>
-            <h2 id="cp-calc-head">{t('قدّر سعة أرشفة الصور الطبية (PACS).', 'Estimate PACS archive capacity.')}</h2>
             <p>
               {t(
-                'احسب حجم التخزين التقديري سنوياً بناءً على عدد الأجهزة ومعدل الفحوصات وسنوات الحفظ القانونية، مع إمكانية إرفاق التقدير مباشرة مع طلبك.',
-                'Calculate your yearly medical data footprint based on modalities, daily study volume, and regulatory retention requirements.'
+                'قدّر سعة أرشفة الصور الطبية المطلوبة، أو احسب حجم التوفير المالي السنوي المباشر الناتج عن الاستغناء عن الأفلام المطبوعة وتسريع التقارير.',
+                'Estimate required imaging storage capacity, or calculate direct annual financial savings from digital delivery and AI drafting.'
               )}
             </p>
           </div>
-
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '22px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className={`care-btn ${calcTab === 'archive' ? '' : 'care-btn-secondary'}`}
+              style={{ fontSize: '13px', padding: '9px 18px', borderRadius: '8px', cursor: 'pointer' }}
+              onClick={() => setCalcTab('archive')}
+              aria-pressed={calcTab === 'archive'}
+            >
+              <ScanLine size={16} />
+              {t('تقدير سعة أرشفة الصور (PACS Storage)', 'PACS Storage Estimator')}
+            </button>
+            <button
+              type="button"
+              className={`care-btn ${calcTab === 'roi' ? '' : 'care-btn-secondary'}`}
+              style={{ fontSize: '13px', padding: '9px 18px', borderRadius: '8px', cursor: 'pointer' }}
+              onClick={() => setCalcTab('roi')}
+              aria-pressed={calcTab === 'roi'}
+            >
+              <TrendingUp size={16} />
+              {t('حاسبة التوفير والعائد المالي (ROI Calculator)', 'Financial ROI Calculator')}
+            </button>
+          </div>
           <div className="cp-estimator-box">
-            <ScopeCalculator locale={locale} onChoose={choose} />
+            {calcTab === 'archive' ? (
+              <ScopeCalculator locale={locale} onChoose={choose} />
+            ) : (
+              <RoiCalculator locale={locale} onAttach={attachRoi} />
+            )}
             {storageError && (
-              <p role="alert" className="care-note" style={{ color: '#b91c1c' }}>
+              <p role="alert" className="cp-storage-error">
                 {t(
-                  'تعذر حفظ التقدير محلياً. يمكنك تدوين الأرقام أو استخدام الحاسبة داخل نموذج التواصل مباشرة.',
-                  'Local storage is restricted in this browser. You can reference your numbers directly in the inquiry form.'
+                  'تعذر حفظ التقدير في هذا المتصفح. يمكنك استخدام الحاسبة داخل نموذج التواصل لإرفاق المدخلات.',
+                  'This browser could not save the estimate. Use the calculator in the contact form to attach your inputs.'
                 )}
               </p>
             )}
           </div>
         </section>
 
-        {/* Rollout & Planning FAQs */}
-        <section className="cp-faq-section" aria-labelledby="cp-faq-head">
-          <div className="cp-faq-grid">
-            <div className="cp-section-head">
-              <span className="care-eyebrow">
-                <Activity size={14} />
-                {t('أسئلة واستفسارات شائعة', 'FREQUENT QUESTIONS')}
-              </span>
-              <h2 id="cp-faq-head">{t('إجابات هندسية وتطبيقية.', 'Practical engineering answers.')}</h2>
-              <p>
-                {t(
-                  'كل ما تحتاج معرفته حول ترحيل البيانات، ربط الأجهزة الطبية، ونماذج الاستضافة السحابية والمحلية.',
-                  'Everything you need to know about healthcare data migration, device connectivity, and hosting.'
-                )}
-              </p>
-            </div>
-
-            <div className="cp-faq-list">
-              {planningFaqs.map(faq => (
-                <details key={faq.id} className="cp-faq-item">
-                  <summary>
-                    <span>{txt(faq.question, locale)}</span>
-                    <Plus size={18} />
-                  </summary>
-                  <p>{txt(faq.answer, locale)}</p>
-                </details>
-              ))}
-            </div>
+        {/* ── 05. Frequently Asked Questions ── */}
+        <section className="cp-section cp-faq" id="faq" aria-labelledby="cp-faq-head">
+          <div>
+            <span className="care-eyebrow">{t('قبل اتخاذ القرار', 'BEFORE YOUR NEXT STEP')}</span>
+            <h2 id="cp-faq-head">
+              {t('أسئلة متوقعة.', 'Expected questions.')}
+              <br />
+              <span>{t('إجابات واضحة.', 'Clear answers.')}</span>
+            </h2>
+            <p>{t('تفاصيل تساعدك على تحديد ما تحتاج مناقشته مع فريقنا.', 'Details to help you decide what to discuss with our team.')}</p>
+          </div>
+          <div>
+            {faqs.map(faq => (
+              <details key={faq.q.en}>
+                <summary>
+                  {txt(faq.q, locale)}
+                  <Plus size={18} />
+                </summary>
+                <p>{txt(faq.a, locale)}</p>
+              </details>
+            ))}
           </div>
         </section>
+
+        {/* ── 06. Final CTA ── */}
+        <section className="cp-next-step">
+          <div>
+            <span className="care-eyebrow">{t('لست متأكداً من نقطة البداية؟', 'UNSURE WHERE TO START?')}</span>
+            <h2>{t('لنرسم خطتك معاً.', 'Let’s shape your plan together.')}</h2>
+            <p>{t('أخبرنا عن منشأتك وما تريد تحسينه أولاً وسيقوم مستشارونا التقنيون بإعداد دراسة النطاق المناسبة.', 'Tell us about your facility and our technical specialists will prepare the tailored scope study.')}</p>
+          </div>
+          <button
+            type="button"
+            className="care-btn"
+            onClick={() => openPlanModal('لم أحدد بعد')}
+          >
+            {t('تحدث مع فريقنا', 'Talk to our team')}
+            <Arrow size={18} />
+          </button>
+        </section>
       </div>
+
+      {/* ── In-Page Package Discussion Modal ── */}
+      <dialog
+        ref={planDialogRef}
+        className="care-dialog cp-plan-modal"
+        aria-labelledby="cp-plan-modal-title"
+        onCancel={closePlanModal}
+        onClick={event => {
+          if (event.target === event.currentTarget) closePlanModal();
+        }}
+      >
+        <div className="cp-plan-modal-heading">
+          <div className="cp-plan-modal-title-wrap">
+            <span className="care-eyebrow">
+              <Sparkles size={14} />
+              {t('مناقشة المتطلبات والنطاق المباشر', 'DIRECT SCOPE & PACKAGE CONSULTATION')}
+            </span>
+            <h2 id="cp-plan-modal-title">
+              {modalPlan && modalPlan !== 'لم أحدد بعد'
+                ? t(`طلب مناقشة باقة ${modalPlan}`, `Discuss ${modalPlan} Package`)
+                : t('طلب استشارة ومناقشة باقة', 'Package Consultation Request')}
+            </h2>
+          </div>
+          <button
+            type="button"
+            className="care-menu"
+            onClick={closePlanModal}
+            aria-label={t('إغلاق', 'Close')}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="cp-plan-modal-body">
+          <LeadForm
+            locale={locale}
+            content={content}
+            interest={interest}
+            setInterest={setInterest}
+            plan={modalPlan || 'لم أحدد بعد'}
+            setPlan={setModalPlan}
+            offer={offer}
+            setOffer={setOffer}
+            scope={scope}
+            setScope={setScope}
+            requestedSystems={requestedSystems}
+            clearRequestedSystems={() => setRequestedSystems([])}
+            requestedFacility={requestedFacility}
+            onPrivacy={() => setPrivacyOpen(true)}
+            onEditScope={() => {
+              closePlanModal();
+              document.getElementById('archive')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
+        </div>
+      </dialog>
+
+      {/* Privacy modal */}
+      {privacyOpen && (
+        <dialog
+          className="care-dialog cp-privacy-dialog"
+          open
+          onClick={event => {
+            if (event.target === event.currentTarget) setPrivacyOpen(false);
+          }}
+        >
+          <div className="care-dialog-heading">
+            <h2>{t('الخصوصية', 'Privacy')}</h2>
+            <button
+              type="button"
+              className="care-menu"
+              onClick={() => setPrivacyOpen(false)}
+              aria-label={t('إغلاق', 'Close')}
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <p>
+            {t(
+              'نستخدم بيانات التواصل وتفاصيل منشأتك لمراجعة طلبك والرد عليه. يُحفظ سجل الطلبات مرتبطاً بمعرّف زائر في هذا المتصفح، ولا تُدرج أي معلومات مرضى.',
+              'We use your contact and facility details to review and respond to your request. Request history is linked to a browser identifier, and no patient information is ever included.'
+            )}
+          </p>
+        </dialog>
+      )}
     </CareFrame>
   );
 }
