@@ -1,19 +1,17 @@
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
-import { cookies } from "next/headers";
-import { getAdmin } from "../../../../lib/admin-auth";
+import { getAdmin, sameOrigin } from "../../../../lib/admin-auth";
+import { readGuestId } from "../../../../lib/guest-identity";
 import { getDb } from "../../../../db";
 import { inquiries } from "../../../../db/schema";
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) {
+  if (!sameOrigin(request)) {
     return NextResponse.json({ error: "مصدر الطلب غير صحيح." }, { status: 403 });
   }
 
   const { id } = await params;
-  const cookieStore = await cookies();
-  const clientId = cookieStore.get("viara_uid")?.value;
+  const clientId = await readGuestId();
   const admin = await getAdmin();
 
   if (!clientId && !admin) {
@@ -31,7 +29,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       return NextResponse.json({ error: "الطلب غير موجود." }, { status: 404 });
     }
     return NextResponse.json({ deleted: true });
-  } catch {
+  } catch (error) {
+    console.error('Failed to delete inquiry:', error);
     return NextResponse.json({ error: "تعذر حذف الطلب." }, { status: 503 });
   }
 }

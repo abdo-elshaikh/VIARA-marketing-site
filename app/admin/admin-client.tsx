@@ -1,14 +1,18 @@
 'use client';
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
+import Link from 'next/link';
 import {
   LayoutDashboard, FileText, Layers3, Gift, MessageSquare, Mail, Settings2, Search, Save,
   ExternalLink, Globe2, Plus, Trash2, Upload, CheckCircle2, LoaderCircle, ChevronDown, Star,
-  Download, RefreshCw, Menu, X, ShieldCheck, ArrowUpLeft, MessageCircle, Copy, Sparkles, Check
+  Download, RefreshCw, Menu, X, ShieldCheck, ArrowUpLeft, MessageCircle, Copy, Sparkles, Check, History
 } from 'lucide-react';
 import { isOfferActive, siteContentSchema, txt, L, type SiteContent, type Localized, type Locale, type PublicReview } from '../../lib/site-content';
-import { healthcareSystems } from '../../lib/healthcare-catalog.mjs';
+import { createDemoContent } from '../../lib/demo-content';
+import { healthcareSystems, marketingSystemIds, marketingCategories, marketingFacilityProfiles } from '../../lib/healthcare-catalog.mjs';
 import { statuses } from '../../lib/request-status';
 import { choiceLabel } from '../../lib/choice-labels';
+import CompanyEditor from './company-editor';
+import CopyEditor from './copy-editor';
 
 type Initial = { content: SiteContent; version: number; updatedAt: number };
 type Lead = {
@@ -17,6 +21,7 @@ type Lead = {
   message: string; status: string; offer: string; locale: string; createdAt: number;
 };
 type Review = PublicReview & { status: string; consent: number };
+type Revision = { id: string; version: number; updatedBy: string; createdAt: number };
 
 async function api<T>(url: string, method = 'GET', body?: unknown): Promise<T> {
   const response = await fetch(url, {
@@ -92,9 +97,9 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
   );
 }
 
-function Panel({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
+function Panel({ title, description, children, id }: { title: string; description?: string; children: ReactNode; id?: string }) {
   return (
-    <section className="cms-panel">
+    <section className="cms-panel" id={id}>
       <div className="cms-panel-head">
         <h2>{title}</h2>
         {description && <p>{description}</p>}
@@ -111,10 +116,13 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
 
   const [tab, setTab] = useState('overview');
   const [mobileNav, setMobileNav] = useState(false);
+  const [navSearch, setNavSearch] = useState('');
+  const navSearchRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState(initial.content);
   const [version, setVersion] = useState(initial.version);
   const [updated, setUpdated] = useState(initial.updatedAt);
   const [dirty, setDirty] = useState(false);
+  const [demoDraft, setDemoDraft] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
@@ -123,8 +131,10 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [revisions, setRevisions] = useState<Revision[]>([]);
   const [loading, setLoading] = useState(true);
-  const [listError, setListError] = useState(false);
+  const [leadError, setLeadError] = useState('');
+  const [reviewError, setReviewError] = useState('');
   const [actionBusy, setActionBusy] = useState('');
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('all');
@@ -132,14 +142,63 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
   const [manual, setManual] = useState({ name: '', role: '', organization: '', quote: '', rating: 5, locale: 'ar', consent: false, systemId: '' });
 
   const tabs = [
-    { id: 'overview', icon: LayoutDashboard, label: t('نظرة عامة', 'Overview') },
-    { id: 'content', icon: FileText, label: t('محتوى الموقع', 'Site content') },
-    { id: 'products', icon: Layers3, label: t('الأنظمة والباقات', 'Systems & plans') },
-    { id: 'offers', icon: Gift, label: t('العروض', 'Offers') },
-    { id: 'reviews', icon: MessageSquare, label: t('آراء العملاء', 'Customer reviews') },
-    { id: 'leads', icon: Mail, label: t('طلبات العملاء', 'Customer requests') },
-    { id: 'settings', icon: Settings2, label: t('الهوية والتواصل', 'Brand & contact') }
+    { id: 'overview', icon: LayoutDashboard, label: t('نظرة عامة', 'Overview'), description: t('ملخص سريع للطلبات والمراجعات والعناصر التي تحتاج إلى متابعة.', 'A quick view of requests, reviews and items that need attention.') },
+    { id: 'content', icon: FileText, label: t('محتوى الموقع', 'Site content'), description: t('حرر محتوى الصفحة الرئيسية والأسئلة الشائعة ورحلة الرعاية.', 'Edit homepage content, FAQs and the care journey.') },
+    { id: 'company', icon: ShieldCheck, label: t('بيانات الشركة', 'Company information'), description: t('حدّث صفحة عن VIARA والمعلومات المؤسسية القابلة للنشر.', 'Update the About VIARA page and publishable company information.') },
+    { id: 'copy', icon: Globe2, label: t('نصوص جميع الصفحات', 'All page text'), description: t('ابحث عن نصوص الواجهات والصفحات وعدّل النسختين العربية والإنجليزية.', 'Find page and interface copy, then edit Arabic and English versions.') },
+    { id: 'products', icon: Layers3, label: t('الأنظمة والباقات', 'Systems & plans'), description: t('أدر تفاصيل الأنظمة والباقات ونطاقها التجاري.', 'Manage system details, package content and commercial scope.') },
+    { id: 'offers', icon: Gift, label: t('العروض', 'Offers'), description: t('أنشئ العروض الفعلية وحدد شروطها وتاريخ انتهائها.', 'Create actual offers and set their terms and expiry dates.') },
+    { id: 'reviews', icon: MessageSquare, label: t('آراء العملاء', 'Customer reviews'), description: t('راجع موافقات النشر واربط الآراء بالأنظمة ذات الصلة.', 'Review publication consent and link testimonials to relevant systems.') },
+    { id: 'leads', icon: Mail, label: t('طلبات العملاء', 'Customer requests'), description: t('ابحث في الطلبات الواردة وحدّث مراحل المتابعة.', 'Search incoming requests and update their follow-up status.') },
+    { id: 'settings', icon: Settings2, label: t('الهوية والتواصل', 'Brand & contact'), description: t('اضبط أصول الهوية وبيانات التواصل التي تظهر للزوار.', 'Configure brand assets and contact details shown to visitors.') }
   ];
+  const navGroups = [
+    { label: t('المساحة والمحتوى', 'Workspace & content'), ids: ['overview', 'content', 'company', 'copy'] },
+    { label: t('إدارة الأعمال', 'Business operations'), ids: ['products', 'offers', 'reviews', 'leads'] },
+    { label: t('إعدادات النظام', 'System settings'), ids: ['settings'] }
+  ];
+  const searchTerm = navSearch.trim().toLocaleLowerCase();
+  const filteredNavGroups = navGroups.map(group => {
+    const groupMatches = group.label.toLocaleLowerCase().includes(searchTerm);
+    return { ...group, items: tabs.filter(item => group.ids.includes(item.id) && (!searchTerm || groupMatches || item.label.toLocaleLowerCase().includes(searchTerm))) };
+  }).filter(group => group.items.length > 0);
+  const currentGroup = navGroups.find(group => group.ids.includes(tab));
+  const sectionLinks: Record<string, { id: string; label: string }[]> = {
+    content: [
+      { id: 'cms-section-home', label: t('الواجهة الرئيسية', 'Homepage') },
+      { id: 'cms-section-about', label: t('عن VIARA', 'About VIARA') },
+      { id: 'cms-section-faq', label: t('الأسئلة الشائعة', 'FAQs') },
+      { id: 'cms-section-journey', label: t('رحلة الرعاية', 'Care journey') },
+      { id: 'cms-section-metrics', label: t('مؤشرات الصفحة', 'Page metrics') }
+    ],
+    products: [
+      { id: 'cms-section-systems', label: t('الأنظمة', 'Systems') },
+      { id: 'cms-section-facilities', label: t('أنواع المنشآت', 'Facility types') },
+      { id: 'cms-section-plans', label: t('الباقات والأسعار', 'Packages & pricing') }
+    ],
+    settings: [
+      { id: 'cms-section-brand', label: t('الهوية البصرية', 'Brand identity') },
+      { id: 'cms-section-imagery', label: t('صور الصفحة', 'Page imagery') },
+      { id: 'cms-section-contact', label: t('بيانات التواصل', 'Contact details') },
+      { id: 'cms-section-seo', label: t('محركات البحث', 'Search metadata') }
+    ],
+    reviews: [
+      { id: 'cms-section-moderation', label: t('مراجعة الآراء', 'Review moderation') },
+      { id: 'cms-section-add-review', label: t('إضافة رأي', 'Add a review') }
+    ]
+  };
+
+  useEffect(() => {
+    function handleShortcut(event: KeyboardEvent) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        navSearchRef.current?.focus();
+      }
+      if (event.key === 'Escape' && navSearch) setNavSearch('');
+    }
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  }, [navSearch]);
 
   useEffect(() => {
     function leave(e: BeforeUnloadEvent) {
@@ -156,11 +215,14 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
     void loadLists();
   }, []);
 
-  function copyToClipboard(text: string, id: string) {
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(text);
+  async function copyToClipboard(text: string, id: string) {
+    setError('');
+    try {
+      await navigator.clipboard.writeText(text);
       setCopyNotice(id);
       setTimeout(() => setCopyNotice(''), 2500);
+    } catch {
+      setError(t('تعذر نسخ البيانات. تحقق من صلاحية الحافظة في المتصفح.', 'Could not copy the information. Check browser clipboard permissions.'));
     }
   }
 
@@ -174,113 +236,69 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
     setMessage('');
   }
 
+  function loadDemoContent() {
+    if (!window.confirm(t(
+      'سيتم استبدال مسودة محتوى الموقع الحالية ببيانات تجريبية. ستبقى الهوية وبيانات التواصل كما هي، ولن تُنشأ طلبات أو آراء عملاء. متابعة؟',
+      'This replaces the current site-content draft with sample data. Branding and contact details stay unchanged; no customer requests or reviews will be created. Continue?'
+    ))) return;
+    setDraft(current => createDemoContent(current));
+    setDirty(true);
+    setDemoDraft(true);
+    setTab('content');
+    setMessage(t('حُمّلت البيانات التجريبية كمسودة. راجعها واستبدل البيانات الإرشادية قبل النشر.', 'Sample data loaded as a draft. Review it and replace guidance fields before publishing.'));
+    setError('');
+  }
+
   async function loadLists() {
     setLoading(true);
-    setListError(false);
+    setLeadError('');
+    setReviewError('');
     const result = await Promise.allSettled([
       api<{ records: Lead[] }>('/api/admin/inquiries'),
-      api<{ records: Review[] }>('/api/admin/reviews')
+      api<{ records: Review[] }>('/api/admin/reviews'),
+      api<{ revisions: Revision[] }>('/api/admin/revisions')
     ]);
-    result.forEach((r, i) => {
-      if (r.status === 'fulfilled') {
-        if (i === 0) setLeads(r.value.records as Lead[]);
-        else setReviews(r.value.records as Review[]);
-      } else {
-        setListError(true);
-        setError(String(r.reason instanceof Error ? r.reason.message : r.reason));
-      }
-    });
+    const message = (reason: unknown) => reason instanceof Error ? reason.message : String(reason);
+    if (result[0].status === 'fulfilled') setLeads(result[0].value.records);
+    else setLeadError(message(result[0].reason));
+    if (result[1].status === 'fulfilled') setReviews(result[1].value.records);
+    else setReviewError(message(result[1].reason));
+    if (result[2].status === 'fulfilled') setRevisions(result[2].value.revisions);
     setLoading(false);
   }
 
-  function loadSampleLeads() {
-    const samples: Lead[] = [
-      {
-        id: '1a2b3c4d-0001-4000-8000-000000000001',
-        name: 'د. طارق محمود',
-        email: 'tarek.m@alshifa-radiology.com',
-        phone: '+966501234567',
-        organization: 'مركز الشفاء للأشعة التشخيصية',
-        facility: 'مركز أشعة',
-        branches: 'فرعان (2)',
-        interest: 'RIS & PACS',
-        plan: 'نمو',
-        message: 'نحتاج لربط جهازين رنين ومقطعية مع نظام العمل والأرشفة السحابية والتقارير الفورية.',
-        status: 'new',
-        offer: '',
-        locale: 'ar',
-        createdAt: Date.now() - 3600000 * 2
-      },
-      {
-        id: '2b3c4d5e-0002-4000-8000-000000000002',
-        name: 'أ. نادية الهاشمي',
-        email: 'n.hashemi@alsafwa-clinics.com',
-        phone: '+966558765432',
-        organization: 'مجمع الصفوة الطبي التخصصي',
-        facility: 'مركز طبي',
-        branches: '3 - 5 فروع',
-        interest: 'CMS',
-        plan: 'مؤسسات',
-        message: 'نرغب في ربط مواعيد 12 عيادة تخصصية مع منصة نفيس والتأمين الصحي والملف الموحد.',
-        status: 'contacted',
-        offer: '',
-        locale: 'ar',
-        createdAt: Date.now() - 86400000
-      },
-      {
-        id: '3c4d5e6f-0003-4000-8000-000000000003',
-        name: 'Dr. Sarah Jenkins',
-        email: 's.jenkins@metropolitan-imaging.com',
-        phone: '+201012345678',
-        organization: 'Metropolitan Imaging Center',
-        facility: 'Radiology center',
-        branches: 'One branch',
-        interest: 'PACS',
-        plan: 'أساس',
-        message: 'Looking for a web-based zero-footprint DICOM viewer with diagnostic MPR and mobile access.',
-        status: 'proposal',
-        offer: 'عرض الافتتاح',
-        locale: 'en',
-        createdAt: Date.now() - 86400000 * 3
-      }
-    ];
-    setLeads(samples);
-    setMessage(t('تم تحميل عينة طلبات عملاء استرشادية للمعاينة والاختبار.', 'Sample customer requests loaded for testing.'));
-  }
-
-  function loadSampleReviews() {
-    const samples: Review[] = [
-      {
-        id: 'rev-001',
-        name: 'د. وليد البصري',
-        role: 'رئيس قسم الأشعة',
-        organization: 'مستشفى دار الشفاء',
-        quote: 'نظام VIARA أحدث نقلة نوعية في سرعة إعداد وكتابة تقارير الرنين والمقطعية، وعارض DICOM يعمل بسلاسة وسرعة فائقة.',
-        rating: 5,
-        locale: 'ar',
-        status: 'pending',
-        consent: 1,
-        createdAt: Date.now() - 7200000
-      },
-      {
-        id: 'rev-002',
-        name: 'أ. هناء السالم',
-        role: 'المدير التنفيذي',
-        organization: 'مراكز الأمل الطبية',
-        quote: 'ربط الفروع والتكامل مع منصة نفيس قلل نسبة رفض المطالبات ورفع كفاءة الاستقبال بنسبة تفوق 40%.',
-        rating: 5,
-        locale: 'ar',
-        status: 'approved',
-        consent: 1,
-        createdAt: Date.now() - 86400000 * 2
-      }
-    ];
-    setReviews(samples);
-    setMessage(t('تم تحميل عينة آراء للمراجعة والتجربة.', 'Sample reviews loaded for moderation testing.'));
+  async function restoreFromRevision(revision: Revision) {
+    if (actionBusy || saving) return;
+    if (!window.confirm(t(
+      `استعادة النسخة ${revision.version}؟ سيُنشر محتوى هذه النسخة كإصدار جديد، ولا يُحذف أي سجل.`,
+      `Restore version ${revision.version}? Its content is published as a new version; no history is deleted.`
+    ))) return;
+    setActionBusy(revision.id);
+    setError('');
+    setMessage('');
+    try {
+      await api<{ version: number }>('/api/admin/revisions', 'POST', { revisionId: revision.id });
+      const result = await api<Initial>('/api/admin/content');
+      setDraft(result.content);
+      setVersion(result.version);
+      setUpdated(result.updatedAt);
+      setDirty(false);
+      setDemoDraft(false);
+      setMessage(t('تمت استعادة النسخة ونشرها كإصدار جديد.', 'Revision restored and published as a new version.'));
+      await loadLists();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('تعذر استعادة النسخة.', 'Could not restore the revision.'));
+    } finally {
+      setActionBusy('');
+    }
   }
 
   async function publish() {
     if (saving || uploading) return;
+    if (demoDraft && !window.confirm(t(
+      'هذه المسودة تحتوي بيانات تجريبية. لا تنشرها قبل استبدال كل البيانات الإرشادية والتحقق من التفاصيل. هل تريد المتابعة؟',
+      'This draft contains sample data. Replace all guidance fields and verify the details before publishing. Publish anyway?'
+    ))) return;
     setError('');
     setMessage('');
     const parsed = siteContentSchema.safeParse(draft);
@@ -294,6 +312,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
       setVersion(result.version);
       setUpdated(result.updatedAt);
       setDirty(false);
+      setDemoDraft(false);
       setMessage(t('تم حفظ ونشر المحتوى بنجاح. يظهر للزوار فورًا عند تحديث الصفحة.', 'Content published. Visitors will see it when they refresh.'));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Save failed');
@@ -312,6 +331,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
       setVersion(result.version);
       setUpdated(result.updatedAt);
       setDirty(false);
+      setDemoDraft(false);
       setMessage(t('تم تحميل النسخة المنشورة.', 'Published content loaded.'));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Reload failed');
@@ -350,9 +370,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
       setLeads(items => items.map(l => l.id === id ? { ...l, status: next } : l));
       setMessage(t('تم تحديث حالة الطلب بنجاح.', 'Request status updated successfully.'));
     } catch (e) {
-      // In local demo mode, update local state directly
-      setLeads(items => items.map(l => l.id === id ? { ...l, status: next } : l));
-      setMessage(t('تم تحديث حالة الطلب (وضع العرض المحلي).', 'Request status updated (local preview mode).'));
+      setError(e instanceof Error ? e.message : t('تعذر تحديث حالة الطلب.', 'Could not update request status.'));
     } finally {
       setActionBusy('');
     }
@@ -405,40 +423,65 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  const visibleLeads = leads.filter(l => (status === 'all' || l.status === status) && [l.name, l.organization, l.email, l.phone, l.id].some(v => v.toLowerCase().includes(query.toLowerCase())));
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const visibleLeads = leads.filter(l => (
+    (status === 'all' || l.status === status) &&
+    [l.name, l.organization, l.email, l.phone, l.id, l.facility, l.branches, l.interest, l.plan, l.offer, l.message]
+      .some(value => value.toLocaleLowerCase().includes(normalizedQuery))
+  ));
   const current = tabs.find(v => v.id === tab)!;
 
   return (
-    <div className="cms" lang={locale} dir={en ? 'ltr' : 'rtl'}>
-      <aside className={`cms-sidebar ${mobileNav ? 'open' : ''}`}>
-        <a href="/" className="cms-brand">
-          <img src={draft.brand.logo} alt="" />
+    <div className="cms brand-admin" style={{ '--brand-primary': draft.brand.primary } as React.CSSProperties} lang={locale} dir={en ? 'ltr' : 'rtl'}>
+      <a className="cms-skip-link" href="#admin-main">{t('انتقل إلى المحتوى الرئيسي', 'Skip to main content')}</a>
+      <aside id="admin-sidebar" className={`cms-sidebar ${mobileNav ? 'open' : ''}`} aria-label={t('قائمة الإدارة', 'Administration menu')}>
+        <Link href="/" className="cms-brand">
+          <img src={draft.brand.logo} alt="" width={46} height={42} />
           <span dir="ltr">{draft.brand.name}<small>CONTROL CENTER</small></span>
-        </a>
-        <span className="cms-sidebar-label">{t('مساحة الإدارة', 'WORKSPACE')}</span>
+        </Link>
+        <span className="cms-sidebar-label">{t('لوحة التحكم', 'CONTROL CENTER')}</span>
+        <label className="cms-nav-search">
+          <Search size={16} aria-hidden="true" />
+          <input
+            ref={navSearchRef}
+            type="search"
+            value={navSearch}
+            onChange={event => setNavSearch(event.target.value)}
+            placeholder={t('ابحث في أقسام الإدارة', 'Search workspace')}
+            aria-label={t('ابحث في أقسام الإدارة', 'Search workspace')}
+          />
+          <kbd>Ctrl K</kbd>
+        </label>
         <nav aria-label={t('أقسام الإدارة', 'Administration navigation')}>
-          {tabs.map(item => (
-            <button
-              type="button"
-              key={item.id}
-              className={tab === item.id ? 'active' : ''}
-              aria-current={tab === item.id ? 'page' : undefined}
-              onClick={() => {
-                setTab(item.id);
-                setMobileNav(false);
-                setMessage('');
-              }}
-            >
-              <item.icon size={19} />
-              <span>{item.label}</span>
-              {item.id === 'reviews' && reviews.some(r => r.status === 'pending') && (
-                <i>{reviews.filter(r => r.status === 'pending').length}</i>
-              )}
-              {item.id === 'leads' && leads.some(l => l.status === 'new') && (
-                <i style={{ background: '#3b82f6', color: '#fff' }}>{leads.filter(l => l.status === 'new').length}</i>
-              )}
-            </button>
+          {filteredNavGroups.map(group => (
+            <div className="cms-nav-group" key={group.label}>
+              <span className="cms-nav-group-label">{group.label}</span>
+              {group.items.map(item => (
+                <button
+                  type="button"
+                  key={item.id}
+                  className={tab === item.id ? 'active' : ''}
+                  aria-current={tab === item.id ? 'page' : undefined}
+                  onClick={() => {
+                    setTab(item.id);
+                    setMobileNav(false);
+                    setNavSearch('');
+                    setMessage('');
+                  }}
+                >
+                  <item.icon size={19} />
+                  <span>{item.label}</span>
+                  {item.id === 'reviews' && !reviewError && reviews.some(r => r.status === 'pending') && (
+                    <i>{reviews.filter(r => r.status === 'pending').length}</i>
+                  )}
+                  {item.id === 'leads' && !leadError && leads.some(l => l.status === 'new') && (
+                    <i style={{ background: '#f5c748', color: '#173c34' }}>{leads.filter(l => l.status === 'new').length}</i>
+                  )}
+                </button>
+              ))}
+            </div>
           ))}
+          {filteredNavGroups.length === 0 && <p className="cms-nav-empty">{t('لا توجد أقسام تطابق بحثك.', 'No sections match your search.')}</p>}
         </nav>
         <div className="cms-sidebar-bottom" style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'stretch' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -470,19 +513,22 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
         </div>
       </aside>
 
-      {mobileNav && <button className="cms-nav-backdrop" onClick={() => setMobileNav(false)} aria-label={t('إغلاق القائمة', 'Close navigation')} />}
+      {mobileNav && (
+        <button type="button" className="cms-nav-backdrop" onClick={() => setMobileNav(false)} aria-label={t('إغلاق القائمة', 'Close navigation')} />
+      )}
 
       <div className="cms-workspace">
         <header className="cms-topbar">
-          <button type="button" className="cms-mobile-menu cms-icon" onClick={() => setMobileNav(!mobileNav)} aria-label="Menu">
+      <button type="button" className="cms-mobile-menu cms-icon" onClick={() => setMobileNav(!mobileNav)} aria-label={t('قائمة الإدارة', 'Administration menu')} aria-expanded={mobileNav} aria-controls="admin-sidebar">
             <Menu size={20} />
           </button>
           <div>
-            <small>VIARA / {t('الإدارة', 'ADMIN')}</small>
+            <small>{currentGroup?.label} / VIARA</small>
             <h1>{current.label}</h1>
+            <p className="cms-page-description">{current.description}</p>
           </div>
           <div className="cms-top-actions">
-            <button type="button" className="cms-icon" onClick={() => setLocale(en ? 'ar' : 'en')} aria-label={en ? 'العربية' : 'English'}>
+            <button type="button" className="cms-icon" onClick={() => setLocale(en ? 'ar' : 'en')} aria-label={en ? 'العربية' : 'English'} title={t('تغيير اللغة', 'Change language')}>
               <Globe2 size={18} />
             </button>
             <a href={en ? '/en' : '/'} target="_blank" rel="noopener noreferrer" className="cms-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
@@ -512,7 +558,16 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
           </button>
         </div>
 
-        <main className="cms-main">
+        <main className="cms-main" id="admin-main" tabIndex={-1}>
+          {demoDraft && (
+            <div className="cms-alert demo-warning" role="status">
+              <ShieldCheck size={18} />
+              <span>{t(
+                'مسودة تجريبية فقط: لا تُنشر قبل استبدال النصوص الإرشادية والتحقق من كل التفاصيل. الهوية وبيانات التواصل محفوظة كما هي، ولا تتضمن المسودة طلبات أو آراء عملاء.',
+                'Sample draft only: replace guidance text and verify every detail before publishing. Existing branding and contact details are preserved; no customer requests or reviews are included.'
+              )}</span>
+            </div>
+          )}
           {error && (
             <div className="cms-alert error" role="alert">
               <span>{error}</span>
@@ -524,6 +579,15 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
               <CheckCircle2 size={17} />
               <span>{message}</span>
             </div>
+          )}
+
+          {sectionLinks[tab] && (
+            <nav className="cms-section-jump" aria-label={t('انتقال إلى قسم', 'Jump to section')}>
+              <span>{t('انتقال سريع', 'JUMP TO')}</span>
+              {sectionLinks[tab].map(section => (
+                <a key={section.id} href={`#${section.id}`}>{section.label}</a>
+              ))}
+            </nav>
           )}
 
           <fieldset className="cms-form-area" disabled={saving}>
@@ -538,11 +602,47 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   <div className="cms-welcome-symbol"><Layers3 size={70} /></div>
                 </div>
 
+                <section className="cms-quick-actions" aria-label={t('إجراءات سريعة', 'Quick actions')}>
+                  <div className="cms-quick-actions-heading">
+                    <div><span>{t('ابدأ من هنا', 'GET STARTED')}</span><h2>{t('إجراءات سريعة', 'Quick actions')}</h2></div>
+                    <p>{t('انتقل مباشرة إلى أكثر المهام استخدامًا.', 'Jump straight to frequently used tasks.')}</p>
+                  </div>
+                  <div className="cms-quick-actions-grid">
+                    {[
+                      { id: 'content', icon: FileText, title: t('تحديث محتوى الموقع', 'Update website content'), detail: t('الواجهة والأسئلة الشائعة', 'Homepage and FAQs') },
+                      { id: 'products', icon: Layers3, title: t('مراجعة الأنظمة والباقات', 'Review systems & plans'), detail: t('النطاق والمزايا المعروضة', 'Published scope and features') },
+                      { id: 'leads', icon: Mail, title: t('متابعة طلبات العملاء', 'Follow up on requests'), detail: t('عرض الطلبات وحالاتها', 'View requests and statuses') },
+                      { id: 'settings', icon: Settings2, title: t('ضبط الهوية والتواصل', 'Set brand & contact'), detail: t('الشعار وبيانات الوصول', 'Logo and contact details') }
+                    ].map(action => (
+                      <button key={action.id} type="button" onClick={() => setTab(action.id)}>
+                        <span className="cms-quick-action-icon"><action.icon size={19} /></span>
+                        <span><b>{action.title}</b><small>{action.detail}</small></span>
+                        <ArrowUpLeft size={16} aria-hidden="true" />
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <Panel title={t('تهيئة بيانات تجريبية قابلة للتعديل', 'Prepare editable sample data')} description={t(
+                  'حمّل محتوى ثنائي اللغة للصفحات والأنظمة والباقات، مع مسودات مخفية للشركة وعرض توضيحي غير مفعّل. لن يُنشر شيء قبل مراجعتك واختيار «حفظ ونشر».',
+                  'Load bilingual page, system and package content, with hidden company drafts and an inactive sample offer. Nothing is published until you review it and choose Save & publish.'
+                )}>
+                  <div className="cms-demo-action">
+                    <p>{t(
+                      'تبقى بيانات الهوية والتواصل الحالية كما هي. لا تُضاف سجلات طلبات أو آراء تجريبية حتى لا تختلط ببيانات العملاء.',
+                      'Current branding and contact details are kept. No sample requests or reviews are added, so they cannot be confused with customer records.'
+                    )}</p>
+                    <button type="button" className="cms-secondary" onClick={loadDemoContent}>
+                      <Sparkles size={15} />{t('تحميل البيانات التجريبية', 'Load sample data')}
+                    </button>
+                  </div>
+                </Panel>
+
                 <div className="cms-metrics">
                   {[
-                    { label: t('طلبات العملاء', 'Customer requests'), value: leads.length, icon: Mail, go: 'leads' },
-                    { label: t('طلبات جديدة', 'New requests'), value: leads.filter(l => l.status === 'new').length, icon: FileText, go: 'leads' },
-                    { label: t('آراء قيد المراجعة', 'Reviews to moderate'), value: reviews.filter(r => r.status === 'pending').length, icon: MessageSquare, go: 'reviews' },
+                    { label: t('طلبات العملاء', 'Customer requests'), value: loading ? '—' : leadError ? t('خطأ', 'Error') : leads.length, icon: Mail, go: 'leads' },
+                    { label: t('طلبات جديدة', 'New requests'), value: loading ? '—' : leadError ? t('خطأ', 'Error') : leads.filter(l => l.status === 'new').length, icon: FileText, go: 'leads' },
+                    { label: t('آراء قيد المراجعة', 'Reviews to moderate'), value: loading ? '—' : reviewError ? t('خطأ', 'Error') : reviews.filter(r => r.status === 'pending').length, icon: MessageSquare, go: 'reviews' },
                     { label: t('عروض مفعلة', 'Enabled offers'), value: draft.offers.filter(o => o.active).length, icon: Gift, go: 'offers' }
                   ].map(m => (
                     <button type="button" key={m.label} onClick={() => setTab(m.go)}>
@@ -552,6 +652,35 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                     </button>
                   ))}
                 </div>
+
+                <Panel title={t('نسخ المحتوى السابقة', 'Previous content versions')} description={t(
+                  'يُحفظ آخر 20 نسخة عند كل عملية نشر. الاستعادة تُصدر النسخة المختارة كإصدار جديد ولا تمحو التاريخ.',
+                  'The last 20 publishes are kept. Restoring publishes the chosen version as a new version and never erases history.'
+                )}>
+                  {revisions.length === 0 ? (
+                    <p className="cms-revisions-empty">{t('لا توجد نسخ محفوظة بعد. تُنشئ النسخ الأولى تلقائيًا مع أول عملية نشر للمحتوى.', 'No saved versions yet. The first versions are created automatically when you publish content.')}</p>
+                  ) : (
+                    <ul className="cms-revisions">
+                      {revisions.map(revision => (
+                        <li key={revision.id}>
+                          <span>
+                            <b>{t('إصدار', 'Version')} {revision.version}</b>
+                            <small>{new Date(revision.createdAt).toLocaleString(en ? 'en-GB' : 'ar-EG', { dateStyle: 'medium', timeStyle: 'short' })}{revision.updatedBy ? ` · ${revision.updatedBy}` : ''}</small>
+                          </span>
+                          <button
+                            type="button"
+                            className="cms-secondary"
+                            disabled={actionBusy === revision.id || saving || revision.version === version}
+                            onClick={() => { void restoreFromRevision(revision); }}
+                          >
+                            {actionBusy === revision.id ? <LoaderCircle size={15} className="spin" /> : <History size={15} />}
+                            {revision.version === version ? t('النسخة الحالية', 'Current version') : t('استعادة', 'Restore')}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Panel>
 
                 <div className="cms-two-columns">
                   <Panel title={t('خطوات تجهيز الموقع', 'Make it yours')} description={t('المحتوى الافتراضي جاهز باللغتين ومُعرب بالكامل مع هوية VIARA.', 'The default bilingual content is pre-configured with your healthcare branding.')}>
@@ -576,9 +705,9 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   <Panel title={t('آخر طلبات العملاء', 'Recent customer requests')} description={t('صندوق الطلبات الواردة من موقع VIARA.', 'Inbox of inquiries submitted via the VIARA website.')}>
                     {loading ? (
                       <div className="cms-empty"><LoaderCircle className="spin" /></div>
-                    ) : listError ? (
+                    ) : leadError ? (
                       <div className="cms-empty">
-                        {t('تعذر تحميل البيانات.', 'Could not load records.')}
+                        {leadError}
                         <button type="button" className="cms-secondary" onClick={loadLists}>{t('إعادة المحاولة', 'Retry')}</button>
                       </div>
                     ) : leads.length ? (
@@ -598,10 +727,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                       <div className="cms-empty">
                         <Mail size={30} />
                         <p>{t('ستظهر طلبات العملاء هنا فور إرسالها من الموقع.', 'Customer requests will appear here when submitted.')}</p>
-                        <button type="button" className="cms-secondary" onClick={loadSampleLeads}>
-                          <Sparkles size={14} />
-                          {t('إضافة طلبات تجريبية للمعاينة', 'Load sample requests')}
-                        </button>
+                        <span hidden />
                       </div>
                     )}
                   </Panel>
@@ -611,7 +737,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
 
             {tab === 'content' && (
               <>
-                <Panel title={t('الواجهة الرئيسية', 'Hero content')} description={t('تعديل النصوص العربية والإنجليزية للواجهة الرئيسية.', 'Edit each language. Text appears in its corresponding version.')}>
+                <Panel id="cms-section-home" title={t('الواجهة الرئيسية', 'Hero content')} description={t('تعديل النصوص العربية والإنجليزية للواجهة الرئيسية.', 'Edit each language. Text appears in its corresponding version.')}>
                   <Pair label={t('الشارة العلوية', 'Eyebrow')} value={draft.hero.badge} onChange={v => mutate(n => { n.hero.badge = v; })} />
                   <Pair label={t('العنوان الرئيسي', 'Main heading')} value={draft.hero.title} onChange={v => mutate(n => { n.hero.title = v; })} />
                   <Pair label={t('الجزء الملون من العنوان', 'Highlighted heading')} value={draft.hero.accent} onChange={v => mutate(n => { n.hero.accent = v; })} />
@@ -619,13 +745,13 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   <Pair label={t('نص زر التواصل', 'Primary button text')} value={draft.hero.cta} onChange={v => mutate(n => { n.hero.cta = v; })} />
                 </Panel>
 
-                <Panel title={t('عن VIARA', 'About VIARA')}>
+                <Panel id="cms-section-about" title={t('عن VIARA', 'About VIARA')}>
                   <Toggle label={t('عرض قسم من نحن', 'Show About section')} checked={draft.sections.about} onChange={v => mutate(n => { n.sections.about = v; })} />
                   <Pair label={t('العنوان', 'Heading')} value={draft.about.title} onChange={v => mutate(n => { n.about.title = v; })} />
                   <Pair label={t('التعريف', 'Description')} value={draft.about.body} area onChange={v => mutate(n => { n.about.body = v; })} />
                 </Panel>
 
-                <Panel title={t('الأسئلة الشائعة', 'Frequently asked questions')}>
+                <Panel id="cms-section-faq" title={t('الأسئلة الشائعة', 'Frequently asked questions')}>
                   <div className="cms-accordion-list">
                     {draft.faqs.map((f, i) => (
                       <details key={f.id}>
@@ -648,14 +774,45 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                     <Plus size={15} />{t('إضافة سؤال', 'Add question')}
                   </button>
                 </Panel>
+
+                <Panel id="cms-section-journey" title={t('مراحل رحلة الرعاية', 'Care journey stages')} description={t('تتحكم هذه النصوص في صفحة الرحلات. روابط الأنظمة والأيقونات تظل ثابتة لضمان صحة التنقل.', 'These fields control the journey page copy. System links and icons stay fixed to preserve navigation.')}>
+                  <div className="cms-accordion-list">
+                    {draft.journeys.map((journey, i) => (
+                      <details key={i}>
+                        <summary>
+                          <span>{String(i + 1).padStart(2, '0')}</span>
+                          <b>{txt(journey.title, locale) || t('مرحلة جديدة', 'Journey stage')}</b>
+                          <ChevronDown size={16} />
+                        </summary>
+                        <div>
+                          <Pair label={t('عنوان المرحلة', 'Stage title')} value={journey.title} onChange={v => mutate(n => { n.journeys[i].title = v; })} />
+                          <Pair label={t('الوصف', 'Description')} value={journey.description} area onChange={v => mutate(n => { n.journeys[i].description = v; })} />
+                          <Pair label={t('الفرق المعنية', 'Teams involved')} value={journey.team} onChange={v => mutate(n => { n.journeys[i].team = v; })} />
+                          <Pair label={t('السؤال الإرشادي', 'Guiding question')} value={journey.question} area onChange={v => mutate(n => { n.journeys[i].question = v; })} />
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                </Panel>
+
+                <Panel id="cms-section-metrics" title={t('مؤشرات الصفحة الرئيسية', 'Homepage metrics')} description={t('تحقق من دقة كل رقم ومصدره قبل نشره؛ هذه مؤشرات تسويقية تظهر للزوار.', 'Verify every figure and its source before publishing; these are public-facing marketing claims.')}>
+                  {draft.metrics.map((metric, i) => (
+                    <div key={i}>
+                      <Pair label={t(`قيمة المؤشر ${i + 1}`, `Metric ${i + 1} value`)} value={metric.value} onChange={v => mutate(n => { n.metrics[i].value = v; })} />
+                      <Pair label={t('التسمية', 'Label')} value={metric.label} onChange={v => mutate(n => { n.metrics[i].label = v; })} />
+                    </div>
+                  ))}
+                </Panel>
               </>
             )}
 
+            {tab === 'company' && <Panel title={t('بيانات الشركة وصفحة عنا', 'Company information & About page')}><CompanyEditor value={draft.company} locale={locale} onChange={v => mutate(n => { n.company = v; })} /></Panel>}
+            {tab === 'copy' && <Panel title={t('نصوص جميع الصفحات', 'All page text')} description={t('ابحث باسم الصفحة أو النص. الأنظمة وبيانات الشركة والباقات لها حقول مستقلة.', 'Search by page or text. Systems, company information and packages have dedicated editors.')}><CopyEditor value={draft.copy} locale={locale} onChange={v => mutate(n => { n.copy = v; })} /></Panel>}
             {tab === 'products' && (
               <>
-                <Panel title={t('أنظمة VIARA', 'VIARA systems')} description={t('عدّل البيانات والمزايا والملاحظات لكل نظام.', 'Edit descriptions, features and notes. Keep at least one system enabled.')}>
+                <Panel id="cms-section-systems" title={t('حلول الأشعة والمراكز الطبية', 'Radiology & medical center systems')} description={t('إدارة محتوى RIS وPACS وCMS الظاهر للزوار.', 'Manage visitor-facing RIS, PACS and CMS content.')}>
                   <div className="cms-accordion-list">
-                    {draft.products.map((p, i) => (
+                    {draft.products.map((p, i) => marketingSystemIds.includes(p.id) && (
                       <details key={p.id} open={i === 0}>
                         <summary>
                           <span>{p.id}</span>
@@ -669,6 +826,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                           <Pair label={t('عنوان التفاصيل', 'Detail heading')} value={p.headline} onChange={v => mutate(n => { n.products[i].headline = v; })} />
                           <Pair label={t('الوصف', 'Description')} value={p.description} area onChange={v => mutate(n => { n.products[i].description = v; })} />
                           <FeatureEditor label={t('مزايا النظام', 'System features')} value={p.features} onChange={v => mutate(n => { n.products[i].features = v; })} />
+                          <label className="cms-company-field"><span>{t('صورة النظام — اختياري', 'System image — optional')}</span><input dir="ltr" value={p.image} maxLength={600} onChange={e => mutate(n => { n.products[i].image = e.target.value; })} /></label>
                           <Pair label={t('ملاحظة النطاق', 'Scope note')} value={p.note} onChange={v => mutate(n => { n.products[i].note = v; })} />
                         </div>
                       </details>
@@ -676,7 +834,11 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   </div>
                 </Panel>
 
-                <Panel title={t('الباقات والأسعار', 'Packages & pricing')} description={t('إدارة باقات الاشتراك والمزايا لكل باقة.', 'Use approved prices or “Tailored quote”. Keep at least one package enabled.')}>
+                <Panel id="cms-section-facilities" title={t('مجالات الأشعة والمراكز الطبية', 'Radiology & medical center areas')}>
+                  {draft.catalog.categories.map((c, i) => marketingCategories.some(item => item.id === c.id) && <Pair key={c.id} label={c.id} value={c.name} onChange={v => mutate(n => { n.catalog.categories[i].name = v; })} />)}
+                  {draft.catalog.facilities.map((f, i) => marketingFacilityProfiles.some(item => item.id === f.id) && <details key={f.id} className="cms-copy-entry"><summary>{txt(f.name, locale)}</summary><Pair label={t('اسم نوع المركز', 'Center type')} value={f.name} onChange={v => mutate(n => { n.catalog.facilities[i].name = v; })} /><div className="cms-catalog-systems">{draft.products.filter(p => marketingSystemIds.includes(p.id)).map(p => <label key={p.id}><input type="checkbox" checked={f.systems.includes(p.id)} disabled={!f.systems.includes(p.id) && f.systems.filter(id => marketingSystemIds.includes(id)).length >= marketingSystemIds.length} onChange={e => mutate(n => { n.catalog.facilities[i].systems = e.target.checked ? [...f.systems, p.id] : f.systems.filter(id => id !== p.id); })} />{p.id}</label>)}</div></details>)}
+                </Panel>
+                <Panel id="cms-section-plans" title={t('الباقات والأسعار', 'Packages & pricing')} description={t('حدّث النطاق التجاري والأسعار المعتمدة فقط. الباقات لا تمنح صلاحيات RBAC؛ حدود الترخيص التقنية موضحة في صفحة التخطيط.', 'Edit commercial scope and approved prices only. Packages do not grant RBAC permissions; technical license limits are documented on the planning page.')}>
                   <div className="cms-accordion-list">
                     {draft.plans.map((p, i) => (
                       <details key={p.id}>
@@ -763,9 +925,9 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
 
             {tab === 'settings' && (
               <>
-                <Panel title={t('الهوية البصرية', 'Brand identity')}>
+                <Panel id="cms-section-brand" title={t('الهوية البصرية', 'Brand identity')}>
                   <div className="cms-logo-editor">
-                    <div><img src={draft.brand.logo} alt={draft.brand.name} /></div>
+                    <div><img src={draft.brand.logo} alt={draft.brand.name} width={96} height={84} loading="lazy" /></div>
                     <label className="cms-secondary">
                       {uploading ? <LoaderCircle size={16} className="spin" /> : <Upload size={16} />}
                       {t('رفع شعار', 'Upload logo')}
@@ -790,11 +952,11 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   <Pair label={t('الجملة التعريفية', 'Brand tagline')} value={draft.brand.tagline} onChange={v => mutate(n => { n.brand.tagline = v; })} />
                 </Panel>
 
-                <Panel title={t('صور الصفحة', 'Page photography')} description={t('صور توضيحية قابلة للاستبدال بصور منشأتك المعتمدة.', 'Replace these illustrative scenes with your approved photography.')}>
+                <Panel id="cms-section-imagery" title={t('صور الصفحة', 'Page photography')} description={t('صور توضيحية قابلة للاستبدال بصور منشأتك المعتمدة.', 'Replace these illustrative scenes with your approved photography.')}>
                   <div className="cms-scene-editors">
                     {(['hero', 'care'] as const).map(key => (
                       <div className="cms-scene-editor" key={key}>
-                        <img src={draft.imagery[key]} alt={key === 'hero' ? t('الصورة الرئيسية', 'Hero image') : t('صورة الفريق', 'Team image')} />
+                        <img src={draft.imagery[key]} alt={key === 'hero' ? t('الصورة الرئيسية', 'Hero image') : t('صورة الفريق', 'Team image')} width={640} height={427} loading="lazy" />
                         <label className="cms-field">
                           {key === 'hero' ? t('الصورة الرئيسية', 'Hero photography') : t('صورة قسم من نحن', 'About section photography')}
                           <input dir="ltr" value={draft.imagery[key]} maxLength={600} onChange={e => mutate(n => { n.imagery[key] = e.target.value; })} />
@@ -809,7 +971,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   </div>
                 </Panel>
 
-                <Panel title={t('بيانات التواصل', 'Contact information')} description={t('بيانات التواصل المعروضة للزوار على الموقع.', 'Only configured channels are displayed.')}>
+                <Panel id="cms-section-contact" title={t('بيانات التواصل', 'Contact information')} description={t('بيانات التواصل المعروضة للزوار على الموقع.', 'Only configured channels are displayed.')}>
                   <div className="cms-grid-fields">
                     {([['email', t('البريد الإلكتروني', 'Email')], ['phone', t('الهاتف', 'Phone')], ['whatsapp', t('واتساب — رمز الدولة والرقم', 'WhatsApp — country code & number')]] as const).map(([key, label]) => (
                       <label className="cms-field" key={key}>{label}
@@ -819,7 +981,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   </div>
                   <Pair label={t('العنوان — اختياري', 'Address — optional')} value={draft.contact.address} area onChange={v => mutate(n => { n.contact.address = v; })} />
                   <div className="cms-grid-fields">
-                    {(['facebook', 'instagram', 'linkedin', 'youtube', 'x'] as const).map(key => (
+                    {(['facebook', 'instagram', 'linkedin', 'youtube', 'x', 'telegram', 'snapchat', 'github'] as const).map(key => (
                       <label className="cms-field" key={key}>{key.toUpperCase()}
                         <input type="url" dir="ltr" value={draft.contact[key]} placeholder="https://…" maxLength={600} onChange={e => mutate(n => { n.contact[key] = e.target.value; })} />
                       </label>
@@ -827,7 +989,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   </div>
                 </Panel>
 
-                <Panel title={t('بيانات محركات البحث', 'Search engine metadata')}>
+                <Panel id="cms-section-seo" title={t('بيانات محركات البحث', 'Search engine metadata')}>
                   <Pair label={t('عنوان الموقع', 'Page title')} value={draft.seo.title} onChange={v => mutate(n => { n.seo.title = v; })} />
                   <Pair label={t('وصف الموقع', 'Page description')} value={draft.seo.description} area onChange={v => mutate(n => { n.seo.description = v; })} />
                 </Panel>
@@ -836,7 +998,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
 
             {tab === 'reviews' && (
               <>
-                <Panel title={t('آراء العملاء ومراجعتها', 'Customer reviews & moderation')} description={t('النشر والإخفاء يحدثان فورًا. الآراء المنشورة فقط تظهر للزوار.', 'Publishing and hiding take effect immediately. Only approved reviews appear to visitors.')}>
+                <Panel id="cms-section-moderation" title={t('آراء العملاء ومراجعتها', 'Customer reviews & moderation')} description={t('النشر والإخفاء يحدثان فورًا. الآراء المنشورة فقط تظهر للزوار.', 'Publishing and hiding take effect immediately. Only approved reviews appear to visitors.')}>
                   <Toggle label={t('عرض قسم آراء العملاء', 'Show reviews section')} checked={draft.sections.reviews} onChange={v => mutate(n => { n.sections.reviews = v; })} />
                   <div className="cms-toolbar">
                     <span>{reviews.length} {t('رأي ضمن السجل', 'reviews in record')}</span>
@@ -844,25 +1006,21 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                       <RefreshCw size={14} />{t('تحديث', 'Refresh')}
                     </button>
                     {!reviews.length && (
-                      <button type="button" className="cms-secondary" onClick={loadSampleReviews}>
-                        <Sparkles size={14} />{t('تحميل عينة آراء للمعاينة', 'Load demo reviews')}
-                      </button>
+                      <span hidden />
                     )}
                   </div>
                   {loading ? (
                     <div className="cms-empty"><LoaderCircle className="spin" /></div>
-                  ) : listError ? (
+                  ) : reviewError ? (
                     <div className="cms-empty">
-                      {t('تعذر تحميل الآراء. أعد المحاولة.', 'Could not load reviews. Retry.')}
+                      {reviewError}
                       <button type="button" className="cms-secondary" onClick={loadLists}>{t('إعادة المحاولة', 'Retry')}</button>
                     </div>
                   ) : !reviews.length ? (
                     <div className="cms-empty">
                       <MessageSquare size={32} />
                       <p>{t('لا توجد آراء بعد. ستظهر التقييمات الجديدة هنا للمراجعة.', 'No reviews yet. New submissions will appear here for moderation.')}</p>
-                      <button type="button" className="cms-secondary" onClick={loadSampleReviews}>
-                        <Sparkles size={14} />{t('إضافة آراء تجريبية للمراجعة', 'Load sample reviews')}
-                      </button>
+                      <span hidden />
                     </div>
                   ) : (
                     <div className="cms-reviews">
@@ -877,7 +1035,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                           <blockquote lang={r.locale} dir={r.locale === 'ar' ? 'rtl' : 'ltr'}>{r.quote}</blockquote>
                           <b>{r.name}</b>
                           <small>{[r.role, r.organization].filter(Boolean).join(' · ')}</small>
-                          <label className="cms-field">{t('النظام المرتبط بالرأي', 'System reviewed')}<select value={r.systemId || ''} disabled={!!actionBusy} onChange={event => reviewAction(r, r.status, event.target.value)}><option value="">{t('رأي عام عن VIARA', 'General VIARA review')}</option>{healthcareSystems.map(system => <option value={system.id} key={system.id}>{txt(system.name, locale)}</option>)}<option value="EMR">EMR</option><option value="AI">VIARA AI</option></select></label>
+                          <label className="cms-field">{t('النظام المرتبط بالرأي', 'System reviewed')}<select value={r.systemId || ''} disabled={!!actionBusy} onChange={event => reviewAction(r, r.status, event.target.value)}><option value="">{t('رأي عام عن VIARA', 'General VIARA review')}</option>{healthcareSystems.filter(system => marketingSystemIds.includes(system.id)).map(system => <option value={system.id} key={system.id}>{txt(system.name, locale)}</option>)}</select></label>
                           <div className="cms-review-actions">
                             <button type="button" className="cms-secondary" disabled={!!actionBusy || r.status === 'approved'} onClick={() => reviewAction(r, 'approved')}>
                               <CheckCircle2 size={14} />{t('نشر الرأي', 'Publish')}
@@ -895,7 +1053,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   )}
                 </Panel>
 
-                <Panel title={t('إضافة رأي بموافقة العميل', 'Add a review with customer consent')} description={t('أدخل تقييمًا معتمدًا ومصرحًا بنشره من العميل.', 'Enter an authentic review with customer permission to publish.')}>
+                <Panel id="cms-section-add-review" title={t('إضافة رأي بموافقة العميل', 'Add a review with customer consent')} description={t('أدخل تقييمًا معتمدًا ومصرحًا بنشره من العميل.', 'Enter an authentic review with customer permission to publish.')}>
                   <form onSubmit={addReview}>
                     <div className="cms-grid-fields">
                       <label className="cms-field">{t('اسم العميل', 'Customer name')} *
@@ -916,8 +1074,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                       <label className="cms-field">{t('النظام المرتبط بالرأي', 'System reviewed')}
                         <select value={manual.systemId} onChange={event => setManual({ ...manual, systemId: event.target.value })}>
                           <option value="">{t('رأي عام عن VIARA', 'General VIARA review')}</option>
-                          {healthcareSystems.map(system => <option value={system.id} key={system.id}>{txt(system.name, locale)}</option>)}
-                          <option value="EMR">EMR</option><option value="AI">VIARA AI</option>
+                          {healthcareSystems.filter(system => marketingSystemIds.includes(system.id)).map(system => <option value={system.id} key={system.id}>{txt(system.name, locale)}</option>)}
                         </select>
                       </label>
                       <label className="cms-field">{t('التقييم', 'Rating')}
@@ -955,24 +1112,27 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                       <option value={id} key={id}>{label[locale]}</option>
                     ))}
                   </select>
+                  <span role="status" aria-live="polite">
+                    {t(`عرض ${visibleLeads.length} من ${leads.length}`, `Showing ${visibleLeads.length} of ${leads.length}`)}
+                  </span>
+                  {(normalizedQuery || status !== 'all') && (
+                    <button type="button" className="cms-secondary" onClick={() => { setQuery(''); setStatus('all'); }}>
+                      {t('مسح التصفية', 'Clear filters')}
+                    </button>
+                  )}
                   <button type="button" className="cms-secondary" onClick={loadLists} disabled={loading}>
                     <RefreshCw size={14} />{t('تحديث', 'Refresh')}
                   </button>
                   <button type="button" className="cms-secondary" onClick={exportLeads} disabled={!leads.length}>
                     <Download size={14} />CSV
                   </button>
-                  {!leads.length && (
-                    <button type="button" className="cms-secondary" onClick={loadSampleLeads}>
-                      <Sparkles size={14} />{t('تحميل عينة طلبات للمعاينة', 'Load demo requests')}
-                    </button>
-                  )}
                 </div>
 
                 {loading ? (
                   <div className="cms-empty"><LoaderCircle className="spin" /></div>
-                ) : listError ? (
+                ) : leadError ? (
                   <div className="cms-empty">
-                    {t('تعذر تحميل الطلبات. أعد المحاولة.', 'Could not load requests. Retry.')}
+                    {leadError}
                     <button type="button" className="cms-secondary" onClick={loadLists}>{t('إعادة المحاولة', 'Retry')}</button>
                   </div>
                 ) : visibleLeads.length ? (
@@ -1054,9 +1214,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   <div className="cms-empty">
                     <Mail size={32} />
                     <p>{t('لا توجد طلبات تطابق معايير البحث.', 'No matching requests found.')}</p>
-                    <button type="button" className="cms-secondary" onClick={loadSampleLeads}>
-                      <Sparkles size={14} />{t('إضافة طلبات تجريبية للمعاينة', 'Load demo requests')}
-                    </button>
+                    <span hidden />
                   </div>
                 )}
               </Panel>

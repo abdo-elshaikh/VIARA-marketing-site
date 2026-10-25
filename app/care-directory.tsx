@@ -1,4 +1,5 @@
 'use client';
+
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -16,14 +17,16 @@ import {
   SlidersHorizontal,
   Users,
   Sparkles,
-  FileText,
+  LayoutGrid,
+  List,
+  Columns3,
   ShieldCheck,
-  Monitor,
+  Eye,
+  CheckCircle2,
+  Activity,
   HardDrive,
-  Calendar,
-  Receipt,
-  QrCode,
-  Smartphone,
+  Cpu,
+  MonitorCheck,
 } from 'lucide-react';
 import { careCatalog, txt, type Locale, type SiteContent } from '../lib/site-content';
 import { marketingSystemIds, normalizeCatalogSearch } from '../lib/healthcare-catalog.mjs';
@@ -33,128 +36,125 @@ import { systemCaptures } from '../lib/system-captures';
 import CareFrame from './care-frame';
 import SystemComparison from './system-comparison';
 import BrandPageHero from './brand-page-hero';
-import SystemSynergyMap from './system-synergy-map';
 import './systems-directory.css';
 import './systems-usability.css';
 import './systems-enhanced.css';
 
 const MAX_SCOPE_SYSTEMS = 6;
 
-const techSpecs: Record<string, { label: { ar: string; en: string }; icon: typeof ScanLine }[]> = {
-  RIS: [
-    { label: { ar: 'تكامل DICOM MWL', en: 'DICOM MWL Integration' }, icon: ScanLine },
-    { label: { ar: 'تقارير وفحوصات الأشعة', en: 'Radiology Reporting' }, icon: FileText },
-    { label: { ar: 'ربط الفوترة والتعاقدات', en: 'Billing & Payer Sync' }, icon: ShieldCheck },
-  ],
-  PACS: [
-    { label: { ar: 'تكاملات DICOM: MWL وC-STORE وC-FIND', en: 'DICOM MWL, C-STORE & C-FIND Integration' }, icon: Layers3 },
-    { label: { ar: 'عارض ويب تشخيصي متقدم', en: 'Diagnostic Web Viewer' }, icon: Monitor },
-    { label: { ar: 'أرشفة سحابية / محلية مشفرة', en: 'Hybrid Encrypted Archive' }, icon: HardDrive },
-  ],
-  CMS: [
-    { label: { ar: 'ملف طبي إلكتروني EMR', en: 'Clinical EMR Records' }, icon: Building2 },
-    { label: { ar: 'جدولة العيادات والمواعيد', en: 'Multi-clinic Scheduling' }, icon: Calendar },
-    { label: { ar: 'فواتير ودفع إلكتروني', en: 'Insurance & POS Billing' }, icon: Receipt },
-  ],
-  PORTAL: [
-    { label: { ar: 'بوابات المرضى والأطباء', en: 'Patient & Doctor Portals' }, icon: Users },
-    { label: { ar: 'تحقق إلكتروني فوري بالـ QR', en: 'Instant QR Verification' }, icon: QrCode },
-    { label: { ar: 'عرض الصور والتقارير بالموبايل', en: 'Mobile DICOM & Reports' }, icon: Smartphone },
-  ],
-  AI: [
-    { label: { ar: 'فرز الحالات حسب الأولوية', en: 'Priority-based case triage' }, icon: Sparkles },
-    { label: { ar: 'مسودات تقارير بمراجعة الطبيب', en: 'Radiologist-reviewed report drafts' }, icon: FileText },
-    { label: { ar: 'مساندة القرار وليست بديلاً عن الطبيب', en: 'Decision support, not a replacement for clinicians' }, icon: ShieldCheck },
-  ],
+// Bespoke 3D Brand Visuals matching each system with VIARA Emerald & Gold Palette
+const systemBrandVisuals: Record<
+  string,
+  {
+    image: string;
+    alt: { ar: string; en: string };
+    tag: { ar: string; en: string };
+    subtitle: { ar: string; en: string };
+  }
+> = {
+  RIS: {
+    image: '/assets/systems/viara-ris-pro.jpg',
+    alt: {
+      ar: 'بيئة عمل نظام إدارة مراكز الأشعة RIS واستقبال المراجعين وأجهزة التصوير بهوية فيارا الزمردية',
+      en: 'VIARA RIS Radiology Center Suite with modality scheduling and patient reception in signature emerald brand',
+    },
+    tag: { ar: 'بيئة مراكز الأشعة RIS', en: 'Radiology Suite 3D' },
+    subtitle: { ar: 'استقبال وجدولة فحوصات الموداليتي وقوائم العمل MWL', en: 'Reception, modality scheduling and MWL worklists' },
+  },
+  PACS: {
+    image: '/assets/systems/viara-pacs-pro.jpg',
+    alt: {
+      ar: 'محطة تشخيص وأرشفة الصور الطبية PACS وعارض DICOM ثلاثي الأبعاد بهوية فيارا الزمردية والذهبية',
+      en: 'VIARA PACS Diagnostic Reading Suite with calibrated DICOM monitors in emerald and gold styling',
+    },
+    tag: { ar: 'محطة التشخيص والأرشفة PACS', en: 'Diagnostic Reading Room 3D' },
+    subtitle: { ar: 'عارض ويب تشخيصي متقدم وأرشفة DICOM هجينة', en: 'Zero-footprint web viewer & hybrid DICOM archive' },
+  },
+  CMS: {
+    image: '/assets/systems/viara-cms-pro.jpg',
+    alt: {
+      ar: 'مركز استقبال وعيادات المجمع الطبي CMS والملف الطبي الموحد بالرخام والزمرد والذهب',
+      en: 'VIARA CMS Luxury Medical Center & Clinics Reception with electronic health records in emerald and champagne gold',
+    },
+    tag: { ar: 'إدارة المراكز والعيادات CMS', en: 'Medical Center & Clinics 3D' },
+    subtitle: { ar: 'بهو الاستقبال وإدارة مواعيد العيادات والملفات الطبية', en: 'Luxury reception and clinic appointment scheduling' },
+  },
+  AI: {
+    image: '/assets/systems/hero-20261025/ai.webp',
+    alt: {
+      ar: 'منظومة فرز أشعة الصدر والتشخيص بالذكاء الاصطناعي السريري بهوية فيارا',
+      en: 'VIARA Clinical AI Radiology Triage and acute findings detection in signature brand styling',
+    },
+    tag: { ar: 'ذكاء الأشعة الاصطناعي AI', en: 'Clinical AI Triage 3D' },
+    subtitle: { ar: 'فرز دراسات الأشعة واكتشاف الحالات الحرجة ومسودات التقارير', en: 'Automated scan triage, acute flags, and report drafts' },
+  },
+  PORTAL: {
+    image: '/assets/systems/hero-20261025/portal.webp',
+    alt: {
+      ar: 'بوابات المرضى والأطباء المحيلين الرقمية عبر الهواتف والتابلت بهوية فيارا',
+      en: 'VIARA Patient & Referring Physician Connected Portals on mobile and tablet devices',
+    },
+    tag: { ar: 'بوابات المرضى والأطباء PORTAL', en: 'Patient & Doctor Portals 3D' },
+    subtitle: { ar: 'وصول رقمي موحد للمرضى والأطباء المحيلين وتحقق فوري بالـ QR', en: 'Connected mobile access with instant QR report verification' },
+  },
 };
 
-function getSynergyInsight(selectedIds: string[], locale: Locale) {
-  const en = locale === 'en';
-  if (selectedIds.length === 0) return null;
-  const hasRis = selectedIds.includes('RIS');
-  const hasPacs = selectedIds.includes('PACS');
-  const hasCms = selectedIds.includes('CMS');
-  const hasPortal = selectedIds.includes('PORTAL');
-
-  if (hasRis && hasPacs && hasCms && hasPortal) {
-    return {
-      text: en
-        ? 'Comprehensive Healthcare Ecosystem: Full coverage from clinic bookings to diagnostic imaging and digital patient delivery.'
-        : 'المنظومة الرقمية الشاملة: تغطية متكاملة تبدأ من العيادات وحجز المواعيد حتى الفحص التشخيصي والتسليم الرقمي للمراجع.',
-      recommended: null,
-    };
-  }
-  if (hasRis && hasPacs && hasPortal) {
-    return {
-      text: en
-        ? 'Complete Digital Radiology Workflow: Modality worklists, DICOM archiving and direct report/image access.'
-        : 'منظومة الأشعة الرقمية المتكاملة: جدولة الأجهزة، الأرشفة التشخيصية وتسليم التقارير والصور للمراجع والطبيب.',
-      recommended: !hasCms ? 'CMS' : null,
-    };
-  }
-  if (hasRis && hasPacs) {
-    return {
-      text: en
-        ? 'Full Radiology & Archive Pairing: Worklists matched directly with DICOM studies and diagnostic viewing.'
-        : 'تناغم الأشعة والأرشفة: ربط مباشر بين قوائم عمل الفحص ودراسات DICOM والعارض التشخيصي.',
-      recommended: !hasPortal ? 'PORTAL' : null,
-    };
-  }
-  if (hasCms && hasPortal) {
-    return {
-      text: en
-        ? 'Modern Clinic Operations: Smooth clinic appointments and verified digital patient results.'
-        : 'تشغيل متقدم للمركز: إدارة العيادات والمواعيد مع تسليم النتائج الطبية رقمياً.',
-      recommended: !hasRis ? 'RIS' : null,
-    };
-  }
-  if (hasRis) {
-    return {
-      text: en
-        ? 'Radiology Suite selected: Best paired with PACS for seamless DICOM study storage and viewing.'
-        : 'نظام الأشعة RIS: يُنصح بدمجه مع PACS لربط الفحوصات مباشرة بأرشفة وعارض الصور الطبية.',
-      recommended: 'PACS',
-    };
-  }
-  if (hasPacs) {
-    return {
-      text: en
-        ? 'PACS Archive selected: Pair with RIS to generate Modality Worklists (MWL) for imaging devices.'
-        : 'أرشفة صور PACS: يُنصح بدمجها مع RIS لربط الأجهزة التشخيصية بقوائم العمل التلقائية (MWL).',
-      recommended: 'RIS',
-    };
-  }
-  if (hasCms) {
-    return {
-      text: en
-        ? 'Medical Center CMS selected: Pair with PORTAL to let patients and doctors access results online.'
-        : 'إدارة المركز CMS: يُنصح بدمجه مع PORTAL لإتاحة حجز المواعيد وتسليم النتائج للمراجعين إلكترونياً.',
-      recommended: 'PORTAL',
-    };
-  }
-  if (hasPortal) {
-    return {
-      text: en
-        ? 'Digital Portals selected: Pair with RIS or CMS to connect with your center’s actual clinical records.'
-        : 'بوابات PORTAL: يُنصح بربطها مع RIS أو CMS للتكامل مع المواعيد وسجلات الفحوصات الفعلية.',
-      recommended: 'RIS',
-    };
-  }
-  return null;
-}
+const systemSpecs: Record<string, { ar: string[]; en: string[] }> = {
+  RIS: {
+    ar: ['قوائم عمل الأجهزة MWL', 'إدارة مواعيد وغرف الفحص', 'قوالب التقارير المنظمة', 'محرك ربط بروتوكول HL7'],
+    en: ['Modality Worklist (MWL)', 'Exam & Room Scheduling', 'Structured Report Templates', 'HL7 Brokering Engine'],
+  },
+  PACS: {
+    ar: ['أرشفة DICOM 3.0 هجينة', 'عارض تشخيصي بدون تثبيت Web Viewer', 'إعادة بناء ثلاثي الأبعاد MPR & 3D', 'مطابقة الفحوصات السابقة'],
+    en: ['DICOM 3.0 Hybrid Archive', 'Zero-Footprint Diagnostic Viewer', 'Multi-Planar 3D MPR', 'Prior Study Matching'],
+  },
+  CMS: {
+    ar: ['الملف الطبي الإلكتروني EMR', 'جدولة العيادات والأطباء', 'الفوترة والمطالبات التأمينية', 'إغلاق ورديات الخزينة'],
+    en: ['Electronic Medical Records (EMR)', 'Clinic & Doctor Scheduling', 'Insurance Claims & Billing', 'Cashier Shift Reconciliation'],
+  },
+  AI: {
+    ar: ['فرز دراسات صدر البالغين CXR', 'تصنيف الحالات الحرجة أولاً', 'مسودات تقارير شعاعية مؤتمتة', 'مراجعة واعتماد الاستشاري'],
+    en: ['Adult CXR Case Triage', 'Acute Finding Prioritization', 'Automated Report Drafting', 'Radiologist Clinical Sign-off'],
+  },
+  PORTAL: {
+    ar: ['بوابة المريض الرقمية', 'بوابة دخول الأطباء المحيلين', 'التحقق برمز الاستجابة السريعة QR', 'تحميل الصور والتقارير المعتمدة'],
+    en: ['Patient Health Portal', 'Referring Physician Hub', 'Instant QR Report Verification', 'Direct DICOM & PDF Download'],
+  },
+};
 
 export default function CareDirectory({ content, locale }: { content: SiteContent; locale: Locale }) {
-  const en = locale === 'en', home = en ? '/en' : '/', t = useSiteText(locale, content);
-  const Arrow = en ? ArrowUpRight : ArrowUpLeft, Forward = en ? ArrowRight : ArrowLeft;
-  const icons: Record<string, typeof ScanLine> = { RIS: ScanLine, PACS: Layers3, AI: Sparkles, CMS: Building2, PORTAL: Users };
-  const allowed = careCatalog(content).sort((a, b) => marketingSystemIds.indexOf(a.id) - marketingSystemIds.indexOf(b.id));
-  const categories = content.catalog.categories.filter(category => allowed.some(system => system.category === category.id));
-  const profiles = content.catalog.facilities.filter(profile => ['radiology', 'medical'].includes(profile.id)).map(profile => ({ ...profile, systems: profile.systems.filter(id => allowed.some(system => system.id === id)) })).filter(profile => profile.systems.length);
+  const en = locale === 'en';
+  const home = en ? '/en' : '/';
+  const t = useSiteText(locale, content);
+  const Arrow = en ? ArrowUpRight : ArrowUpLeft;
+  const Forward = en ? ArrowRight : ArrowLeft;
 
-  const [query, setQuery] = useState(''), [area, setArea] = useState('all');
-  const [selected, setSelected] = useState<string[]>([]), [activeProfile, setActiveProfile] = useState<string | null>(null), [ready, setReady] = useState(false);
+  const icons: Record<string, typeof ScanLine> = {
+    RIS: ScanLine,
+    PACS: Layers3,
+    AI: Sparkles,
+    CMS: Building2,
+    PORTAL: Users,
+  };
+
+  const allowed = careCatalog(content).sort(
+    (a, b) => marketingSystemIds.indexOf(a.id) - marketingSystemIds.indexOf(b.id)
+  );
+  const categories = content.catalog.categories.filter(category =>
+    allowed.some(system => system.category === category.id)
+  );
+
+  const [query, setQuery] = useState('');
+  const [area, setArea] = useState('all');
+  const [selected, setSelected] = useState<string[]>([]);
+  const [ready, setReady] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
   const [activeCaptures, setActiveCaptures] = useState<Record<string, number>>({});
+  const [cardVisualModes, setCardVisualModes] = useState<Record<string, 'brand' | 'ui'>>({});
+
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const comparisonDialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -164,8 +164,23 @@ export default function CareDirectory({ content, locale }: { content: SiteConten
       if (content.catalog.categories.some(category => category.id === requested)) setArea(requested!);
       try {
         const saved = JSON.parse(sessionStorage.getItem('viara-system-selection') || '[]');
-        if (Array.isArray(saved)) setSelected([...new Set(saved.filter((id): id is string => typeof id === 'string' && marketingSystemIds.includes(id) && content.products.some(product => product.id === id && product.enabled)))].slice(0, MAX_SCOPE_SYSTEMS));
-      } catch { /* Scope selection is optional when browser storage is unavailable. */ }
+        if (Array.isArray(saved)) {
+          setSelected(
+            [
+              ...new Set(
+                saved.filter(
+                  (id): id is string =>
+                    typeof id === 'string' &&
+                    marketingSystemIds.includes(id) &&
+                    content.products.some(product => product.id === id && product.enabled)
+                )
+              ),
+            ].slice(0, MAX_SCOPE_SYSTEMS)
+          );
+        }
+      } catch {
+        /* Scope selection is optional when browser storage is unavailable. */
+      }
       setReady(true);
     });
     return () => cancelAnimationFrame(frame);
@@ -174,20 +189,30 @@ export default function CareDirectory({ content, locale }: { content: SiteConten
   useEffect(() => {
     if (!ready) return;
     const url = new URL(location.href);
-    if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
-    if (area !== 'all') url.searchParams.set('area', area); else url.searchParams.delete('area');
+    if (query) url.searchParams.set('q', query);
+    else url.searchParams.delete('q');
+    if (area !== 'all') url.searchParams.set('area', area);
+    else url.searchParams.delete('area');
     history.replaceState(null, '', url);
   }, [query, area, ready]);
 
   useEffect(() => {
     if (!ready) return;
-    try { sessionStorage.setItem('viara-system-selection', JSON.stringify(selected)); } catch { /* Selection still works without storage. */ }
+    try {
+      sessionStorage.setItem('viara-system-selection', JSON.stringify(selected));
+    } catch {
+      /* Selection still works without storage. */
+    }
   }, [selected, ready]);
 
   // Keyboard shortcut '/' to focus search input
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+      if (
+        e.key === '/' &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
@@ -196,37 +221,60 @@ export default function CareDirectory({ content, locale }: { content: SiteConten
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  const results = allowed.filter(system => (area === 'all' || system.category === area) && normalizeCatalogSearch(`${system.id} ${system.name.ar} ${system.name.en} ${system.description.ar} ${system.description.en}`).includes(normalizeCatalogSearch(query)));
-
-  const toggle = (id: string) => {
-    setActiveProfile(null);
-    setSelected(ids => ids.includes(id) ? ids.filter(item => item !== id) : (ids.length >= MAX_SCOPE_SYSTEMS ? ids : [...ids, id]));
-  };
-
-  const reset = () => { setQuery(''); setArea('all'); };
-
-  const handleSynergySelect = (id: string) => {
-    const el = document.getElementById(`system-${id}`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.classList.add('is-highlighted');
-      setTimeout(() => el.classList.remove('is-highlighted'), 2000);
+  // Sync comparison dialog
+  useEffect(() => {
+    if (showComparisonModal) {
+      comparisonDialogRef.current?.showModal();
+    } else {
+      comparisonDialogRef.current?.close();
     }
+  }, [showComparisonModal]);
+
+  const results = allowed.filter(
+    system =>
+      (area === 'all' || system.category === area) &&
+      normalizeCatalogSearch(
+        `${system.id} ${system.name.ar} ${system.name.en} ${system.description.ar} ${system.description.en}`
+      ).includes(normalizeCatalogSearch(query))
+  );
+
+  const toggle = (id: string) =>
+    setSelected(ids =>
+      ids.includes(id)
+        ? ids.filter(item => item !== id)
+        : ids.length >= MAX_SCOPE_SYSTEMS
+        ? ids
+        : [...ids, id]
+    );
+
+  const reset = () => {
+    setQuery('');
+    setArea('all');
   };
 
   const roles: Record<string, [string, string]> = {
-    RIS: ['من الحجز إلى التقرير', 'From booking to reporting'],
-    PACS: ['الصور في سياق أوضح', 'Imaging in clearer context'],
-    CMS: ['يوم عمل منظم لمركزك', 'A more organized center day'],
-    PORTAL: ['بوابات تفاعلية للمرضى والأطباء', 'Interactive patient and doctor portals'],
+    RIS: ['من الحجز إلى التقرير والفوترة', 'From booking to reporting & billing'],
+    PACS: ['أرشفة طبية وبث فوري للدراسات', 'Medical image streaming & hybrid archive'],
+    CMS: ['إدارة متكاملة للعيادات والمراكز', 'Unified clinic & patient workflow'],
+    PORTAL: ['بوابات تفاعلية للمرضى والأطباء', 'Interactive patient & doctor portals'],
+    AI: ['فرز ذكي للحالات الحرجة والأشعة', 'AI critical findings triage'],
   };
 
   const fits: Record<string, [string, string]> = {
-    RIS: ['لفرق الاستقبال والأشعة والتقارير', 'For reception, radiology and reporting teams'],
-    PACS: ['لفرق التصوير ومراجعة الدراسات', 'For imaging and study review teams'],
-    CMS: ['لإدارة المراكز الطبية والعيادات', 'For medical center and clinic management'],
-    PORTAL: ['للمرضى والأطباء المحيلين وفرق المتابعة', 'For patients, referring doctors and follow-up teams'],
+    RIS: ['لفرق الاستقبال وفنيي وأطباء الأشعة', 'For reception, radiology techs & radiologists'],
+    PACS: ['لأطباء الأشعة وفرق التشخيص والأرشفة', 'For radiologists, diagnosticians & IT archive teams'],
+    CMS: ['لإدارة المراكز والعيادات التخصصية', 'For medical centers & outpatient clinics'],
+    PORTAL: ['للمرضى والأطباء المحيلين وفرق المتابعة', 'For patients, referring doctors & care coordinators'],
+    AI: ['لأطباء الأشعة وغرف الطوارئ والعناية', 'For radiologists, ER teams & acute care units'],
   };
+
+  const pipeline = [
+    { id: 'CMS', num: '01', title: en ? 'Registration & EMR' : 'الاستقبال والملف الطبي' },
+    { id: 'RIS', num: '02', title: en ? 'Exam Worklist (MWL)' : 'أمر الفحص وقائمة MWL' },
+    { id: 'PACS', num: '03', title: en ? 'Diagnostic Archive' : 'أرشفة وعرض الصور' },
+    { id: 'AI', num: '04', title: en ? 'Clinical AI Triage' : 'فرز دراسات الأشعة' },
+    { id: 'PORTAL', num: '05', title: en ? 'Results & Delivery' : 'البوابات وتسليم النتائج' },
+  ];
 
   return (
     <CareFrame content={content} locale={locale} current="systems">
@@ -239,373 +287,628 @@ export default function CareDirectory({ content, locale }: { content: SiteConten
           title={t('اختر النظام المناسب', 'Choose the right system')}
           accent={t('لطريقة عمل مركزك.', 'for the way your center works.')}
           description={t(
-            'إدارة رحلة الأشعة، وتنظيم الصور الطبية، وتشغيل المراكز والعيادات. تعرّف على حلول VIARA واختر الأنظمة التي تريد مناقشتها مع فريقنا.',
-            'Radiology workflows, medical imaging and daily center operations. Explore VIARA solutions and choose the systems you would like to discuss with our team.',
+            'إدارة رحلة الأشعة، وتنظيم الصور الطبية، وتشغيل المراكز والعيادات. استعرض حلول VIARA بتصميم مريح وتصورات معمارية وواجهات حية، واختر ما يلائم احتياجك.',
+            'Radiology workflows, medical imaging and daily clinic operations. Explore VIARA solutions with architectural previews, live interfaces, and clear clinical scope.'
           )}
         >
-          <a className="care-btn" href="#system-directory">
-            {t('استكشف الأنظمة', 'Explore the systems')}
-            <Arrow size={18} />
-          </a>
-          <a
-            className="care-link"
-            href="#system-comparison"
-            onClick={() => {
-              const comparison = document.getElementById('system-comparison');
-              if (comparison instanceof HTMLDetailsElement) comparison.open = true;
-            }}
-          >
-            {t('قارن بين الأنظمة', 'Compare systems')}
-            <Forward size={17} />
-          </a>
-        </BrandPageHero>
-
-        {/* ── Connected Healthcare Synergy Map ── */}
-        <SystemSynergyMap
-          locale={locale}
-          activeId={selected[0] || null}
-          onSelectSystem={handleSynergySelect}
-        />
-
-        {/* ── Systems Directory ── */}
-        <section className="care-wrap vsd-directory" id="system-directory" aria-labelledby="vsd-directory-title">
-          <div className="vsd-section-heading">
-            <div>
-              <span className="vsd-kicker">{t('حلول VIARA', 'THE VIARA SYSTEMS')}</span>
-              <h2 id="vsd-directory-title">{t('حلول متخصصة. أدوار واضحة.', 'Specialized systems. Clear roles.')}</h2>
-            </div>
-            <p>{t('استعرض دور كل نظام وقدراته، ثم أضفه إلى نطاقك المبدئي. يمكنك اختيار أكثر من نظام.', 'Review each system’s role and capabilities, then add it to your initial scope. You can select more than one.')}</p>
+          <div className="vsd-hero-actions-group">
+            <a className="care-btn" href="#system-directory">
+              {t('استكشف الأنظمة', 'Explore systems')}
+              <Arrow size={18} />
+            </a>
+            <button
+              type="button"
+              className="vsd-hero-compare-btn"
+              onClick={() => setShowComparisonModal(true)}
+            >
+              <Columns3 size={17} />
+              <span>{t('مصفوفة مقارنة الأنظمة', 'System comparison matrix')}</span>
+            </button>
           </div>
 
-          {/* Interactive Comparison Tool */}
-          <SystemComparison content={content} locale={locale} selected={selected} onToggle={toggle} />
-
-          {/* Toolbar: Filters and Search */}
-          <div className="vsd-toolbar">
-            <div className="vsd-filters" role="group" aria-label={t('تصفية الأنظمة', 'Filter systems')}>
-              <SlidersHorizontal size={16} aria-hidden="true" />
-              <button type="button" aria-pressed={area === 'all'} onClick={() => setArea('all')}>
-                {t('كل الأنظمة', 'All systems')}
-                <bdi>{allowed.length}</bdi>
-              </button>
-              {categories.map(category => (
-                <button
-                  type="button"
-                  key={category.id}
-                  aria-pressed={area === category.id}
-                  onClick={() => setArea(category.id)}
-                >
-                  {txt(category.name, locale)}
-                </button>
-              ))}
-            </div>
-
-            <div className="vsd-search">
-              <Search size={17} aria-hidden="true" />
-              <input
-                ref={searchInputRef}
-                type="search"
-                aria-label={t('ابحث عن نظام (اضغط / للتركيز)', 'Search systems (press / to focus)')}
-                placeholder={t('ابحث باسم النظام أو اختصاره (اضغط /)', 'Search by system name or code (/ to focus)')}
-                value={query}
-                onChange={event => setQuery(event.target.value)}
-              />
-              {query && (
-                <button type="button" aria-label={t('مسح البحث', 'Clear search')} onClick={() => setQuery('')}>
-                  <X size={15} />
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="vsd-results" role="status" aria-live="polite">
-            <span>{results.length} {t('أنظمة متاحة للاستكشاف', 'systems to explore')}</span>
-            <span>
-              {selected.length ? (
-                <>{selected.length} {t('أنظمة في نطاقك المختار', 'systems in your selected scope')}</>
-              ) : (
-                t('اختر ما يناسب طريقة عملك', 'Choose what fits the way you work')
-              )}
+          {/* Quick High-Trust Badges */}
+          <div className="vsd-hero-stats-row" aria-label={t('مؤشرات الاعتماد الطبي', 'Clinical accreditation specs')}>
+            <span className="vsd-hero-stat-pill">
+              <Cpu size={14} />
+              <span>{t('5 أنظمة متكاملة ومترابطة', '5 Native Integrated Systems')}</span>
+            </span>
+            <span className="vsd-hero-stat-pill">
+              <ShieldCheck size={14} />
+              <span>{t('100% معايير DICOM 3.0 & HL7', '100% DICOM 3.0 & HL7 Compliant')}</span>
+            </span>
+            <span className="vsd-hero-stat-pill">
+              <HardDrive size={14} />
+              <span>{t('نشر محلي وسحابي هجين', 'Hybrid On-prem & Cloud')}</span>
+            </span>
+            <span className="vsd-hero-stat-pill">
+              <Activity size={14} />
+              <span>{t('دعم فني وتدريب ميداني', 'Clinical SLA & Hands-on Onboarding')}</span>
             </span>
           </div>
+        </BrandPageHero>
 
-          {/* Grid of System Cards */}
-          <div className="vsd-grid">
-            {results.map(system => {
-              const product = content.products.find(item => item.id === system.id)!;
-              const Icon = icons[system.id] || Building2;
-              const chosen = selected.includes(system.id);
-              const captures = systemCaptures[system.id] || [];
-              const captureIdx = activeCaptures[system.id] || 0;
-              const currentCapture = captures[captureIdx] || captures[0];
-              const specs = techSpecs[system.id] || [];
+        {/* ── Main Systems Directory Section ── */}
+        <section className="care-wrap vsd-directory-clean" id="system-directory" aria-labelledby="vsd-directory-title">
+          {/* Header & Subtitle */}
+          <div className="vsd-clean-heading">
+            <div className="vsd-heading-text">
+              <span className="vsd-clean-kicker">
+                <Sparkles size={13} />
+                {t('دليل الأنظمة الطبية المعتمدة', 'CERTIFIED CLINICAL SYSTEMS DIRECTORY')}
+              </span>
+              <h2 id="vsd-directory-title">
+                {t('أنظمة متخصصة. أدوار تشغيلية واضحة.', 'Specialized systems. Focused roles.')}
+              </h2>
+              <p>
+                {t(
+                  'استعرض الأنظمة بأناقة وسهولة. يمكنك التبديل بين التصور المعماري بهوية فيارا وواجهات التطبيق الفعلية، أو إضافة أي نظام إلى نطاقك بضغطة واحدة.',
+                  'Browse systems effortlessly. Toggle between branded architectural 3D previews and live clinical screens, or add any system to your scope with a click.'
+                )}
+              </p>
+            </div>
 
-              return (
-                <article
-                  className={`vsd-card ${chosen ? 'is-selected' : ''}`}
-                  data-system={system.id}
-                  key={system.id}
-                  id={`system-${system.id}`}
-                >
-                  {/* Interactive Screenshot Preview */}
-                  {currentCapture && (
-                    <div className="vsd-capture-wrapper">
-                      <Link
-                        className="vsd-product-preview"
-                        href={solutionPath(system.id, locale)}
-                        aria-label={`${t('تفاصيل وواجهات', 'Details and interfaces for')} ${txt(product.name, locale)}`}
-                      >
-                        <img
-                          src={currentCapture.thumbnail || currentCapture.image}
-                          width={840}
-                          height={525}
-                          alt={txt(currentCapture.title, locale)}
-                          loading="lazy"
-                        />
-                      </Link>
-
-                      <div className="vsd-capture-nav">
-                        <span className="vsd-capture-badge">
-                          <ScanLine size={13} />
-                          {txt(currentCapture.title, locale)}
-                        </span>
-
-                        {captures.length > 1 && (
-                          <div className="vsd-capture-tabs" role="tablist" aria-label={t('واجهات النظام', 'System screens')}>
-                            {captures.map((c, i) => (
-                              <button
-                                key={c.id}
-                                type="button"
-                                className={`vsd-capture-tab ${i === captureIdx ? 'is-active' : ''}`}
-                                onClick={e => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  setActiveCaptures(prev => ({ ...prev, [system.id]: i }));
-                                }}
-                                title={txt(c.title, locale)}
-                                aria-label={`${t('واجهة', 'Screen')} 0${i + 1}`}
-                              >
-                                0{i + 1}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="vsd-card-top">
-                    <span className="vsd-system-icon">
-                      <Icon size={30} strokeWidth={1.4} />
-                    </span>
-                    <bdi>{system.id}</bdi>
-                    <span className="vsd-card-index">0{allowed.findIndex(item => item.id === system.id) + 1}</span>
-                  </div>
-
-                  <div className="vsd-card-body">
-                    <span className="vsd-role">{t(...(roles[system.id] || ['', '']))}</span>
-                    <h3>{txt(product.name, locale)}</h3>
-                    <p>{txt(product.description, locale)}</p>
-
-                    {/* Technical Specifications Pills */}
-                    {specs.length > 0 && (
-                      <div className="vsd-tech-strip" aria-label={t('المعايير الفنية', 'Technical specifications')}>
-                        {specs.map((spec, i) => {
-                          const SpecIcon = spec.icon;
-                          return (
-                            <span key={i} className="vsd-tech-badge">
-                              <SpecIcon size={12} aria-hidden="true" />
-                              <span>{en ? spec.label.en : spec.label.ar}</span>
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    <div className="vsd-audience">
-                      <Icon size={15} />
-                      <span>{t(...(fits[system.id] || ['', '']))}</span>
-                    </div>
-
-                    <span className="vsd-feature-label">{t('ضمن قدرات النظام', 'SYSTEM CAPABILITIES')}</span>
-                    <ul className="vsd-features">
-                      {product.features.slice(0, 3).map((feature, index) => (
-                        <li key={index}>
-                          <Check size={15} />
-                          <span>{txt(feature, locale)}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <div className="vsd-card-actions">
-                      <Link href={solutionPath(system.id, locale)}>
-                        {t('التفاصيل والواجهات', 'Details and interfaces')}
-                        <Arrow size={17} />
-                      </Link>
-                      <button type="button" aria-pressed={chosen} onClick={() => toggle(system.id)}>
-                        {chosen ? <Check size={16} /> : <Plus size={16} />}
-                        {chosen ? t('تمت الإضافة', 'Added to scope') : t('أضف إلى نطاقك', 'Add to scope')}
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+            {/* Quick Action Matrix Button */}
+            <div className="vsd-heading-actions">
+              <button
+                type="button"
+                className="vsd-compare-pill-btn"
+                onClick={() => setShowComparisonModal(true)}
+              >
+                <Columns3 size={15} />
+                <span>{t('مقارنة سريعة بين الأنظمة', 'Quick compare matrix')}</span>
+              </button>
+            </div>
           </div>
 
+          {/* ── Connected Clinical Synergy Pipeline ── */}
+          <div className="vsd-synergy-pipeline" aria-label={t('مسار الترابط السريري بين الأنظمة', 'Clinical Synergy Pipeline')}>
+            <div className="vsd-pipeline-heading">
+              <span className="vsd-pipeline-dot" />
+              <span>{t('مسار العمل السريري المتصل بين أنظمة VIARA:', 'Connected clinical workflow across VIARA systems:')}</span>
+            </div>
+            <div className="vsd-pipeline-steps">
+              {pipeline.map((step, idx) => (
+                <div key={step.id} className="vsd-pipeline-node">
+                  <button
+                    type="button"
+                    className="vsd-pipeline-btn"
+                    onClick={() => {
+                      const el = document.getElementById(`system-${step.id}`);
+                      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }}
+                    title={t('انتقل إلى هذا النظام', 'Jump to this system')}
+                  >
+                    <bdi className="vsd-pipe-badge">{step.id}</bdi>
+                    <span className="vsd-pipe-num">{step.num}</span>
+                    <span className="vsd-pipe-title">{step.title}</span>
+                  </button>
+                  {idx < pipeline.length - 1 && (
+                    <span className="vsd-pipeline-arrow" aria-hidden="true">
+                      {en ? <ArrowRight size={14} /> : <ArrowLeft size={14} />}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Smart Control Hub (Filters, Search & View Switcher) ── */}
+          <div className="vsd-control-hub">
+            {/* Domain Tabs */}
+            <div className="vsd-domain-tabs" role="tablist" aria-label={t('تصفية الأنظمة حسب التخصص', 'Filter by domain')}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={area === 'all'}
+                className={`vsd-domain-tab ${area === 'all' ? 'is-active' : ''}`}
+                onClick={() => setArea('all')}
+              >
+                <span>{t('الكل', 'All')}</span>
+                <span className="vsd-tab-count">{allowed.length}</span>
+              </button>
+
+              {categories.map(category => {
+                const count = allowed.filter(s => s.category === category.id).length;
+                const isSelected = area === category.id;
+                return (
+                  <button
+                    type="button"
+                    key={category.id}
+                    role="tab"
+                    aria-selected={isSelected}
+                    className={`vsd-domain-tab ${isSelected ? 'is-active' : ''}`}
+                    onClick={() => setArea(category.id)}
+                  >
+                    <span>{txt(category.name, locale)}</span>
+                    <span className="vsd-tab-count">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Search Field & View Switcher */}
+            <div className="vsd-actions-dock">
+              <div className="vsd-search-box">
+                <Search size={16} className="vsd-search-icon" aria-hidden="true" />
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  aria-label={t('ابحث في الأنظمة', 'Search systems')}
+                  placeholder={t('ابحث باسم النظام أو الاختصار (/ للتركيز)', 'Search by name or code (/ to focus)')}
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                />
+                {query && (
+                  <button
+                    type="button"
+                    className="vsd-clear-search"
+                    aria-label={t('مسح البحث', 'Clear search')}
+                    onClick={() => setQuery('')}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* View Mode Toggle: Grid vs Compact List */}
+              <div className="vsd-view-toggle" role="group" aria-label={t('طريقة العرض', 'View mode')}>
+                <button
+                  type="button"
+                  aria-pressed={viewMode === 'grid'}
+                  className={`vsd-view-btn ${viewMode === 'grid' ? 'is-active' : ''}`}
+                  onClick={() => setViewMode('grid')}
+                  title={t('عرض البطاقات الشبكية', 'Grid cards view')}
+                >
+                  <LayoutGrid size={16} />
+                  <span className="vsd-view-btn-text">{t('بطاقات', 'Cards')}</span>
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={viewMode === 'table'}
+                  className={`vsd-view-btn ${viewMode === 'table' ? 'is-active' : ''}`}
+                  onClick={() => setViewMode('table')}
+                  title={t('عرض القائمة المدمجة', 'Compact list view')}
+                >
+                  <List size={16} />
+                  <span className="vsd-view-btn-text">{t('قائمة سريعة', 'Compact list')}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Results Status Line */}
+          <div className="vsd-status-line" role="status" aria-live="polite">
+            <span className="vsd-count-text">
+              {results.length} {t('أنظمة مطابقة للبحث والتصفية', 'systems match your selection')}
+            </span>
+            {selected.length > 0 && (
+              <span className="vsd-basket-indicator">
+                <CheckCircle2 size={13} />
+                {selected.length} {t('أنظمة مضافة لنطاقك المختار', 'systems in your custom scope')}
+              </span>
+            )}
+          </div>
+
+          {/* ── View 1: Streamlined Grid Cards with Dual 3D / Live UI Visuals ── */}
+          {viewMode === 'grid' && (
+            <div className="vsd-cards-grid">
+              {results.map(system => {
+                const product = content.products.find(item => item.id === system.id)!;
+                const Icon = icons[system.id] || Building2;
+                const chosen = selected.includes(system.id);
+                const captures = systemCaptures[system.id] || [];
+                const captureIdx = activeCaptures[system.id] || 0;
+                const currentCapture = captures[captureIdx] || captures[0];
+                const brandVisual = systemBrandVisuals[system.id];
+                const visualMode = cardVisualModes[system.id] || 'brand'; // default to brand visual
+
+                return (
+                  <article
+                    key={system.id}
+                    id={`system-${system.id}`}
+                    className={`vsd-clean-card ${chosen ? 'is-selected' : ''}`}
+                    data-system={system.id}
+                  >
+                    {/* Top Identity Header */}
+                    <div className="vsd-card-header">
+                      <div className="vsd-brand-ident">
+                        <span className="vsd-icon-badge">
+                          <Icon size={20} strokeWidth={1.7} />
+                        </span>
+                        <div>
+                          <bdi className="vsd-code-badge">{system.id}</bdi>
+                          <span className="vsd-role-kicker">{t(...(roles[system.id] || ['', '']))}</span>
+                        </div>
+                      </div>
+
+                      {/* Quick Scope Toggle Button */}
+                      <button
+                        type="button"
+                        className={`vsd-scope-quick-btn ${chosen ? 'is-added' : ''}`}
+                        aria-pressed={chosen}
+                        onClick={() => toggle(system.id)}
+                        title={chosen ? t('إزالة من النطاق', 'Remove from scope') : t('إضافة للنطاق', 'Add to scope')}
+                      >
+                        {chosen ? <Check size={14} /> : <Plus size={14} />}
+                        <span>{chosen ? t('في نطاقك', 'In scope') : t('أضف للنطاق', 'Add')}</span>
+                      </button>
+                    </div>
+
+                    {/* Dual-Perspective Preview Container: 3D Brand Architectural Render OR Live System UI */}
+                    <div className="vsd-preview-container">
+                      <Link
+                        href={solutionPath(system.id, locale)}
+                        className="vsd-preview-link"
+                        aria-label={`${t('عرض واجهات ومواصفات', 'View interfaces and specs for')} ${txt(product.name, locale)}`}
+                      >
+                        {visualMode === 'brand' && brandVisual ? (
+                          <img
+                            src={brandVisual.image}
+                            alt={txt(brandVisual.alt, locale)}
+                            width={640}
+                            height={400}
+                            loading="lazy"
+                            className="vsd-preview-img vsd-preview-img-brand"
+                          />
+                        ) : currentCapture ? (
+                          <img
+                            src={currentCapture.thumbnail || currentCapture.image}
+                            alt={txt(currentCapture.title, locale)}
+                            width={640}
+                            height={400}
+                            loading="lazy"
+                            className="vsd-preview-img vsd-preview-img-ui"
+                          />
+                        ) : null}
+
+                        <div className="vsd-preview-shade" />
+
+                        {/* Informative Overlay Tag */}
+                        {visualMode === 'brand' && brandVisual ? (
+                          <span className="vsd-screen-tag vsd-screen-tag-brand">
+                            <Sparkles size={12} />
+                            <span>{txt(brandVisual.tag, locale)}</span>
+                          </span>
+                        ) : currentCapture ? (
+                          <span className="vsd-screen-tag">
+                            <MonitorCheck size={12} />
+                            <span>{txt(currentCapture.title, locale)}</span>
+                          </span>
+                        ) : null}
+                      </Link>
+
+                      {/* Interactive Visual Switcher Pill: [ 3D Brand | Live UI ] */}
+                      <div className="vsd-preview-toggle-dock" role="group" aria-label={t('نمط المعاينة', 'Preview perspective')}>
+                        <button
+                          type="button"
+                          className={`vsd-toggle-pill ${visualMode === 'brand' ? 'is-active' : ''}`}
+                          onClick={e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setCardVisualModes(prev => ({ ...prev, [system.id]: 'brand' }));
+                          }}
+                          title={t('عرض التصور المعماري بهوية فيارا', 'View 3D brand visual')}
+                        >
+                          <Sparkles size={11} />
+                          <span>{t('بيئة النظام', '3D Scene')}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          className={`vsd-toggle-pill ${visualMode === 'ui' ? 'is-active' : ''}`}
+                          onClick={e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setCardVisualModes(prev => ({ ...prev, [system.id]: 'ui' }));
+                          }}
+                          title={t('عرض واجهة التطبيق الفعلية', 'View live system interface')}
+                        >
+                          <MonitorCheck size={11} />
+                          <span>{t('واجهة النظام', 'Live UI')}</span>
+                        </button>
+                      </div>
+
+                      {/* UI Screen Sub-dots if in UI mode and has multiple screens */}
+                      {visualMode === 'ui' && captures.length > 1 && (
+                        <div className="vsd-preview-dots">
+                          {captures.map((c, i) => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              className={`vsd-dot-btn ${i === captureIdx ? 'is-active' : ''}`}
+                              onClick={e => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setActiveCaptures(prev => ({ ...prev, [system.id]: i }));
+                              }}
+                              title={txt(c.title, locale)}
+                              aria-label={`${t('واجهة', 'Screen')} 0${i + 1}`}
+                            >
+                              0{i + 1}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="vsd-card-content">
+                      <h3 className="vsd-card-title">{txt(product.name, locale)}</h3>
+                      <p className="vsd-card-desc">{txt(product.description, locale)}</p>
+
+                      {/* Target Audience Pill */}
+                      <div className="vsd-target-team">
+                        <Icon size={13} className="vsd-team-icon" />
+                        <span>{t(...(fits[system.id] || ['', '']))}</span>
+                      </div>
+
+                      {/* Technical Standards and Protocols Badges */}
+                      {systemSpecs[system.id] && (
+                        <div className="vsd-spec-badges" aria-label={t('المعايير والمواصفات المدعومة', 'Supported specs')}>
+                          {(en ? systemSpecs[system.id].en : systemSpecs[system.id].ar).map(spec => (
+                            <span key={spec} className="vsd-spec-badge">{spec}</span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Top 3 Feature Highlights */}
+                      <div className="vsd-highlights-list">
+                        {product.features.slice(0, 3).map((feat, idx) => (
+                          <div key={idx} className="vsd-highlight-item">
+                            <Check size={13} className="vsd-highlight-check" />
+                            <span>{txt(feat, locale)}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Single Unified Primary CTA Button */}
+                      <div className="vsd-card-footer">
+                        <Link className="vsd-details-btn" href={solutionPath(system.id, locale)}>
+                          <span>{t('استكشف الواجهات والتفاصيل', 'Explore screens & specs')}</span>
+                          <Arrow size={16} />
+                        </Link>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── View 2: Compact High-Efficiency Table Mode ── */}
+          {viewMode === 'table' && (
+            <div className="vsd-table-wrapper">
+              <table className="vsd-compact-table">
+                <caption className="vsd-visually-hidden">
+                  {t('جدول مقارنة واستعراض أنظمة VIARA', 'VIARA systems overview and spec table')}
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{t('النظام والكود', 'System & Code')}</th>
+                    <th scope="col">{t('الدور التشغيلي', 'Operational Role')}</th>
+                    <th scope="col">{t('الفريق المستفيد', 'Target Team')}</th>
+                    <th scope="col">{t('الواجهة السريرية', 'Preview')}</th>
+                    <th scope="col">{t('الإجراءات', 'Actions')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map(system => {
+                    const product = content.products.find(item => item.id === system.id)!;
+                    const Icon = icons[system.id] || Building2;
+                    const chosen = selected.includes(system.id);
+                    const brandVisual = systemBrandVisuals[system.id];
+                    const captures = systemCaptures[system.id] || [];
+                    const currentCapture = captures[0];
+
+                    return (
+                      <tr key={system.id} className={chosen ? 'is-row-selected' : ''}>
+                        {/* System & Code */}
+                        <td className="vsd-td-identity">
+                          <div className="vsd-row-id-cell">
+                            <span className="vsd-row-icon">
+                              <Icon size={18} />
+                            </span>
+                            <div>
+                              <bdi className="vsd-row-code">{system.id}</bdi>
+                              <strong className="vsd-row-name">{txt(product.name, locale)}</strong>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Role */}
+                        <td className="vsd-td-role">
+                          <span className="vsd-row-role-text">{t(...(roles[system.id] || ['', '']))}</span>
+                          <p className="vsd-row-desc-text">{txt(product.description, locale)}</p>
+                        </td>
+
+                        {/* Audience */}
+                        <td className="vsd-td-audience">
+                          <span className="vsd-audience-badge">{t(...(fits[system.id] || ['', '']))}</span>
+                        </td>
+
+                        {/* Preview Thumbnail */}
+                        <td className="vsd-td-preview">
+                          <Link
+                            href={solutionPath(system.id, locale)}
+                            className="vsd-row-thumb-link"
+                            title={txt(product.name, locale)}
+                          >
+                            <img
+                              src={brandVisual ? brandVisual.image : (currentCapture?.thumbnail || currentCapture?.image || '')}
+                              alt={txt(product.name, locale)}
+                              width={120}
+                              height={75}
+                              className="vsd-row-thumb-img"
+                            />
+                          </Link>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="vsd-td-actions">
+                          <div className="vsd-row-actions">
+                            <button
+                              type="button"
+                              className={`vsd-row-scope-btn ${chosen ? 'is-active' : ''}`}
+                              onClick={() => toggle(system.id)}
+                            >
+                              {chosen ? <Check size={14} /> : <Plus size={14} />}
+                              <span>{chosen ? t('في نطاقك', 'In scope') : t('أضف', 'Add')}</span>
+                            </button>
+                            <Link href={solutionPath(system.id, locale)} className="vsd-row-view-btn">
+                              <span>{t('التفاصيل', 'Details')}</span>
+                              <Arrow size={14} />
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Empty Search State */}
           {!results.length && (
-            <div className="vsd-empty">
-              <Search size={32} />
-              <h3>{t('لم نجد نظاماً يطابق بحثك.', 'No systems match your search.')}</h3>
-              <p>{t('جرّب RIS أو PACS أو AI أو CMS أو PORTAL، أو أعد عرض جميع الأنظمة.', 'Try RIS, PACS, AI, CMS or PORTAL, or view all systems again.')}</p>
+            <div className="vsd-clean-empty">
+              <Search size={36} className="vsd-empty-icon" />
+              <h3>{t('لم نجد نظاماً يطابق بحثك.', 'No systems match your search query.')}</h3>
+              <p>
+                {t(
+                  'جرّب البحث باسم مختصر مثل RIS أو PACS أو CMS أو AI، أو أعد عرض كافة الأنظمة.',
+                  'Try searching for RIS, PACS, CMS or AI, or reset filters to display all systems.'
+                )}
+              </p>
               <button type="button" className="care-btn" onClick={reset}>
-                {t('عرض كل الأنظمة', 'Show all systems')}
-                <Forward size={17} />
+                {t('عرض كافة الأنظمة', 'Show all systems')}
+                <Forward size={16} />
               </button>
             </div>
           )}
         </section>
 
-        {/* ── Facility Profiles Presets ── */}
-        {profiles.length > 0 && (
-          <section className="vsd-facilities" id="facility-scope" aria-labelledby="vsd-facility-title">
-            <div className="care-wrap">
-              <div className="vsd-section-heading">
-                <div>
-                  <span className="vsd-kicker">{t('ابدأ من منشأتك', 'START WITH YOUR FACILITY')}</span>
-                  <h2 id="vsd-facility-title">{t('نقطة بداية تناسب مركزك.', 'A starting point for your center.')}</h2>
-                </div>
-                <p>{t('اختر نوع المنشأة لإضافة نطاق مبدئي، ثم عدّل اختيارك حسب احتياجاتك. المتطلبات والربط تُراجع في العرض الفني.', 'Select your facility type to add an initial scope, then adjust it to your needs. Requirements and integrations are reviewed in the technical proposal.')}</p>
+        {/* ── System Comparison Dialog Modal ── */}
+        <dialog
+          ref={comparisonDialogRef}
+          className="vsd-modal-dialog"
+          aria-labelledby="vsd-modal-title"
+          onClick={e => {
+            if (e.target === comparisonDialogRef.current) setShowComparisonModal(false);
+          }}
+        >
+          <div className="vsd-modal-sheet">
+            <div className="vsd-modal-header">
+              <div>
+                <span className="vsd-modal-kicker">
+                  <Columns3 size={15} />
+                  {t('مصفوفة المقارنة السريرية والتقنية', 'TECHNICAL & CLINICAL COMPARISON MATRIX')}
+                </span>
+                <h3 id="vsd-modal-title">
+                  {t('قارن بين قدرات وأدوار أنظمة VIARA', 'Compare VIARA systems roles and capabilities')}
+                </h3>
               </div>
-
-              <div className="vsd-profile-grid">
-                {profiles.map(profile => {
-                  const Icon = profile.id === 'radiology' ? ScanLine : Building2;
-                  return (
-                    <button
-                      type="button"
-                      key={profile.id}
-                      className={`vsd-profile ${activeProfile === profile.id ? 'is-active' : ''}`}
-                      aria-pressed={activeProfile === profile.id}
-                      onClick={() => {
-                        setActiveProfile(profile.id);
-                        setSelected(profile.systems);
-                      }}
-                    >
-                      <span className="vsd-profile-icon">
-                        <Icon size={27} strokeWidth={1.5} />
-                      </span>
-                      <span className="vsd-profile-copy">
-                        <strong>{txt(profile.name, locale)}</strong>
-                        <small>
-                          {profile.id === 'radiology'
-                            ? t('لتنظيم الفحوصات والتقارير والصور الطبية.', 'For examinations, reporting and medical imaging.')
-                            : t('لتنظيم المواعيد والزيارات وإدارة المركز.', 'For appointments, visits and center operations.')}
-                          <span>
-                            {profile.systems.map(id => (
-                              <bdi key={id}>{id}</bdi>
-                            ))}
-                          </span>
-                        </small>
-                      </span>
-                      <span className="vsd-profile-check">
-                        {activeProfile === profile.id ? <Check size={18} /> : <Plus size={18} />}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              <button
+                type="button"
+                className="vsd-modal-close"
+                onClick={() => setShowComparisonModal(false)}
+                aria-label={t('إغلاق المقارنة', 'Close comparison')}
+              >
+                <X size={18} />
+              </button>
             </div>
-          </section>
-        )}
+
+            <div className="vsd-modal-body">
+              <SystemComparison
+                content={content}
+                locale={locale}
+                selected={selected}
+                onToggle={toggle}
+              />
+            </div>
+          </div>
+        </dialog>
 
         {/* ── Next Step Call to Action ── */}
-        <section className="care-wrap vsd-next" aria-labelledby="vsd-next-title">
-          <div className="vsd-next-inner">
-            <div>
-              <span className="vsd-kicker">{t('الخطوة التالية', 'YOUR NEXT STEP')}</span>
-              <h2 id="vsd-next-title">{t('لنحوّل احتياجك إلى نطاق واضح.', 'Turn your needs into a clear scope.')}</h2>
-              <p>{t('نراجع طريقة العمل الحالية، والأدوار والفروع، والبيانات والتكاملات المطلوبة، ثم نحدد معك خطة التنفيذ المناسبة.', 'We review your current workflow, roles, branches, data and integration needs, then define a suitable rollout plan with you.')}</p>
+        <section className="care-wrap vsd-next-clean" aria-labelledby="vsd-next-clean-title">
+          <div className="vsd-next-clean-card">
+            <div className="vsd-next-copy">
+              <span className="vsd-next-kicker">{t('الخطوة التالية · استشارة النطاق', 'NEXT STEP · SCOPE CONSULTATION')}</span>
+              <h2 id="vsd-next-clean-title">
+                {t('لنحوّل احتياج منشأتك إلى نطاق عملي مدروس.', 'Turn your clinical needs into a solid plan.')}
+              </h2>
+              <p>
+                {t(
+                  'أرسل الأنظمة التي اخترتها إلى فريقنا الاستشاري، وسنراجع معك متطلبات الربط والأجهزة وخطة التدشين المرحلية.',
+                  'Submit your chosen systems directly. Our clinical engineers will review workflow requirements, modality integrations, and phased rollout milestones.'
+                )}
+              </p>
             </div>
-            <div className="vsd-next-actions">
+
+            <div className="vsd-next-buttons">
               <Link
-                className="care-btn"
-                href={selected.length ? `${home}?systems=${encodeURIComponent(selected.join(','))}#contact` : `${home}#contact`}
+                className="vsd-next-primary-btn"
+                href={
+                  selected.length
+                    ? `${home}?systems=${encodeURIComponent(selected.join(','))}#contact`
+                    : `${home}#contact`
+                }
               >
-                {t('ناقش احتياجات مركزك', 'Discuss your center’s needs')}
+                <span>{t('ناقش احتياجات مركزك الآن', 'Discuss your facility needs now')}</span>
                 <Arrow size={18} />
               </Link>
-              <Link href={`${en ? '/en' : ''}/planning`}>
-                {t('تعرّف على خطوات التنفيذ', 'See the rollout process')}
+              <Link className="vsd-next-secondary-link" href={`${en ? '/en' : ''}/planning`}>
+                <span>{t('خارطة طريق التنفيذ والجدوى', 'Rollout roadmap & ROI')}</span>
                 <Forward size={16} />
               </Link>
             </div>
           </div>
         </section>
 
-        {/* ── Floating Smart Scope Builder Drawer ── */}
-        {selected.length > 0 && (() => {
-          const insight = getSynergyInsight(selected, locale);
-          return (
-            <aside className="vsd-selection" aria-label={t('نطاقك المختار', 'Your selected scope')}>
-              <div className="vsd-selection-main">
-                <div className="vsd-selection-chips-row">
-                  <span className="vsd-selection-label">
-                    <Sparkles size={14} className="vsd-sparkle" aria-hidden="true" />
-                    {t('نطاقك المبدئي', 'Your initial scope')}:
+        {/* ── Floating Smart Scope Builder Basket ── */}
+        {selected.length > 0 && (
+          <aside className="vsd-floating-basket" aria-label={t('نطاقك المختار', 'Your selected scope')}>
+            <div className="vsd-basket-info">
+              <span className="vsd-basket-badge">
+                <Sparkles size={13} />
+                <span>{t('نطاقك المختار', 'Your scope')} ({selected.length}/{MAX_SCOPE_SYSTEMS})</span>
+              </span>
+
+              <div className="vsd-basket-chips">
+                {selected.map(id => (
+                  <span key={id} className="vsd-basket-chip">
+                    <bdi>{id}</bdi>
+                    <button
+                      type="button"
+                      onClick={() => toggle(id)}
+                      aria-label={`${t('إزالة', 'Remove')} ${id}`}
+                      className="vsd-chip-remove"
+                    >
+                      <X size={11} />
+                    </button>
                   </span>
-                  <div className="vsd-selected-chips">
-                    {selected.map(id => (
-                      <button
-                        type="button"
-                        key={id}
-                        onClick={() => toggle(id)}
-                        aria-label={`${t('إزالة', 'Remove')} ${id}`}
-                        title={txt(allowed.find(system => system.id === id)?.name || { ar: id, en: id }, locale)}
-                      >
-                        <bdi>{id}</bdi>
-                        <X size={13} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {insight && (
-                  <div className="vsd-selection-synergy">
-                    <span className="vsd-selection-hint">{insight.text}</span>
-                    {insight.recommended && !selected.includes(insight.recommended) && (
-                      <span className="vsd-selection-recommend">
-                        {t('اقتراح مكمل:', 'Suggested addition:')}{' '}
-                        <button type="button" onClick={() => toggle(insight.recommended!)}>
-                          <Plus size={11} /> {insight.recommended}
-                        </button>
-                      </span>
-                    )}
-                  </div>
-                )}
+                ))}
               </div>
+            </div>
 
-              <div className="vsd-selection-actions">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelected([]);
-                    setActiveProfile(null);
-                  }}
-                >
-                  {t('مسح', 'Clear')}
-                </button>
-                <Link
-                  href={`${home}?systems=${encodeURIComponent(selected.join(','))}#contact`}
-                  className="care-btn"
-                >
-                  {t('ناقش هذا النطاق', 'Discuss this scope')} ({selected.length})
-                  <Arrow size={17} />
-                </Link>
-              </div>
-            </aside>
-          );
-        })()}
+            <div className="vsd-basket-actions">
+              <button
+                type="button"
+                className="vsd-basket-clear"
+                onClick={() => setSelected([])}
+              >
+                {t('مسح الكل', 'Clear all')}
+              </button>
+
+              <Link
+                href={`${home}?systems=${encodeURIComponent(selected.join(','))}#contact`}
+                className="vsd-basket-submit"
+              >
+                <span>{t('طلب دراسة هذا النطاق', 'Request scope proposal')}</span>
+                <Arrow size={16} />
+              </Link>
+            </div>
+          </aside>
+        )}
       </div>
     </CareFrame>
   );

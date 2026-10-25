@@ -39,7 +39,7 @@ export const inquirySchema = z.object({
   organization: z.string().trim().min(2).max(150),
   facility: z.enum(["مركز أشعة", "مركز طبي", "عيادات تخصصية", "مجموعة فروع", "مستشفى", "مختبر تحاليل", "منشأة أخرى"]),
   branches: z.enum(["فرع واحد", "2–5 فروع", "أكثر من 5 فروع"]),
-  interest: z.enum(["RIS", "PACS", "CMS", "SUITE", "CONSULT"]),
+  interest: z.enum(["RIS", "PACS", "AI", "CMS", "PORTAL", "SUITE", "CONSULT"]),
   plan: z.enum(["أساس", "نمو", "مؤسسات", "لم أحدد بعد"]),
   message: z.string().trim().max(2000).default(""),
   consent: z.literal(true),
@@ -50,6 +50,7 @@ export const inquirySchema = z.object({
   systems: requestedSystemsSchema.optional(),
 });
 export const interestNames: Record<string, string> = {
-  RIS: "إدارة مراكز الأشعة", PACS: "أرشفة الصور الطبية", CMS: "إدارة المراكز الطبية",
+  RIS: "إدارة مراكز الأشعة", PACS: "أرشفة الصور الطبية", AI: "مساندة الذكاء الاصطناعي للأشعة", CMS: "إدارة المراكز الطبية",
+  PORTAL: "نظام المريض والأطباء المحيلين",
   SUITE: "الحل المتكامل", CONSULT: "استشارة لاختيار النظام",
 };

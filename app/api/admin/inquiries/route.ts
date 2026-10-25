@@ -13,7 +13,7 @@ export async function GET() {
     const rows = await getDb().select().from(inquiries).orderBy(desc(inquiries.createdAt)).limit(200);
     return NextResponse.json({ records: rows.map(({ userId: _user, ...row }) => row) }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch {
-    return NextResponse.json({ records: [] }, { headers: { 'Cache-Control': 'private, no-store' } });
+    return NextResponse.json({ error: 'تعذر تحميل الطلبات / Could not load inquiries' }, { status: 503, headers: { 'Cache-Control': 'private, no-store' } });
   }
 }
 

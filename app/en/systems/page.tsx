@@ -1,4 +1,5 @@
 import SystemsPage from '../../systems-page';
+import { pageMetadata } from '../../../lib/seo';
 export const dynamic='force-dynamic';
-export const metadata={title:'Healthcare systems directory | VIARA',description:'Explore clinical, diagnostic, operational and digital healthcare systems. Compare areas and build your facility scope.',alternates:{canonical:'/en/systems',languages:{ar:'/systems',en:'/en/systems'}}};
+export const metadata=pageMetadata({locale:'en',canonical:'/en/systems',arPath:'/systems',enPath:'/en/systems',title:'Radiology & Medical Center Systems | VIARA',description:'Explore VIARA RIS for radiology workflow, PACS for medical image archiving, and CMS for medical centers and clinics.'});
 export default function Page(){return <SystemsPage locale="en"/>;}

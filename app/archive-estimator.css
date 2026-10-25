@@ -1,0 +1,68 @@
+/* Self-contained estimator; does not inherit full-page section or hero layouts. */
+.archive-estimator{font-family:inherit;color:#173c34;box-sizing:border-box;width:100%;min-width:0;text-align:start}
+.archive-estimator *{box-sizing:border-box}
+.archive-estimator .ae-layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:24px;align-items:start}
+.archive-estimator .ae-inputs{min-width:0;padding:3px 0}
+.archive-estimator .ae-input-heading{display:flex;align-items:center;gap:11px;margin-bottom:23px}
+.archive-estimator .ae-heading-icon{display:grid;place-items:center;width:42px;height:42px;border:1px solid #dce9df;border-radius:12px;background:#eef6ee;color:#007b61;flex-shrink:0}
+.archive-estimator .ae-input-heading>div{flex:1;min-width:0}
+.archive-estimator .ae-input-heading h3{font-size:18px;line-height:1.5;font-weight:700;letter-spacing:0;color:#123f32;margin:0 0 4px}
+.care-site.viara-professional .archive-estimator .ae-input-heading p,.archive-estimator .ae-input-heading p{font-size:11px;line-height:1.8;color:#708273;margin:0}
+.archive-estimator .ae-reset{display:grid;place-items:center;width:34px;height:34px;flex-shrink:0;border:1px solid #dee8df;border-radius:9px;background:#fff;color:#6b8474;cursor:pointer}
+.archive-estimator .ae-reset:hover{background:#eff6ed;color:#007b61}
+.archive-estimator .ae-modalities{border:0;padding:0;margin:0 0 22px;min-width:0}
+.archive-estimator .ae-modalities legend{font-size:12px;font-weight:600;color:#294f3e;margin-bottom:11px;padding:0}
+.archive-estimator .ae-modalities>div{display:flex;flex-wrap:wrap;gap:7px}
+.archive-estimator .ae-modalities button{display:flex;align-items:center;justify-content:center;gap:5px;min-height:35px;padding:7px 10px;border:1px solid #dde7dd;border-radius:7px;background:#fff;font:inherit;font-size:10px;line-height:1.7;color:#647c6c;cursor:pointer;transition:background .2s,border-color .2s}
+.archive-estimator .ae-modalities button[aria-pressed=true]{color:#08664d;border-color:#aacfb8;background:#edf6ec}
+.archive-estimator .ae-modalities button:hover{border-color:#8fbaa0}
+.care-site.viara-professional .archive-estimator .ae-modalities p,.archive-estimator .ae-modalities p{margin:10px 0 0;font-size:9px;line-height:1.8;color:#809082}
+.archive-estimator .ae-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 15px}
+.archive-estimator .ae-number{display:flex;flex-direction:column;gap:8px;min-width:0}
+.archive-estimator .ae-number>span{font-size:11px;font-weight:600;color:#345542;line-height:1.7}
+.archive-estimator .ae-number input{width:100%;height:44px;min-height:44px;min-width:0;border:1px solid #d6e3d9;border-radius:8px;padding:8px 12px;background:#fff;color:#174833;font-family:Arial,sans-serif;font-size:18px;font-weight:600;box-shadow:0 2px 5px #073e3203;outline-offset:2px}
+.archive-estimator .ae-number input:focus{border-color:#78ad90;outline:2px solid #c4dfcb}
+.archive-estimator .ae-number input[aria-invalid=true]{border-color:#c67466;background:#fff9f6}
+.archive-estimator .ae-number small{font-size:9px;color:#859080;line-height:1.6}
+.archive-estimator .ae-number small bdi{font-family:Arial,sans-serif;font-size:9px}
+.archive-estimator .ae-assumptions{margin-top:20px;border:1px solid #dfe8dc;border-radius:10px;background:#f7faf4}
+.archive-estimator .ae-assumptions summary,.archive-estimator .ae-method summary{display:flex;align-items:center;gap:8px;list-style:none;cursor:pointer;min-height:44px;line-height:1.8}
+.archive-estimator summary::-webkit-details-marker{display:none}
+.archive-estimator .ae-assumptions summary{padding:12px;font-size:11px;color:#4e725a}
+.archive-estimator .ae-assumptions summary>svg:last-child{margin-inline-start:auto;flex-shrink:0;transition:transform .2s}
+.archive-estimator details[open]>summary>svg:last-child{transform:rotate(180deg)}
+.archive-estimator .ae-assumptions .ae-fields{padding:5px 13px 13px}
+.care-site.viara-professional .archive-estimator .ae-assumptions>p,.archive-estimator .ae-assumptions>p{font-size:9px;line-height:1.8;color:#7f8d7c;margin:0;padding:0 13px 13px}
+.archive-estimator .ae-output{min-width:0;background:#073e32;border:1px solid #073e32;border-radius:16px 6px 16px 6px;padding:24px;color:#fffefb;box-shadow:0 10px 24px -15px #073e3250}
+.archive-estimator .ae-output-label{display:flex;align-items:center;gap:8px;color:#f6cd5c;font-size:10px;font-weight:600;line-height:1.8}
+.archive-estimator .ae-output-label>bdi{margin-inline-start:auto;font:500 9px Arial,sans-serif;color:#bbd3c3;border:1px solid #ffffff25;border-radius:5px;padding:4px 7px}
+.archive-estimator .ae-result{margin-top:22px}
+.archive-estimator .ae-result>span{display:block;font-size:11px;color:#c1d7c8;line-height:1.8}
+.archive-estimator .ae-result>strong{display:block;text-align:start;direction:ltr;font:600 clamp(32px,3vw,44px)/1.4 Arial,sans-serif;letter-spacing:-1px;color:#fffefb;margin:8px 0 18px}
+.archive-estimator[dir=rtl] .ae-result>strong{text-align:right}
+.archive-estimator .ae-annual{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 0;border-top:1px solid #ffffff20;border-bottom:1px solid #ffffff20}
+.archive-estimator .ae-annual span{font-size:10px;color:#bed4c4;line-height:1.8}
+.archive-estimator .ae-annual b{font-size:17px;color:#fffefb;white-space:nowrap}
+.archive-estimator .ae-summary{display:grid;grid-template-columns:1fr 1fr;gap:15px 14px;padding:18px 0;margin:0}
+.archive-estimator .ae-summary>div{min-width:0}
+.archive-estimator .ae-summary dt{font-size:9px;color:#a7c3b2;line-height:1.8}
+.archive-estimator .ae-summary dd{font-size:12px;font-weight:600;color:#e9f2e9;margin:5px 0 0;line-height:1.6}
+.archive-estimator[dir=rtl] .ae-summary dd[dir=ltr]{text-align:right}
+.archive-estimator .ae-method{border-top:1px solid #ffffff20;border-bottom:1px solid #ffffff20}
+.archive-estimator .ae-method summary{justify-content:space-between;font-size:10px;color:#d0e2d4;padding:10px 0}
+.care-site.viara-professional .archive-estimator .ae-method p,.archive-estimator .ae-method p{font-size:10px;color:#adc9b8;line-height:1.9;margin:0 0 12px}
+.care-site.viara-professional .archive-estimator .ae-disclaimer,.archive-estimator .ae-disclaimer{font-size:10px;line-height:1.9;color:#b9d0c0;margin:15px 0 18px}
+.care-site.viara-professional .archive-estimator .ae-error,.archive-estimator .ae-error{font-size:11px;line-height:1.8;color:#ffe2d2;background:#ffffff09;border:1px solid #f7b89c55;padding:10px;border-radius:7px;margin:0 0 13px}
+.archive-estimator .ae-choose{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:45px;padding:12px 14px;background:#f6c747;border:1px solid #f6c747;border-radius:8px;color:#123f32;font:inherit;font-size:12px;line-height:1.7;font-weight:700;cursor:pointer;transition:background .2s}
+.archive-estimator .ae-choose:hover:not(:disabled){background:#ffda71}
+.archive-estimator .ae-choose:disabled{opacity:.45;cursor:not-allowed}
+.archive-estimator .ae-choose>svg{flex-shrink:0}
+.archive-estimator button:focus-visible,.archive-estimator summary:focus-visible{outline:3px solid var(--focus-ring);outline-offset:4px}
+.care-site.viara-professional .care-dialog.archive-dialog{width:min(940px,calc(100% - 40px));max-width:940px;max-height:calc(100dvh - 48px);padding:24px;margin:auto;border-radius:20px;background:#fffefb;border:1px solid #dce8dd;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#bbcbbd transparent}
+.care-site.viara-professional .care-dialog.archive-dialog .care-dialog-heading{margin:0 0 23px;padding-bottom:18px;border-bottom:1px solid #e1e9df;align-items:center;gap:15px}
+.care-site.viara-professional .care-dialog.archive-dialog .care-dialog-heading h2{font-size:23px;line-height:1.5;font-weight:700;letter-spacing:-.4px;color:#123f32;background:transparent;margin:0;padding:0}
+.care-site.viara-professional .care-dialog.archive-dialog .care-dialog-heading .care-menu{width:36px;height:36px;min-width:36px;border-radius:9px;background:#f5f8f1;border-color:#dce6d8}
+.care-site.viara-professional .care-dialog.archive-dialog .care-dialog-heading .care-menu svg{width:19px;height:19px}
+body:has(dialog.archive-dialog[open]){overflow:hidden}
+@media(max-width:700px){.archive-estimator .ae-layout{grid-template-columns:1fr;gap:23px}.archive-estimator .ae-output{padding:22px}.archive-estimator .ae-result>strong{font-size:40px}.care-site.viara-professional .care-dialog.archive-dialog{width:calc(100% - 20px);max-height:calc(100dvh - 24px);padding:20px 16px;border-radius:16px}.care-site.viara-professional .care-dialog.archive-dialog .care-dialog-heading{margin-bottom:20px;padding-bottom:15px}.care-site.viara-professional .care-dialog.archive-dialog .care-dialog-heading h2{font-size:20px}.archive-estimator .ae-input-heading h3{font-size:17px}.archive-estimator .ae-modalities button{min-height:38px}.archive-estimator .ae-number input{font-size:18px}.archive-estimator .ae-number>span{font-size:11px}.archive-estimator .ae-result{margin-top:16px}.archive-estimator .ae-summary{grid-template-columns:1fr 1fr}.archive-estimator .ae-disclaimer{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.archive-estimator *{animation:none!important;transition:none!important}}@media(max-width:700px){.care-site.viara-professional .care-dialog.archive-dialog .care-dialog-heading{position:sticky;top:0;z-index:2;background:#fffefb;padding-block:5px 15px}}

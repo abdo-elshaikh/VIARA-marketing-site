@@ -13,7 +13,7 @@ export async function GET() {
   try {
     return NextResponse.json({ records: await getDb().select().from(reviews).orderBy(desc(reviews.createdAt)).limit(200) }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch {
-    return NextResponse.json({ records: [] }, { headers: { 'Cache-Control': 'private, no-store' } });
+    return NextResponse.json({ error: 'تعذر تحميل الآراء / Could not load reviews' }, { status: 503, headers: { 'Cache-Control': 'private, no-store' } });
   }
 }
 

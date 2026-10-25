@@ -9,12 +9,22 @@ export type AdminUser = {
 
 export const ADMIN_COOKIE_NAME = 'viara_admin_session';
 
-export function getAdminSecret(): string {
-  return process.env.VIARA_ADMIN_PASSWORD || process.env.VIARA_ADMIN_KEY || 'viara2026admin';
+export class AdminSecretNotConfiguredError extends Error {
+  constructor() {
+    super('VIARA_ADMIN_PASSWORD is not configured');
+    this.name = 'AdminSecretNotConfiguredError';
+  }
 }
 
-export function getConfiguredAdminEmail(): string {
-  return process.env.VIARA_ADMIN_EMAIL || 'admin@viara.health';
+export function getAdminSecret(): string {
+  const secret = process.env.VIARA_ADMIN_PASSWORD || process.env.VIARA_ADMIN_KEY;
+  if (!secret || secret.trim().length < 8) throw new AdminSecretNotConfiguredError();
+  return secret;
+}
+
+export function getConfiguredAdminEmail(): string | null {
+  const email = process.env.VIARA_ADMIN_EMAIL?.trim();
+  return email ? email : null;
 }
 
 function toBase64Url(str: string): string {
@@ -39,6 +49,15 @@ async function sha256Hex(text: string): Promise<string> {
   return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+export function timingSafeEqualHex(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
 export async function createAdminSession(email: string): Promise<string> {
   const ts = Date.now().toString();
   const secret = getAdminSecret();
@@ -54,12 +73,13 @@ export async function verifyAdminSession(token: string | undefined): Promise<str
   try {
     const email = fromBase64Url(b64Email);
     const timestamp = Number(ts);
-    if (isNaN(timestamp) || Date.now() - timestamp > 7 * 24 * 60 * 60 * 1000) {
-      return null; // Expired after 7 days
+    const age = Date.now() - timestamp;
+    if (!Number.isFinite(timestamp) || age < 0 || age > SESSION_MAX_AGE_MS) {
+      return null; // Reject future timestamps and sessions older than 7 days
     }
     const secret = getAdminSecret();
     const expectedSig = await sha256Hex(`${email}:${ts}:${secret}`);
-    if (sig !== expectedSig) return null;
+    if (!timingSafeEqualHex(sig, expectedSig)) return null;
     return email;
   } catch {
     return null;
@@ -73,7 +93,7 @@ export async function getAdmin(): Promise<AdminUser | null> {
     const email = await verifyAdminSession(sessionToken);
     if (!email) return null;
     const configured = getConfiguredAdminEmail();
-    if (!matchesAdmin(email, configured)) return null;
+    if (!configured || !matchesAdmin(email, configured)) return null;
     return {
       userId: 'admin',
       email,
@@ -86,5 +106,12 @@ export async function getAdmin(): Promise<AdminUser | null> {
 
 export function sameOrigin(request: Request) {
   const origin = request.headers.get('origin');
-  return !origin || origin === new URL(request.url).origin;
+  if (origin) return origin === new URL(request.url).origin;
+  const referer = request.headers.get('referer');
+  if (!referer) return false; // Fail closed: browsers send Origin/Referer on state-changing fetches
+  try {
+    return new URL(referer).origin === new URL(request.url).origin;
+  } catch {
+    return false;
+  }
 }

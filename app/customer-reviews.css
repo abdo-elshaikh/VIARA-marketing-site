@@ -1,0 +1,79 @@
+.customer-reviews {
+  display: grid;
+  grid-template-columns: 1fr 1.65fr;
+  align-items: start;
+  gap: 90px;
+  padding-block: 90px 45px;
+  scroll-margin-top: 110px;
+}
+.cr-intro { padding-top: 14px; padding-inline: 3px; min-width: 0; }
+.cr-intro > p {
+  max-width: 320px;
+  margin-top: 22px;
+  font-size: 16px;
+  line-height: 1.95;
+  color: var(--care-muted);
+}
+.cr-summary { border-top: 1px solid var(--care-line); margin-top: 30px; padding-top: 24px; }
+.cr-average { display: flex; align-items: center; gap: 12px; }
+.cr-average > svg { color: #98713c; flex-shrink: 0; }
+.cr-average strong { font-family: Manrope, sans-serif; font-size: 35px; font-weight: 600; line-height: 1.3; direction: ltr; unicode-bidi: isolate; }
+.cr-average small { font-size: 15px; font-weight: 400; color: var(--care-muted); }
+.cr-summary > p { font-size: 13px; color: var(--care-muted); margin-top: 10px; line-height: 1.8; }
+.cr-summary > span { display: block; margin-top: 4px; font-size: 12px; color: #85663d; }
+.cr-carousel { min-width: 0; }
+.care-site .cr-card {
+  background: #fffef9;
+  border: 1px solid var(--care-line);
+  border-radius: 16px;
+  padding: 32px 38px;
+  position: relative;
+  overflow: hidden;
+}
+.cr-card::before { content: ''; position: absolute; inset-block: 0; inset-inline-start: 0; width: 3px; background: #b09463; }
+.cr-card-top { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+.cr-quote-symbol { display: flex; color: #a88a57; }
+.cr-rating { display: inline-flex; gap: 4px; color: #96703d; direction: ltr; }
+.care-site .cr-quote { margin: 0; padding: 0 0 32px; border: 0; background: transparent; }
+.cr-quote > p { font-size: clamp(22px, 2.1vw, 30px); line-height: 1.85; color: var(--care-ink); font-weight: 400; overflow-wrap: anywhere; white-space: pre-line; }
+.care-site .cr-person { display: flex; align-items: center; gap: 14px; padding-top: 22px; margin: 0; border-top: 1px solid var(--care-line); color: var(--care-ink); }
+.cr-avatar { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; flex-shrink: 0; background: #eaf0e1; color: #456143; border: 1px solid #dce5ce; border-radius: 50%; font-size: 15px; font-weight: 700; }
+.cr-person > div { min-width: 0; overflow-wrap: anywhere; }
+.cr-person strong { display: block; font-size: 16px; line-height: 1.7; font-weight: 700; }
+.cr-person > div > span { display: block; font-size: 13px; color: var(--care-muted); line-height: 1.8; margin-top: 3px; }
+.cr-card .cr-system { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 20px; min-height: 32px; font-size: 12px; color: var(--care-green); }
+.cr-system:hover { text-decoration: underline; }
+.cr-system bdi { font-family: Manrope, sans-serif; font-size: 10px; color: #85663d; }
+.cr-navigation { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding-top: 20px; }
+.cr-position { display: flex; align-items: center; gap: 18px; flex: 1; }
+.cr-position > span:first-child { font-size: 13px; color: var(--care-muted); direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
+.cr-progress { display: block; width: 96px; height: 2px; background: #e2e6da; }
+.cr-progress > i { display: block; height: 100%; background: #ad8c56; transition: width .2s; }
+.cr-navigation-buttons { display: flex; gap: 10px; }
+.cr-navigation-buttons > button { display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border: 1px solid #cfd9c5; border-radius: 50%; background: transparent; color: var(--care-green); transition: background .2s, color .2s; }
+.cr-navigation-buttons > button:hover:not(:disabled) { background: var(--care-green); border-color: var(--care-green); color: white; }
+.cr-navigation-buttons > button:disabled { opacity: .35; cursor: not-allowed; }
+@media (max-width: 1100px) {
+  .customer-reviews { grid-template-columns: 1fr 1.5fr; gap: 45px; }
+  .care-site .cr-card { padding: 28px; }
+}
+@media (max-width: 760px) {
+  .customer-reviews { grid-template-columns: 1fr; gap: 28px; padding-block: 60px 20px; }
+  .cr-intro { padding-top: 0; }
+  .cr-intro > p { max-width: none; margin-top: 17px; font-size: 15px; }
+  .cr-summary { margin-top: 20px; padding-top: 18px; }
+  .cr-average strong { font-size: 29px; }
+  .care-site .cr-card { padding: 25px 23px; }
+  .cr-quote > p { font-size: 22px; line-height: 1.9; }
+  .cr-card-top { margin-bottom: 18px; }
+  .care-site .cr-quote { padding-bottom: 26px; }
+  .cr-person strong { font-size: 15px; }
+  .cr-person > div > span { font-size: 12px; }
+}
+@media (max-width: 380px) {
+  .care-site .cr-card { padding: 22px 20px; }
+  .cr-progress { width: 64px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .customer-reviews * { transition: none !important; }
+}

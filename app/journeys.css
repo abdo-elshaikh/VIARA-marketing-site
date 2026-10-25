@@ -2,13 +2,6 @@
 /* Redesigned to match the shared care design system.                        */
 
 /* ── Hero / intro section ───────────────────────────────────────────────── */
-.jrn-hero {
-  background: linear-gradient(135deg, #eef1e9 0%, #fbfaf5 55%, #f3f5ee 100%);
-  border-bottom: 1px solid var(--care-line);
-  padding-block: 70px 56px;
-  position: relative;
-  overflow: hidden;
-}
 .jrn-hero::after {
   content: '';
   position: absolute;
@@ -19,27 +12,6 @@
   border: 1px solid #b1966340;
   transform: rotate(45deg);
   pointer-events: none;
-}
-.jrn-hero-inner {
-  max-width: 760px;
-}
-.jrn-hero h1 {
-  font-size: clamp(36px, 4.2vw, 60px);
-  line-height: 1.3;
-  letter-spacing: -1.2px;
-  font-weight: 700;
-  margin-top: 4px;
-}
-.jrn-hero h1 em {
-  font-style: normal;
-  color: var(--care-green);
-}
-.jrn-hero > div > p {
-  font-size: 17px;
-  color: var(--care-muted);
-  line-height: 1.95;
-  margin-top: 20px;
-  max-width: 600px;
 }
 
 /* ── Explorer layout ────────────────────────────────────────────────────── */
@@ -278,6 +250,15 @@
 .jrn-system-name-row a:hover {
   color: var(--care-green);
   text-decoration: underline;
+}
+.jrn-tech-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #e2ede0;
+  border: 1px solid #c9dec8;
+  color: #275239;
 }
 .jrn-system-desc {
   font-size: 13px;
@@ -522,16 +503,6 @@
 }
 
 @media (max-width: 600px) {
-  .jrn-hero {
-    padding-block: 44px 38px;
-  }
-  .jrn-hero h1 {
-    font-size: 36px;
-    letter-spacing: -0.8px;
-  }
-  .jrn-hero > div > p {
-    font-size: 16px;
-  }
   .jrn-explorer {
     padding-block: 40px 55px;
   }

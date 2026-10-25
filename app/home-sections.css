@@ -1,0 +1,969 @@
+/* ==========================================================================
+   VIARA Modern Homepage Sections (صفحة البداية المتطورة)
+   Rich, Professional Healthcare IT Design System
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Proof & High-Trust Metrics Strip (شريط الثقة والمؤشرات الطبية)
+   -------------------------------------------------------------------------- */
+.vhm-proof-strip {
+  background: linear-gradient(180deg, #f7faf8 0%, #edf5f0 100%);
+  border-block: 1px solid #dce8e0;
+  padding-block: 32px;
+  position: relative;
+  z-index: 2;
+}
+
+.vhm-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.vhm-proof-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(220, 232, 224, 0.8);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.vhm-proof-item:hover {
+  transform: translateY(-2px);
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(7, 62, 50, 0.06);
+}
+
+.vhm-proof-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #e8f5ee;
+  border: 1px solid #cce5d6;
+  color: #007b61;
+  flex-shrink: 0;
+}
+
+.vhm-proof-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.vhm-proof-value {
+  font-size: clamp(20px, 1.8vw, 26px);
+  font-weight: 800;
+  color: #073e32;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  font-family: inherit;
+}
+
+.vhm-proof-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #235443;
+  margin-top: 3px;
+}
+
+.vhm-proof-sub {
+  font-size: 11px;
+  color: #63796d;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   2. Interactive Systems Showcase (عرض الأنظمة التفاعلي المتقدم)
+   -------------------------------------------------------------------------- */
+.vhm-solutions {
+  padding-block: 84px 50px;
+  scroll-margin-top: 100px;
+}
+
+.vhm-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 36px;
+}
+
+.vhm-head-copy {
+  max-width: 680px;
+}
+
+.vhm-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #007b61;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.vhm-kicker::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #007b61;
+  box-shadow: 0 0 0 4px rgba(0, 123, 97, 0.15);
+}
+
+.vhm-head-copy h2 {
+  font-size: clamp(28px, 2.6vw, 38px);
+  font-weight: 800;
+  line-height: 1.35;
+  color: #073e32;
+  margin: 0 0 14px;
+  letter-spacing: -0.6px;
+}
+
+.vhm-head-copy p {
+  font-size: 15px;
+  line-height: 1.85;
+  color: #556c60;
+  margin: 0;
+}
+
+.vhm-all-systems-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #007b61;
+  white-space: nowrap;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: #edf6f1;
+  border: 1px solid #d0e7d9;
+  transition: all 0.2s ease;
+}
+
+.vhm-all-systems-link:hover {
+  background: #007b61;
+  color: #ffffff;
+  border-color: #007b61;
+  box-shadow: 0 6px 16px rgba(0, 123, 97, 0.2);
+}
+
+/* Segmented Tab Navigator */
+.vhm-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  background: #edf4ee;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid #dce8df;
+  margin-bottom: 24px;
+}
+
+.vhm-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: start;
+  transition: all 0.2s ease;
+  color: #50685c;
+}
+
+.vhm-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: #073e32;
+}
+
+.vhm-tab-btn.is-active {
+  background: #ffffff;
+  border-color: #c9ded2;
+  box-shadow: 0 4px 14px rgba(7, 62, 50, 0.08);
+  color: #073e32;
+}
+
+.vhm-tab-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #eef6f1;
+  color: #007b61;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.vhm-tab-btn.is-active .vhm-tab-icon {
+  background: #007b61;
+  color: #ffffff;
+}
+
+.vhm-tab-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.vhm-tab-code {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #007b61;
+  direction: ltr;
+}
+
+.vhm-tab-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+/* Showcase Panel */
+.vhm-showcase-panel {
+  display: grid;
+  grid-template-columns: 1.05fr 1.2fr;
+  gap: 36px;
+  background: #ffffff;
+  border: 1px solid #d9e6dc;
+  border-radius: 18px;
+  padding: 36px;
+  box-shadow: 0 10px 34px rgba(7, 62, 50, 0.05);
+  align-items: center;
+  animation: vhm-fade 0.25s ease-out;
+}
+
+@keyframes vhm-fade {
+  from { opacity: 0.6; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.vhm-showcase-copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.vhm-system-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.vhm-code-chip {
+  padding: 4px 10px;
+  background: #073e32;
+  color: #f7f9f2;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  direction: ltr;
+}
+
+.vhm-cat-tag {
+  font-size: 12px;
+  color: #5f786c;
+  font-weight: 600;
+}
+
+.vhm-showcase-copy h3 {
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 800;
+  color: #073e32;
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
+.vhm-showcase-copy p {
+  font-size: 15px;
+  line-height: 1.85;
+  color: #52685c;
+  margin: 0 0 20px;
+}
+
+.vhm-highlights-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  display: grid;
+  gap: 10px;
+}
+
+.vhm-highlights-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #274b3d;
+  font-weight: 500;
+}
+
+.vhm-highlights-list svg {
+  color: #007b61;
+  flex-shrink: 0;
+}
+
+.vhm-tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+  padding-top: 14px;
+  border-top: 1px solid #e7efe9;
+}
+
+.vhm-tech-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #f1f7f3;
+  border: 1px solid #d7e8dd;
+  font-size: 11px;
+  font-weight: 600;
+  color: #295745;
+}
+
+.vhm-showcase-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.vhm-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  background: #007b61;
+  color: #ffffff;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 123, 97, 0.2);
+}
+
+.vhm-btn-primary:hover {
+  background: #056651;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 123, 97, 0.3);
+}
+
+.vhm-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  background: #ffffff;
+  color: #073e32;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1px solid #c8dcd0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vhm-btn-secondary:hover {
+  border-color: #007b61;
+  background: #f4faf6;
+  color: #007b61;
+}
+
+/* Showcase Visual (Real System Preview) */
+.vhm-showcase-visual {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #073e32;
+  box-shadow: 0 12px 32px rgba(7, 62, 50, 0.14);
+  border: 1px solid #235848;
+}
+
+.vhm-capture-link {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.vhm-capture-link img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.vhm-capture-link:hover img {
+  transform: scale(1.02);
+}
+
+.vhm-capture-overlay {
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  padding: 18px 20px 14px;
+  background: linear-gradient(180deg, transparent 0%, rgba(7, 62, 50, 0.88) 35%, rgba(7, 62, 50, 0.98) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #f7f9f2;
+}
+
+.vhm-capture-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.vhm-capture-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(246, 199, 71, 0.2);
+  border: 1px solid rgba(246, 199, 71, 0.5);
+  color: #f6c747;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   3. Four Strategic Value Pillars (ركائز القيمة والاعتماد الطبي)
+   -------------------------------------------------------------------------- */
+.vhm-pillars {
+  padding-block: 70px 60px;
+  background: #fbfdfb;
+  border-top: 1px solid #dce8df;
+}
+
+.vhm-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-top: 36px;
+}
+
+.vhm-pillar-card {
+  display: flex;
+  flex-direction: column;
+  padding: 28px 24px;
+  background: #ffffff;
+  border: 1px solid #d9e6dd;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(7, 62, 50, 0.04);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.vhm-pillar-card:hover {
+  transform: translateY(-4px);
+  border-color: #007b61;
+  box-shadow: 0 14px 30px rgba(7, 62, 50, 0.1);
+}
+
+.vhm-pillar-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: #edf6f1;
+  border: 1px solid #cce5d6;
+  color: #007b61;
+  margin-bottom: 20px;
+}
+
+.vhm-pillar-card h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #073e32;
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+
+.vhm-pillar-card p {
+  font-size: 14px;
+  line-height: 1.85;
+  color: #556c60;
+  margin: 0;
+  flex: 1;
+}
+
+/* --------------------------------------------------------------------------
+   4. Facility Matcher Section (حلول مهيأة لطبيعة منشأتك الطبية)
+   -------------------------------------------------------------------------- */
+.vhm-facilities {
+  padding-block: 70px 60px;
+  border-top: 1px solid #dce8df;
+}
+
+.vhm-facilities-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-top: 36px;
+}
+
+.vhm-facility-card {
+  display: flex;
+  flex-direction: column;
+  padding: 26px 22px;
+  background: #ffffff;
+  border: 1px solid #d9e6dd;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(7, 62, 50, 0.04);
+  transition: all 0.25s ease;
+}
+
+.vhm-facility-card:hover {
+  border-color: #007b61;
+  box-shadow: 0 12px 28px rgba(7, 62, 50, 0.09);
+  transform: translateY(-3px);
+}
+
+.vhm-facility-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.vhm-facility-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #edf6f1;
+  color: #007b61;
+  border: 1px solid #d0e7d9;
+}
+
+.vhm-facility-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #073e32;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.vhm-facility-systems-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.vhm-facility-chip {
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: #073e32;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  direction: ltr;
+}
+
+.vhm-facility-card p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #556c60;
+  margin: 0 0 20px;
+  flex: 1;
+}
+
+.vhm-facility-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #f1f7f3;
+  color: #007b61;
+  border: 1px solid #cce5d6;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vhm-facility-btn:hover {
+  background: #007b61;
+  color: #ffffff;
+  border-color: #007b61;
+}
+
+/* --------------------------------------------------------------------------
+   5. Modern Rollout & Planning Banner (التخطيط الاستراتيجي وسعة الأرشفة)
+   -------------------------------------------------------------------------- */
+.vhm-planning-banner {
+  background: linear-gradient(135deg, #073e32 0%, #104e3f 100%);
+  border: 1px solid #236350;
+  border-radius: 20px;
+  padding: 44px 48px;
+  color: #f7f9f2;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 50px;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  margin-block: 40px;
+  box-shadow: 0 16px 40px rgba(7, 62, 50, 0.18);
+}
+
+.vhm-planning-banner::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  inset-inline-start: -80px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(246, 199, 71, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.vhm-planning-copy h2 {
+  font-size: clamp(26px, 2.3vw, 34px);
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 12px;
+  line-height: 1.35;
+}
+
+.vhm-planning-copy h2 em {
+  font-style: normal;
+  color: #f6c747;
+}
+
+.vhm-planning-copy p {
+  font-size: 15px;
+  line-height: 1.85;
+  color: #c9ded3;
+  margin: 0 0 24px;
+  max-width: 520px;
+}
+
+.vhm-planning-explore-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  transition: color 0.2s ease;
+}
+
+.vhm-planning-explore-link:hover {
+  color: #f6c747;
+}
+
+.vhm-planning-actions {
+  display: grid;
+  gap: 14px;
+}
+
+.vhm-planning-action-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-align: start;
+}
+
+.vhm-planning-action-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #f6c747;
+  transform: translateY(-2px);
+}
+
+.vhm-action-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f6c747;
+  flex-shrink: 0;
+}
+
+.vhm-action-copy {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.vhm-action-copy strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.vhm-action-copy small {
+  font-size: 12px;
+  color: #c5ded2;
+  line-height: 1.6;
+  margin-top: 3px;
+}
+
+.vhm-action-arrow {
+  color: #f6c747;
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   6. Testimonials & Customer Perspectives (مراجعات العملاء)
+   -------------------------------------------------------------------------- */
+.home-reviews {
+  padding-block: 40px;
+}
+
+.home-review-panel {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 24px;
+  background: #f2f7f3;
+  border: 1px solid #dce8df;
+  border-radius: 16px;
+  padding: 36px 40px;
+  align-items: flex-start;
+}
+
+.home-review-panel > svg {
+  color: #007b61;
+}
+
+.home-review-content blockquote {
+  margin: 0;
+}
+
+.home-review-content blockquote p {
+  font-size: clamp(18px, 1.8vw, 22px);
+  line-height: 1.8;
+  color: #073e32;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+
+.home-review-content cite {
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 700;
+  color: #4a6859;
+}
+
+.home-review-controls {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.home-review-controls bdi {
+  font-size: 12px;
+  font-weight: 700;
+  color: #557263;
+}
+
+.home-review-controls button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #c9dec2;
+  color: #007b61;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.home-review-controls button:hover:not(:disabled) {
+  background: #007b61;
+  color: #ffffff;
+  border-color: #007b61;
+}
+
+.home-review-controls button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* --------------------------------------------------------------------------
+   7. FAQ Section (الأسئلة الشائعة)
+   -------------------------------------------------------------------------- */
+.care-faq {
+  padding-block: 60px 80px;
+}
+
+.care-faq details {
+  background: #ffffff;
+  border: 1px solid #dce8df;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.care-faq details:hover {
+  border-color: #007b61;
+}
+
+.care-faq details[open] {
+  border-color: #007b61;
+  box-shadow: 0 6px 20px rgba(0, 123, 97, 0.06);
+}
+
+.care-faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 16px;
+  font-weight: 700;
+  color: #073e32;
+  user-select: none;
+}
+
+.care-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.care-faq summary svg {
+  color: #007b61;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.care-faq details[open] summary svg {
+  transform: rotate(45deg);
+}
+
+.care-faq details p {
+  padding: 0 24px 22px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.85;
+  color: #556c60;
+}
+
+/* --------------------------------------------------------------------------
+   8. Responsive Design Breakpoints
+   -------------------------------------------------------------------------- */
+@media (max-width: 1200px) {
+  .vhm-proof-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .vhm-tabs {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .vhm-showcase-panel {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .vhm-pillars-grid,
+  .vhm-facilities-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .vhm-planning-banner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 36px 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .vhm-proof-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .vhm-section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .vhm-tabs {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .vhm-tab-btn {
+    padding: 10px 12px;
+  }
+  .vhm-showcase-panel {
+    padding: 22px 18px;
+    border-radius: 14px;
+  }
+  .vhm-showcase-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .vhm-btn-primary,
+  .vhm-btn-secondary {
+    justify-content: center;
+  }
+  .vhm-pillars-grid,
+  .vhm-facilities-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .vhm-planning-banner {
+    padding: 28px 20px;
+    border-radius: 14px;
+  }
+  .home-review-panel {
+    grid-template-columns: 1fr;
+    padding: 24px;
+  }
+  .home-review-controls {
+    grid-column: 1;
+  }
+}

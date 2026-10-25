@@ -1,613 +1,142 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import {
-  ArrowUpLeft, ArrowUpRight, ArrowLeft, ArrowRight,
-  Check, Plus, X, Hospital, ScanLine, Stethoscope,
-  Microscope, Network, Layers3, HeartPulse, Route, ShieldCheck,
-} from 'lucide-react';
-import { txt, type Locale, type SiteContent, type PublicReview } from '../lib/site-content';
-import { healthcareCategories, healthcareSystems, facilityProfiles } from '../lib/healthcare-catalog.mjs';
+
+import Link from 'next/link';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { ArrowUpLeft, ArrowUpRight, Check, Layers3, Mail, MessageCircle, Phone, Plus, Quote, ScanLine, X, Images, CalendarDays, BrainCircuit, PanelsTopLeft, HardDrive } from 'lucide-react';
+import { isOfferActive, txt, type Locale, type PublicReview, type SiteContent } from '../lib/site-content';
+import { marketingSystemIds, marketingFacilityProfiles } from '../lib/healthcare-catalog.mjs';
 import { scopeEstimateSchema, type ScopeEstimate } from '../lib/inquiry';
+import { solutionPath } from '../lib/solutions';
+import { systemCaptures } from '../lib/system-captures';
+import { heroVisuals } from '../lib/home-hero-visuals';
+import { useSiteText } from '../lib/site-copy';
 import CareFrame from './care-frame';
 import CareHero from './care-hero';
 import LeadForm from './lead-form';
 import ScopeCalculator from './scope-calculator';
+import './brand-editorial.css';
+import './home-redesign.css';
 
-export default function CareHome({
-  content,
-  locale = 'ar',
-  reviews = [],
-}: {
-  content: SiteContent;
-  locale?: Locale;
-  reviews?: PublicReview[];
-}) {
+const iconBySystem: Record<string, typeof ScanLine> = { RIS: ScanLine, PACS: Images, CMS: CalendarDays, AI: BrainCircuit, PORTAL: PanelsTopLeft };
+
+export default function CareHome({ content, locale = 'ar', reviews = [] }: { content: SiteContent; locale?: Locale; reviews?: PublicReview[] }) {
   const en = locale === 'en';
   const prefix = en ? '/en' : '';
-  const t = (ar: string, english: string) => en ? english : ar;
+  const t = useSiteText(locale, content);
   const Arrow = en ? ArrowUpRight : ArrowUpLeft;
-
-  const [profile, setProfile] = useState('hospital');
   const [interest, setInterest] = useState('CONSULT');
   const [plan, setPlan] = useState('لم أحدد بعد');
   const [offer, setOffer] = useState('');
   const [requestedSystems, setRequestedSystems] = useState<string[]>([]);
   const [requestedFacility, setRequestedFacility] = useState('');
   const [scope, setScope] = useState<ScopeEstimate | null>(null);
-  const [modal, setModal] = useState<'privacy' | 'calculator' | null>(null);
-  const [currentSlide, setCurrentSlide] = useState<number>(0);
-
+  const [dialogName, setDialogName] = useState<'privacy' | 'calculator' | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLElement | null>(null);
+  const tabButtons = useRef<Record<string, HTMLButtonElement | null>>({});
+  const products = marketingSystemIds.flatMap(id => content.products.filter(product => product.id === id && product.enabled));
+  const [activeId, setActiveId] = useState(products[0]?.id || 'RIS');
+  const activeProduct = products.find(product => product.id === activeId) || products[0];
+  const visual = heroVisuals.find(item => item.id === activeProduct?.id);
+  const activeCapture = activeProduct && visual ? (systemCaptures[activeProduct.id] || []).find(item => visual.captures.includes(item.id)) : undefined;
+  const previewImage = activeCapture?.image || visual?.image;
 
-  const allowed = healthcareSystems.filter(
-    system => !content.products.some(p => p.id === system.id && !p.enabled)
-  );
-  const selectedProfile = facilityProfiles.find(p => p.id === profile)!;
-  const suggested = allowed.filter(s => selectedProfile.systems.includes(s.id));
+  const goToContact = (systems: string[] = [], facility = '', estimate: ScopeEstimate | null = null) => {
+    setRequestedSystems(systems);
+    setRequestedFacility(facility);
+    setInterest(systems.length === 1 ? systems[0] : 'CONSULT');
+    setScope(estimate);
+    requestAnimationFrame(() => {
+      document.getElementById('home-contact-title')?.focus({ preventScroll: true });
+      document.getElementById('contact')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+  };
 
-  const scroll = () =>
-    requestAnimationFrame(() =>
-      document.getElementById('contact')?.scrollIntoView({
-        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-      })
-    );
-
-  const statsData = [
-    { number: '500', suffix: '+', label: t('منشأة طبية', 'Healthcare facilities') },
-    { number: '15', suffix: '+', label: t('دولة حول العالم', 'Countries worldwide') },
-    { number: '99.9', suffix: '%', label: t('وقت التشغيل المضمون', 'Guaranteed uptime') },
-    { number: '50', suffix: '+', label: t('نظاماً صحياً متخصصاً', 'Specialized health systems') },
-  ];
-
-  const hiwSteps = [
-    {
-      icon: Route,
-      title: t('نفهم سير عملك', 'We understand your workflow'),
-      body: t(
-        'نجلس مع فريقك لفهم الأقسام والأنظمة القائمة وتحديد أولويات الربط.',
-        'We meet your team to map current workflows, systems and integration priorities.'
-      ),
-    },
-    {
-      icon: ShieldCheck,
-      title: t('نصمم النطاق الأمثل', 'We design the optimal scope'),
-      body: t(
-        'نختار الأنظمة المناسبة وخطة التنفيذ المرحلية وفق بيئتك التقنية.',
-        'We select the right systems and phased rollout plan for your technical environment.'
-      ),
-    },
-    {
-      icon: HeartPulse,
-      title: t('ننفذ ونرافقك دائماً', 'We deliver and stay with you'),
-      body: t(
-        'تشغيل حي مع تدريب الكوادر ودعم مستمر طوال رحلة التحول الرقمي.',
-        'Live go-live with staff training and ongoing support throughout your digital transformation.'
-      ),
-    },
-  ];
-
-  // Read browser-only request context after hydration.
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       const query = new URLSearchParams(location.search);
-      const ids = [...new Set((query.get('systems') || '').split(','))]
-        .filter(
-          id =>
-            healthcareSystems.some(s => s.id === id) &&
-            !content.products.some(p => p.id === id && !p.enabled)
-        )
-        .slice(0, 6);
-      if (ids.length) setRequestedSystems(ids);
+      const systems = [...new Set((query.get('systems') || '').split(','))].filter(id => marketingSystemIds.includes(id) && content.products.some(product => product.id === id && product.enabled)).slice(0, 6);
       const facility = query.get('facility') || '';
-      if (facilityProfiles.some(p => p.id === facility)) setRequestedFacility(facility);
-      const packageId = query.get('plan');
-      if (content.plans.some(p => p.enabled && p.id === packageId)) setPlan(packageId!);
-      const product = query.get('interest');
-      if (content.products.some(p => p.enabled && p.id === product)) setInterest(product!);
+      const product = query.get('interest') || '';
+      if (systems.length) { setRequestedSystems(systems); setActiveId(systems[0]); }
+      if (marketingFacilityProfiles.some(item => item.id === facility)) setRequestedFacility(facility);
+      if (content.products.some(item => item.id === product && item.enabled)) { setInterest(product); setActiveId(product); }
+      const selectedPlan = query.get('plan');
+      if (content.plans.some(item => item.id === selectedPlan && item.enabled)) setPlan(selectedPlan!);
       try {
         const stored = sessionStorage.getItem('viara-planned-scope');
-        if (stored) {
-          const parsed = scopeEstimateSchema.safeParse(JSON.parse(stored));
-          if (parsed.success) setScope(parsed.data);
-          sessionStorage.removeItem('viara-planned-scope');
-        }
-      } catch {
-        /* Storage is optional. */
-      }
+        if (stored) { const parsed = scopeEstimateSchema.safeParse(JSON.parse(stored)); if (parsed.success) setScope(parsed.data); sessionStorage.removeItem('viara-planned-scope'); }
+      } catch { /* Browser storage is optional. */ }
       if (location.hash === '#calculator') {
-        trigger.current = document.getElementById('care-calculator-link');
-        setModal('calculator');
+        trigger.current = document.getElementById('home-archive-trigger');
+        setDialogName('calculator');
       }
     });
     return () => cancelAnimationFrame(frame);
-  }, [content]);
-
-  // Intersection Observer for scroll animations.
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries =>
-        entries.forEach(entry => {
-          if (entry.isIntersecting) entry.target.classList.add('is-visible');
-        }),
-      { threshold: 0.15 }
-    );
-    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+  }, [content, locale]);
 
   useEffect(() => {
-    if (modal && !dialog.current?.open) dialog.current?.showModal();
-    else if (!modal && dialog.current?.open) dialog.current.close();
-  }, [modal]);
+    if (dialogName && !dialog.current?.open) dialog.current?.showModal();
+    if (!dialogName && dialog.current?.open) dialog.current.close();
+  }, [dialogName]);
 
-  const open = (name: 'privacy' | 'calculator') => {
-    trigger.current = document.activeElement as HTMLElement;
-    setModal(name);
+  const openDialog = (name: 'privacy' | 'calculator') => { trigger.current = document.activeElement as HTMLElement; setDialogName(name); };
+  const closeDialog = () => { setDialogName(null); requestAnimationFrame(() => trigger.current?.focus()); };
+  const activeOffers = content.sections.offers ? content.offers.filter(offerItem => isOfferActive(offerItem)) : [];
+  const navigateTabs = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let next = index;
+    if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = products.length - 1;
+    else if (event.key === 'ArrowRight') next = (index + (en ? 1 : -1) + products.length) % products.length;
+    else if (event.key === 'ArrowLeft') next = (index + (en ? -1 : 1) + products.length) % products.length;
+    else return;
+    event.preventDefault();
+    setActiveId(products[next].id);
+    tabButtons.current[products[next].id]?.focus();
   };
-  const close = () => {
-    setModal(null);
-    requestAnimationFrame(() => trigger.current?.focus());
-  };
 
-  const domainDescriptions = [
-    t('المستشفيات والملف الطبي والعيادات والتمريض.', 'Hospitals, records, clinics and nursing.'),
-    t('الأشعة والصور الطبية والمختبرات وبنوك الدم.', 'Radiology, imaging, laboratories and blood banks.'),
-    t('الإيرادات والصيدليات والموارد وذكاء الأعمال.', 'Revenue, pharmacy, resources and analytics.'),
-    t('بوابة المريض والرعاية عن بُعد والتكامل.', 'Patient portals, telehealth and interoperability.'),
-  ];
+  return <CareFrame content={content} locale={locale}>
+    <div className="ve-page home-redesign">
+      <CareHero content={content} locale={locale} onDiscuss={goToContact} />
 
-  const domainIcons = [HeartPulse, ScanLine, Layers3, Network];
-
-  const facilityIcons = [Hospital, Stethoscope, ScanLine, Microscope, Network];
-
-  const marqueeLabels = [
-    t('المستشفيات', 'Hospitals'),
-    t('العيادات', 'Clinics'),
-    t('الأشعة', 'Radiology'),
-    t('المختبرات', 'Laboratories'),
-    t('الرعاية الرقمية', 'Digital care'),
-  ];
-
-  return (
-    <CareFrame content={content} locale={locale}>
-      <CareHero
-        content={content}
-        locale={locale}
-        onDiscuss={(ids, facility) => {
-          setRequestedSystems(ids);
-          setRequestedFacility(facility);
-          setInterest('CONSULT');
-          setScope(null);
-          scroll();
-        }}
-      />
-
-      {/* Context bar with marquee */}
-      <div className="care-context-bar">
-        <div className="care-wrap">
-          <span>{t('منظومة رعاية متكاملة لكل مرحلة في منشأتك', 'AN INTEGRATED CARE ECOSYSTEM FOR YOUR FACILITY')}</span>
-          <div className="care-marquee-track" aria-hidden="true">
-            {marqueeLabels.map(label => <span key={label}>{label}</span>)}
-            {marqueeLabels.map(label => <span key={`dup-${label}`}>{label}</span>)}
-          </div>
-        </div>
-      </div>
-
-      {/* Stats section */}
-      <section className="care-stats animate-on-scroll">
-        <div className="care-wrap">
-          <div className="care-stats-grid">
-            {statsData.map(stat => (
-              <div key={stat.label} className="care-stat-item">
-                <span className="care-stat-number">
-                  {stat.number}
-                  <span className="care-stat-suffix">{stat.suffix}</span>
-                </span>
-                <p className="care-stat-label">{stat.label}</p>
-              </div>
-            ))}
-          </div>
+      <section className="home-proof-band" aria-label={t('نطاق VIARA', 'VIARA scope')}>
+        <div className="care-wrap home-proof-grid">
+          <span>{t('حلول مخصصة للأشعة وتشغيل المراكز الطبية', 'Purpose-built for radiology and medical centers')}</span>
+          <span>{t('واجهة عربية وإنجليزية', 'Arabic and English experience')}</span>
+          <span>{t('نطاق يحدد بعد فهم طريقة العمل', 'Scope defined around your workflow')}</span>
         </div>
       </section>
 
-      {/* Systems / domains section */}
-      <section className="care-section care-wrap" id="systems">
-        <div className="care-section-heading animate-on-scroll">
-          <div>
-            <span className="care-eyebrow">{t('منظومة تستوعب طموحك', 'ROOM FOR YOUR AMBITION')}</span>
-            <h2>
-              {t('منظومة صحية متكاملة.', 'A complete health ecosystem.')}
-              <br />
-              <span>{t('مصممة لمنشأتك.', 'Built around your facility.')}</span>
-            </h2>
-          </div>
-          <p>
-            {t(
-              'أربعة مجالات متكاملة تغطي الرعاية السريرية والتشخيص والتشغيل الإداري وتجربة المريض الرقمية. كل مجال يضم أنظمة متخصصة قابلة للربط ضمن منظومة واحدة مصممة لمنشأتك.',
-              'Four integrated domains covering clinical care, diagnostics, administrative operations, and the digital patient experience. Each domain offers specialized systems built to connect within one ecosystem tailored for your facility.'
-            )}
-          </p>
+      <section className="care-wrap home-system-showcase" id="systems" aria-labelledby="home-systems-title">
+        <div className="home-section-heading">
+          <div><span className="home-kicker">{t('المنتج أولاً', 'THE PRODUCT, FIRST')}</span><h2 id="home-systems-title">{t('شاهد ما يدير يوم مركزك.', 'See what runs your center.')}</h2></div>
+          <p>{t('اختر النظام الذي يهم فريقك، وتعرف على وظيفته ومتطلبات تهيئته وربطه. نعرض لقطات التطبيق الفعلية حيث تتوفر، ونوضح الصور التوضيحية.', 'Choose a system and explore its role, configuration and integration needs. Actual application captures are shown where available, with conceptual images clearly labeled.')}</p>
         </div>
-        <div className="care-domain-grid">
-          {healthcareCategories.map((category, index) => {
-            const Icon = domainIcons[index];
-            return (
-              <a
-                href={`${prefix}/systems?area=${category.id}`}
-                className="care-domain animate-on-scroll"
-                key={category.id}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="care-domain-gradient" aria-hidden="true" />
-                <div>
-                  <Icon size={25} />
-                  <span>0{index + 1}</span>
-                </div>
-                <h3>{txt(category.name, locale)}</h3>
-                <p>{domainDescriptions[index]}</p>
-                <span className="care-domain-bottom">
-                  {allowed.filter(s => s.category === category.id).length}{' '}
-                  {t('مجالات للاستكشاف', 'areas to explore')}
-                  <Arrow size={19} />
-                </span>
-              </a>
-            );
+        <div className="home-system-tabs" role="tablist" aria-label={t('أنظمة VIARA', 'VIARA systems')}>
+          {products.map((product, index) => {
+            const Icon = iconBySystem[product.id] || Layers3;
+            return <button key={product.id} ref={element => { tabButtons.current[product.id] = element; }} id={`home-tab-${product.id}`} type="button" role="tab" aria-selected={activeProduct?.id === product.id} aria-controls="home-system-panel" tabIndex={activeProduct?.id === product.id ? 0 : -1} onKeyDown={event => navigateTabs(event, index)} onClick={() => setActiveId(product.id)}><Icon size={18} /><bdi>{product.id}</bdi><span>{txt(product.name, locale)}</span></button>;
           })}
         </div>
+        {activeProduct && <div className="home-system-panel" id="home-system-panel" role="tabpanel" aria-labelledby={`home-tab-${activeProduct.id}`} tabIndex={0}>
+          <div className="home-system-copy"><span className="home-system-code"><bdi>{activeProduct.id}</bdi> / {t('حل لفريقك', 'A solution for your team')}</span><h3>{txt(activeProduct.headline, locale)}</h3><p>{txt(activeProduct.description, locale)}</p><ul>{activeProduct.features.slice(0, 3).map((feature, index) => <li key={index}><Check size={16} />{txt(feature, locale)}</li>)}</ul><div className="home-actions"><Link className="care-btn" href={solutionPath(activeProduct.id, locale)}>{t('استكشف النظام', 'Explore system')}<Arrow size={17} /></Link><button type="button" className="care-link" onClick={() => goToContact([activeProduct.id])}>{t('ناقش هذا النظام', 'Discuss this system')}<Arrow size={16} /></button></div></div>
+          <figure className="home-system-image">{previewImage ? <><Link href={solutionPath(activeProduct.id, locale)}><img key={previewImage} src={previewImage} width={activeCapture?.width || 1586} height={activeCapture?.height || 992} loading="lazy" alt={txt(activeCapture?.description || visual!.alt, locale)} /></Link><figcaption>{activeCapture ? t('واجهة فعلية من النسخة المحلية؛ بيانات عرض.', 'Actual local application screen; demonstration data.') : t('تصور توضيحي مولّد بهوية VIARA، وليس واجهة فعلية.', 'AI-generated VIARA illustration, not an actual interface.')}</figcaption></> : <div className="home-image-empty"><bdi>{activeProduct.id}</bdi><span>{t('راجع تفاصيل الحل ونطاقه في صفحته.', 'Review this solution and its scope on its page.')}</span></div>}</figure>
+        </div>}
       </section>
 
-      {/* How it Works section */}
-      <section className="care-how-it-works">
-        <div className="care-wrap">
-          <div className="care-section-heading animate-on-scroll">
-            <div>
-              <span className="care-eyebrow">{t('كيف نعمل معك', 'HOW WE WORK')}</span>
-              <h2>
-                {t('ثلاث خطوات.', 'Three steps.')}
-                <br />
-                <span>{t('من الفكرة إلى التشغيل.', 'From idea to operations.')}</span>
-              </h2>
-            </div>
-            <p>
-              {t(
-                'نبدأ بفهم احتياجاتك، ثم نصمم النطاق المناسب، وننفذ بمنهجية واضحة تضمن الاستقرار التشغيلي.',
-                'We start by understanding your needs, design the right scope, then deliver with a clear methodology that ensures operational stability.'
-              )}
-            </p>
-          </div>
-          <div className="care-hiw-grid">
-            {hiwSteps.map((step, i) => (
-              <article
-                key={i}
-                className="care-hiw-step animate-on-scroll"
-                style={{ animationDelay: `${i * 0.12}s` }}
-              >
-                <div className="care-hiw-num">0{i + 1}</div>
-                <div className="care-hiw-icon">
-                  <step.icon size={28} />
-                </div>
-                <h3>{step.title}</h3>
-                <p>{step.body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      {content.sections.about && <section className="home-company-section"><div className="care-wrap home-company-grid"><div className="home-brand-signature"><img src="/assets/viara-symbol.webp" width={130} height={130} loading="lazy" alt="" /><span>VIARA</span><small>HEALTHCARE TECHNOLOGY</small></div><div><span className="home-kicker">{t('تقنية أقرب إلى فريقك', 'TECHNOLOGY CLOSER TO YOUR TEAM')}</span><h2>{txt(content.about.title, locale)}</h2><p>{txt(content.about.body, locale)}</p><Link className="care-link" href={`${prefix}/about`}>{t('تعرف على VIARA وطريقة عملنا', 'Meet VIARA and how we work')}<Arrow size={18} /></Link></div></div></section>}
 
-      {/* Facility type selector */}
-      <section className="care-facility-section">
-        <div className="care-wrap">
-          <div className="care-section-heading">
-            <div>
-              <span className="care-eyebrow">{t('مسارك يبدأ من هنا', 'FIND YOUR STARTING POINT')}</span>
-              <h2>{t('ما نوع منشأتك؟', "What's your facility?")}</h2>
-            </div>
-            <p>
-              {t(
-                'اختر نوع المنشأة لتتعرف على نطاق مبدئي للنقاش. نراجع معك التفاصيل قبل تحديد الحل والتنفيذ.',
-                'Choose your facility for a starting scope. We review the details with you before defining the solution and rollout.'
-              )}
-            </p>
-          </div>
-          <div className="care-facility-tabs" aria-label={t('نوع المنشأة', 'Facility type')}>
-            {facilityProfiles.map((p, index) => {
-              const Icon = facilityIcons[index];
-              return (
-                <button type="button" key={p.id} aria-pressed={profile === p.id} onClick={() => setProfile(p.id)}>
-                  <Icon size={19} />
-                  {txt(p.name, locale)}
-                </button>
-              );
-            })}
-          </div>
-          <div className="care-facility-panel">
-            <div className="care-facility-title">
-              <span className="care-eyebrow">{t('نقطة بداية مقترحة', 'A SUGGESTED START')}</span>
-              <h3>{txt(selectedProfile.name, locale)}</h3>
-              <p>{t('نطاق يناسب سير عملك، مع مساحة للتوسع.', 'A scope shaped around your workflow, with room to grow.')}</p>
-              <button
-                type="button"
-                className="care-link"
-                onClick={() => {
-                  setRequestedSystems(suggested.map(s => s.id));
-                  setRequestedFacility(profile);
-                  setInterest('CONSULT');
-                  setScope(null);
-                  scroll();
-                }}
-              >
-                {t('ناقش هذا النطاق', 'Discuss this scope')}
-                <Arrow size={18} />
-              </button>
-            </div>
-            <div className="care-scope-list" aria-live="polite">
-              {suggested.map(s => (
-                <div key={s.id}>
-                  <Check size={16} />
-                  <span>{txt(s.name, locale)}</span>
-                  <bdi>{s.id}</bdi>
-                </div>
-              ))}
-            </div>
-          </div>
-          <p className="care-note">
-            {t(
-              'الدليل يشمل الحلول الحالية ومجالات التوسع. الإتاحة والتكاملات تُحدد في العرض الفني.',
-              'The directory includes current solutions and expansion areas. Availability and integrations are defined in the technical proposal.'
-            )}
-          </p>
-        </div>
-      </section>
+      {activeOffers.length > 0 && <section className="care-wrap home-offers" aria-labelledby="home-offers-title"><span className="home-kicker">{t('عرض متاح', 'AVAILABLE OFFER')}</span><h2 id="home-offers-title">{t('ابدأ من نطاق واضح.', 'Start with a clear scope.')}</h2><div>{activeOffers.map(offerItem => <article key={offerItem.id}><b>{txt(offerItem.title, locale)}</b><p>{txt(offerItem.description, locale)}</p><button type="button" className="care-link" onClick={() => { setOffer(txt(offerItem.title, locale)); setPlan(offerItem.plan); goToContact(); }}>{t('استخدم العرض في طلبك', 'Use this offer in your request')}<Arrow size={16} /></button></article>)}</div></section>}
 
-      {/* Story / about section */}
-      <section className="care-section care-wrap care-story" id="about">
-        <figure className="animate-on-scroll">
-          <img
-            src="/assets/scenes/arab-diagnostics.webp"
-            width={1536}
-            height={1024}
-            loading="lazy"
-            alt={t(
-              'أخصائية عربية في بيئة تشخيص طبي حديثة، مشهد توضيحي مولد',
-              'Generated illustrative scene of an Arab specialist in a modern diagnostic setting'
-            )}
-          />
-          <figcaption>{t('مشهد توضيحي مولد بالذكاء الاصطناعي', 'AI-generated illustrative scene')}</figcaption>
-        </figure>
-        <div className="animate-on-scroll">
-          <span className="care-eyebrow">{t('شريك تقني بخبرة ميدانية', 'A TECHNOLOGY PARTNER WITH FIELD EXPERTISE')}</span>
-          <h2>
-            {t('أقل تعقيداً إدارياً.', 'Less administrative burden.')}
-            <br />
-            <span>{t('أكثر وقتاً للمريض.', 'More time for patients.')}</span>
-          </h2>
-          <p>
-            {t(
-              'نبدأ بفهم طريقة عمل منشأتك: المواعيد، الفحوصات، التقارير، والحسابات. نحلل سير العمل الفعلي في كل قسم لنحدد نقاط الربط ونصمم نطاقاً يناسب بيئتك التشغيلية تماماً.',
-              'We start by mapping your actual clinical workflows across every department — appointments, diagnostics, reports, and billing — to identify integration points and design a scope that fits your operational environment precisely.'
-            )}
-          </p>
-          <div className="care-values">
-            {[
-              {
-                icon: Route,
-                title: t('تنفيذ على مراحل', 'A phased rollout'),
-                text: t('أولويات واضحة من البداية إلى التدريب.', 'Clear priorities, from discovery to training.'),
-              },
-              {
-                icon: ShieldCheck,
-                title: t('متطلبات واضحة', 'Defined requirements'),
-                text: t(
-                  'الاستضافة والصلاحيات والربط ضمن الدراسة الفنية.',
-                  'Hosting, access and integration reviewed together.'
-                ),
-              },
-            ].map(item => (
-              <div key={item.title}>
-                <item.icon size={22} />
-                <span>
-                  <b>{item.title}</b>
-                  <small>{item.text}</small>
-                </span>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap', marginTop: 24 }}>
-            <a className="care-btn care-btn-small" href={`${prefix}/about`}>
-              {t('اقرأ المزيد عن VIARA', 'More about VIARA')}
-              <Arrow size={16} />
-            </a>
-            <a className="care-link" href={`${prefix}/planning`}>
-              {t('تعرف على خطوات البداية', 'Explore the rollout steps')}
-              <Arrow size={18} />
-            </a>
-          </div>
-        </div>
-      </section>
+      <section className="care-wrap home-planning-section" aria-labelledby="home-planning-title"><div className="home-planning-card"><div><span className="home-kicker">{t('من الاستكشاف إلى خطة', 'FROM EXPLORATION TO A PLAN')}</span><h2 id="home-planning-title">{t('قبل أن تبدأ،', 'Before you begin,')}<br /><em>{t('اجعل النطاق واضحًا.', 'make the scope clear.')}</em></h2><p>{t('الأنظمة المشمولة، متطلبات الربط، التهيئة والتدريب؛ تفاصيل نراجعها معك قبل تحديد التنفيذ.', 'Included systems, integration needs, setup and training: details to review together before defining the rollout.')}</p></div><div className="home-planning-options"><Link href={`${prefix}/planning#packages`}><Layers3 size={23} /><span><strong>{t('الباقات وخطوات التنفيذ', 'Packages & rollout steps')}</strong><small>{t('راجع ما يشمله كل نطاق وما يحتاج إلى مناقشة.', 'Review what each scope includes and what needs discussion.')}</small></span><Arrow size={18} /></Link><button id="home-archive-trigger" type="button" onClick={() => openDialog('calculator')}><HardDrive size={23} /><span><strong>{t('قدّر سعة أرشفة الصور', 'Estimate imaging archive capacity')}</strong><small>{t('حجم العمل ومدة الاحتفاظ؛ تقدير أولي قابل للمراجعة.', 'Workload and retention: a preliminary estimate to review.')}</small></span><Arrow size={18} /></button></div></div></section>
 
-      {/* Planning banner */}
-      <section className="care-planning-banner care-wrap animate-on-scroll">
-        <div>
-          <span className="care-eyebrow">{t('خطط تشغيلك الرقمي بثقة', 'PLAN YOUR DIGITAL OPERATIONS WITH CONFIDENCE')}</span>
-          <h2>{t('استكشف الباقات. قدّر الاحتياجات.', 'Explore tiers. Estimate needs.')}</h2>
-          <p>
-            {t(
-              'تصفح الباقات المتدرجة، وقدّر سعة أرشفة الصور الطبية المطلوبة، وتعرف على مراحل التنفيذ في صفحة تخطيط مخصصة تساعدك على فهم النطاق الكامل قبل الانطلاق.',
-              'Browse tiered packages, estimate your medical imaging archive capacity, and understand each rollout phase in one dedicated planning page that helps you scope your full deployment before day one.'
-            )}
-          </p>
-        </div>
-        <a className="care-btn" href={`${prefix}/planning`}>
-          {t('خطط لبدايتك', 'Plan your rollout')}
-          <Arrow size={18} />
-        </a>
-      </section>
+      {content.faqs.length > 0 && <section className="care-wrap home-faq" aria-labelledby="home-faq-title"><div><span className="home-kicker">{t('قبل التواصل', 'BEFORE YOU TALK')}</span><h2 id="home-faq-title">{t('أسئلة عملية، وإجابات مباشرة.', 'Practical questions. Direct answers.')}</h2><p>{t('إجابات مختصرة تساعدك على تحديد ما تريد مناقشته مع فريق VIARA.', 'Short answers to help you decide what to discuss with the VIARA team.')}</p></div><div>{content.faqs.map(faq => <details key={faq.id}><summary>{txt(faq.question, locale)}<Plus size={17} /></summary><p>{txt(faq.answer, locale)}</p></details>)}</div></section>}
 
-      {/* Reviews slider */}
-      {content.sections.reviews && reviews.length > 0 && (
-        <section className="care-section care-wrap">
-          <span className="care-eyebrow">{t('من تجارب العملاء', 'CUSTOMER PERSPECTIVES')}</span>
-          <div className="care-reviews-slider">
-            <div
-              className="care-reviews-track"
-              style={{ transform: `translateX(calc(${en ? '' : '-'}${currentSlide} * (min(520px, 85vw) + 28px)))` }}
-            >
-              {reviews.map(review => (
-                <div key={review.id} className="care-review-slide">
-                  <blockquote lang={review.locale} dir={review.locale === 'ar' ? 'rtl' : 'ltr'}>
-                    <p>&ldquo;{review.quote}&rdquo;</p>
-                    <cite>{review.name} · {review.organization}</cite>
-                  </blockquote>
-                </div>
-              ))}
-            </div>
-            <div className="care-slider-controls">
-              <button
-                type="button"
-                className="care-slider-btn"
-                onClick={() => setCurrentSlide(i => Math.max(0, i - 1))}
-                aria-label={t('السابق', 'Previous')}
-              >
-                <ArrowLeft />
-              </button>
-              <button
-                type="button"
-                className="care-slider-btn"
-                onClick={() => setCurrentSlide(i => Math.min(reviews.length - 1, i + 1))}
-                aria-label={t('التالي', 'Next')}
-              >
-                <ArrowRight />
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
+      {content.sections.reviews && reviews.length > 0 && <section className="care-wrap home-reviews" aria-label={t('تجارب منشورة', 'Published experiences')}><span className="home-kicker">{t('من تجارب المستخدمين', 'USER PERSPECTIVES')}</span><div>{reviews.slice(0, 3).map(review => <blockquote key={review.id} lang={review.locale} dir={review.locale === 'ar' ? 'rtl' : 'ltr'}><Quote size={26} aria-hidden="true" /><p>{review.quote}</p><cite>{review.name}<span>{review.organization}</span></cite></blockquote>)}</div></section>}
 
-      {/* FAQ section */}
-      <section className="care-section care-wrap care-faq" id="faq">
-        <div className="animate-on-scroll">
-          <span className="care-eyebrow">{t('قبل خطوتك الأولى', 'BEFORE YOUR FIRST STEP')}</span>
-          <h2>
-            {t('بعض الأسئلة.', 'A few questions.')}
-            <br />
-            <span>{t('وإجابات واضحة.', 'Clear answers.')}</span>
-          </h2>
-        </div>
-        <div>
-          {content.faqs.map(faq => (
-            <details key={faq.id}>
-              <summary>
-                {txt(faq.question, locale)}
-                <Plus size={18} />
-              </summary>
-              <p>{txt(faq.answer, locale)}</p>
-            </details>
-          ))}
-        </div>
-      </section>
+      <section className="home-contact-section" id="contact"><div className="care-wrap home-contact-grid"><div><span className="home-kicker">{t('الخطوة التالية', 'YOUR NEXT STEP')}</span><h2 id="home-contact-title" tabIndex={-1}>{t('لنحدد ما يحتاجه مركزك.', 'Let’s define what your center needs.')}</h2><p>{t('شاركنا طبيعة العمل والأنظمة التي تهمك. نرتب عرضًا توضيحيًا ونراجع معك نطاقًا مناسبًا.', 'Tell us about your operation and the systems that matter. We will arrange a demonstration and review a suitable scope.')}</p><div className="home-contact-links">{content.contact.email && <a href={`mailto:${content.contact.email}`}><Mail size={16} />{content.contact.email}</a>}{content.contact.phone && <a href={`tel:${content.contact.phone.replace(/\s/g, '')}`}><Phone size={16} />{content.contact.phone}</a>}{content.contact.whatsapp && <a href={`https://wa.me/${content.contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"><MessageCircle size={16} />{t('واتساب', 'WhatsApp')}</a>}</div><Link href={`${prefix}/requests`} className="care-link">{t('متابعة طلب سابق', 'Track an existing request')}<Arrow size={16} /></Link></div><div className="home-form"><LeadForm locale={locale} content={content} interest={interest} setInterest={setInterest} plan={plan} setPlan={setPlan} offer={offer} setOffer={setOffer} scope={scope} setScope={setScope} requestedSystems={requestedSystems} requestedFacility={requestedFacility} clearRequestedSystems={() => { setRequestedSystems([]); setRequestedFacility(''); }} onPrivacy={() => openDialog('privacy')} onEditScope={() => openDialog('calculator')} /></div></div></section>
 
-      {/* Contact section */}
-      <section className="care-contact-section" id="contact">
-        <div className="care-wrap care-contact-grid">
-          <div className="animate-on-scroll">
-            <span className="care-eyebrow">{t('خطوتك الأولى تبدأ بمحادثة', "YOUR FIRST STEP STARTS WITH A CONVERSATION")}</span>
-            <h2>
-              {t('أخبرنا عن منشأتك.', 'Tell us about your facility.')}
-              <br />
-              <span>{t('نحدد النطاق معك.', 'We define the scope together.')}</span>
-            </h2>
-            <p>
-              {t(
-                'شاركنا احتياجات فريقك وما تطمح إلى تحسينه. نراجع معك الخيارات ونحدد نطاقاً يناسب بيئتك.',
-                "Share your team's needs and what you want to improve. We'll review the options and define a scope for your environment."
-              )}
-            </p>
-            <ol>
-              {[
-                t('نحلل سير العمل وأولويات الربط الطبي', 'Analyze clinical workflows and integration priorities'),
-                t('نصمم نطاقاً مخصصاً للأنظمة والباقة المناسبة', 'Design a tailored system scope and the right package'),
-                t('نقترح خطة تنفيذ واضحة ومراحل تدريب الكوادر', 'Propose a clear implementation plan and staff training phases'),
-              ].map((step, i) => (
-                <li key={step}>
-                  <span>0{i + 1}</span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-            <button className="care-link" id="care-calculator-link" type="button" onClick={() => open('calculator')}>
-              {t('هل تحتاج تقدير سعة الأرشفة؟', 'Need an archive capacity estimate?')}
-              <Arrow size={18} />
-            </button>
-          </div>
-          <div className="care-form animate-on-scroll">
-            <LeadForm
-              locale={locale}
-              content={content}
-              interest={interest}
-              setInterest={setInterest}
-              plan={plan}
-              setPlan={setPlan}
-              offer={offer}
-              setOffer={setOffer}
-              scope={scope}
-              setScope={setScope}
-              requestedSystems={requestedSystems}
-              requestedFacility={requestedFacility}
-              clearRequestedSystems={() => {
-                setRequestedSystems([]);
-                setRequestedFacility('');
-              }}
-              onPrivacy={() => open('privacy')}
-              onEditScope={() => open('calculator')}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Dialog */}
-      <dialog
-        className="care-dialog"
-        ref={dialog}
-        onCancel={close}
-        onClick={event => {
-          if (event.target === event.currentTarget) close();
-        }}
-        aria-labelledby="care-dialog-title"
-      >
-        <div className="care-dialog-heading">
-          <h2 id="care-dialog-title">
-            {modal === 'calculator'
-              ? t('تقدير سعة الأرشفة', 'Archive capacity estimator')
-              : t('الخصوصية', 'Privacy')}
-          </h2>
-          <button type="button" className="care-menu" onClick={close} aria-label={t('إغلاق', 'Close')}>
-            <X />
-          </button>
-        </div>
-        {modal === 'calculator' ? (
-          <ScopeCalculator
-            locale={locale}
-            onChoose={estimate => {
-              setScope(estimate);
-              setInterest('PACS');
-              setRequestedSystems([]);
-              setRequestedFacility('');
-              close();
-              scroll();
-            }}
-          />
-        ) : (
-          <div>
-            <p>
-              {t(
-                'نستخدم بيانات التواصل وتفاصيل منشأتك لمراجعة طلبك والرد عليه. يُحفظ سجل الطلبات مرتبطاً بمعرّف زائر في هذا المتصفح، وقد يتغير عند مسح بيانات الموقع أو تغيير الجهاز. لا تُدرج معلومات المرضى.',
-                'We use your contact and facility details to review and respond to your request. Request history is linked to a guest identifier in this browser and may differ after clearing site data or changing devices. Do not include patient information.'
-              )}
-            </p>
-          </div>
-        )}
-      </dialog>
-    </CareFrame>
-  );
+      <dialog ref={dialog} className="care-dialog home-dialog" onCancel={closeDialog} onClick={event => { if (event.target === event.currentTarget) closeDialog(); }} aria-labelledby="home-dialog-title"><div className="care-dialog-heading"><h2 id="home-dialog-title">{dialogName === 'calculator' ? t('تقدير سعة الأرشفة', 'Archive capacity estimate') : t('الخصوصية', 'Privacy')}</h2><button type="button" className="care-menu" onClick={closeDialog} aria-label={t('إغلاق', 'Close')}><X /></button></div>{dialogName === 'calculator' ? <ScopeCalculator locale={locale} onChoose={estimate => { closeDialog(); goToContact(['PACS'], requestedFacility, estimate); }} /> : <p>{t('نستخدم بيانات التواصل وتفاصيل المنشأة لمراجعة الطلب والرد عليه. لا ترسل معلومات المرضى أو التقارير الطبية عبر نموذج الموقع.', 'We use contact and facility details to review and respond to your request. Do not send patient information or clinical reports through this website form.')}</p>}</dialog>
+    </div>
+  </CareFrame>;
 }

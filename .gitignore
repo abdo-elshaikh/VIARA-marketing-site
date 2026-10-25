@@ -57,3 +57,4 @@ next-env.d.ts
 
 # Generated incremental compiler cache
 *.tsbuildinfo
+.dev.vars*

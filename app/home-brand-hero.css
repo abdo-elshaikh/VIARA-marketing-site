@@ -1,0 +1,20 @@
+/* Product-led homepage. Editable hero copy is supplied by the CMS. */
+.care-site.viara-professional .vbh-hero{padding-block:clamp(125px,11vw,160px) 0;background:#f5f8f6;border-bottom:1px solid #dfe8e4}
+.vbh-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:center;gap:clamp(28px,4vw,64px);padding-bottom:64px}
+.vbh-copy,.vbh-workspace{min-width:0}
+.vbh-eyebrow{display:block;color:var(--care-green);font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:24px}
+.care-site.viara-professional .vbh-copy h1{font-size:clamp(36px,3.7vw,56px);line-height:1.4;letter-spacing:-1px;margin:0;color:var(--care-ink)}
+.vbh-copy h1 em{display:block;font-style:normal;color:var(--care-green)}
+.vbh-description{font-size:17px;line-height:1.95;color:var(--care-muted);margin:24px 0 0;max-width:520px}
+.vbh-actions{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-top:30px}
+.vbh-context{font-size:12px;color:var(--care-muted);margin:22px 0 0}
+.vbh-workspace{padding:10px;background:#e6efea;border:1px solid #dce6e0;border-radius:22px}
+.vbh-empty{padding:60px 30px;border:1px solid #d7e3df;border-radius:16px;background:#fff;text-align:center}
+.vbh-empty>span{font:700 50px Manrope,Arial,sans-serif;color:var(--care-green);letter-spacing:4px}
+.vbh-empty>p{color:var(--care-muted)}
+.vbh-page-guide{display:flex;align-items:center;gap:24px;border-top:1px solid #d9e4dd;padding-block:22px}
+.vbh-page-guide>span{font-size:11px;font-weight:700;color:var(--care-green);letter-spacing:.5px;white-space:nowrap}
+.vbh-page-guide p{font-size:13px;line-height:1.8;color:var(--care-muted);margin:0}
+.vbh-page-guide>a{display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;border:1px solid #cadbd1;border-radius:50%;margin-inline-start:auto;color:var(--care-green)}
+@media(max-width:1000px){.vbh-layout{grid-template-columns:1fr;gap:32px;padding-bottom:40px}.vbh-copy{max-width:700px}.vbh-workspace{max-width:820px;width:100%;justify-self:center}.care-site.viara-professional .vbh-copy h1{font-size:clamp(36px,5vw,52px)}}
+@media(max-width:600px){.care-site.viara-professional .vbh-hero{padding-top:112px}.vbh-eyebrow{margin-bottom:16px}.care-site.viara-professional .vbh-copy h1{font-size:35px;letter-spacing:-.5px}.vbh-description{font-size:15px;margin-top:18px}.vbh-actions{gap:12px 20px;margin-top:24px}.vbh-context{font-size:11px;line-height:1.8}.vbh-workspace{padding:5px;border-radius:19px}.vbh-page-guide{gap:12px;align-items:flex-start}.vbh-page-guide>span{display:none}.vbh-page-guide p{font-size:12px}}

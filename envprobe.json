@@ -1,0 +1,8 @@
+{
+  "name": "envprobe",
+  "main": "./envprobe.mjs",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {},
+  "legacy_env": false
+}

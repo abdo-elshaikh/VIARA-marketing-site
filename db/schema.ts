@@ -21,6 +21,13 @@ export const siteSettings = sqliteTable('site_settings', {
   key: text('key').primaryKey(), value: text('value').notNull(), version: integer('version').notNull().default(1),
   updatedBy: text('updated_by').notNull(), updatedAt: integer('updated_at').notNull(),
 });
+export const siteRevisions = sqliteTable('site_revisions', {
+  id: text('id').primaryKey(),
+  version: integer('version').notNull(),
+  value: text('value').notNull(),
+  updatedBy: text('updated_by').notNull(),
+  createdAt: integer('created_at').notNull(),
+}, (table) => [index('site_revisions_version_idx').on(table.version)]);
 export const reviews = sqliteTable('reviews', {
   systemId: text('system_id'),
   id: text('id').primaryKey(), userId: text('user_id').notNull(), name: text('name').notNull(), role: text('role').notNull(),

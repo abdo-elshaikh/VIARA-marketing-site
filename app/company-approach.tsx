@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { ArrowUpLeft, ArrowUpRight, CalendarDays, Check, Network, ScanLine, Workflow } from 'lucide-react';
 import type { Locale } from '../lib/site-content';
+import { useSiteText } from '../lib/site-copy';
 import './company-approach.css';
 
 const steps = [
@@ -45,10 +46,10 @@ const steps = [
 
 export default function CompanyApproach({ locale }: { locale: Locale }) {
   const en = locale === 'en';
-  const t = (ar: string, eng: string) => en ? eng : ar;
+  const t = useSiteText(locale);
   const Arrow = en ? ArrowUpRight : ArrowUpLeft;
 
-  return <section className="co-approach" aria-labelledby="co-approach-title">
+  return <section className="co-approach" id="about-approach" aria-labelledby="co-approach-title">
     <div className="co-approach-heading">
       <div>
         <span className="care-eyebrow">{t('من الاحتياج إلى نطاق واضح', 'FROM NEEDS TO A CLEAR SCOPE')}</span>
@@ -64,8 +65,8 @@ export default function CompanyApproach({ locale }: { locale: Locale }) {
             <span className="co-approach-step-icon"><Icon size={20} strokeWidth={1.7} /></span>
             <span className="co-approach-step-copy">
               <span className="co-approach-step-label">{t('الخطوة', 'STEP')} <bdi>{number}</bdi></span>
-              <strong>{en ? title.en : title.ar}</strong>
-              <span>{en ? description.en : description.ar}</span>
+              <strong>{t(title.ar, title.en)}</strong>
+              <span>{t(description.ar, description.en)}</span>
             </span>
             <Check className="co-approach-check" size={17} aria-hidden="true" />
           </li>
@@ -81,36 +82,5 @@ export default function CompanyApproach({ locale }: { locale: Locale }) {
       </aside>
     </div>
 
-    <div className="co-security">
-      <div className="co-approach-heading" style={{marginTop: '3rem'}}>
-        <div>
-          <span className="care-eyebrow">{t('موثق في النظام', 'VERIFIED IN SYSTEM')}</span>
-          <h2>{t('أمان وخصوصية مدمجان.', 'Security and privacy built in.')}</h2>
-        </div>
-        <p>{t('الضمانات التالية موثقة في قاعدة الكود ومُفعّلة في بيئات الإنتاج. لا تعتمد على شهادات خارجية بل على آليات تقنية مُحكمة.', 'These controls are documented in the codebase and active in production. They rely on verified technical mechanisms, not third-party certifications.')}</p>
-      </div>
-      <ul className="co-steps" style={{listStyle: 'none', padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem', marginTop: '1.5rem'}}>
-        {(en ? [
-          'AES-256-GCM field-level encryption',
-          'Blind indexing for encrypted field search',
-          'Tamper-evident audit chain',
-          '2FA and Passkeys authentication support',
-          'ClamAV malware scanning on uploads',
-          'On-premises and offline deployment option',
-        ] : [
-          'تشفير على مستوى الحقول بـ AES-256-GCM',
-          'فهرسة عمياء للبحث في الحقول المشفرة',
-          'سجل تدقيق مضاد للتلاعب',
-          'دعم المصادقة الثنائية (2FA) ومفاتيح المرور',
-          'فحص الملفات المرفوعة بـ ClamAV',
-          'نشر محلي وبدون اتصال إنترنت',
-        ]).map((item, i) => (
-          <li key={i} style={{display: 'flex', alignItems: 'flex-start', gap: '0.6rem', background: 'var(--co-step-bg, #f8fafc)', borderRadius: '0.5rem', padding: '0.75rem 1rem', fontSize: '0.9rem', lineHeight: 1.5}}>
-            <Check size={16} style={{flexShrink: 0, marginTop: '0.15rem', color: '#007b61'}} />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
   </section>;
 }

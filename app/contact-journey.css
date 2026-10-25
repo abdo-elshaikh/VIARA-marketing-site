@@ -1,0 +1,535 @@
+/* ═══════════════════════════════════════════════════════════════
+   VIARA Professional Contact Section — Ambient Arabic Girih & DICOM Depth
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Exact scroll alignment: top of section hits viewport top so the dark canvas covers behind the floating dock */
+.care-site.viara-professional .vp-contact,
+.care-site.viara-professional #contact,
+section#contact {
+  scroll-margin-top: 0 !important;
+}
+
+/* Master background with radial emerald and gold ambers */
+.viara-professional .vp-contact {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(105px, 8.5vw, 135px) clamp(80px, 7vw, 110px);
+  background:
+    radial-gradient(ellipse 70% 60% at 12% 18%, rgba(0, 168, 134, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 55% at 88% 82%, rgba(246, 199, 71, 0.12) 0%, transparent 55%),
+    radial-gradient(circle at 50% 40%, rgba(4, 46, 37, 0.5) 0%, transparent 80%),
+    linear-gradient(172deg, #04261f 0%, #073a2e 45%, #031c16 100%) !important;
+  color: #ffffff;
+  border-top: 1px solid rgba(246, 199, 71, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Background authentic motifs */
+.vp-contact-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.vp-contact-girih {
+  position: absolute;
+  inset-inline-end: clamp(-60px, -3vw, 20px);
+  top: clamp(20px, 4vw, 60px);
+  width: clamp(260px, 28vw, 420px);
+  height: clamp(260px, 28vw, 420px);
+  opacity: 0.18;
+  filter: drop-shadow(0 0 20px rgba(0, 168, 134, 0.22));
+}
+
+.vp-contact-scanline {
+  position: absolute;
+  inset-inline-start: clamp(-60px, -3vw, 20px);
+  bottom: clamp(10px, 3vw, 40px);
+  width: clamp(240px, 25vw, 360px);
+  height: clamp(240px, 25vw, 360px);
+  opacity: 0.15;
+}
+
+/* Contact Grid Layout */
+.viara-professional .vp-contact .care-contact-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1.08fr;
+  gap: clamp(45px, 5.5vw, 85px);
+  align-items: start;
+}
+
+/* Kicker Badge */
+.viara-professional .vp-contact .vp-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 30px;
+  background: rgba(246, 199, 71, 0.12);
+  border: 1px solid rgba(246, 199, 71, 0.35);
+  color: #f6c747 !important;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Section Title */
+.viara-professional .vp-contact h2 {
+  font-size: clamp(34px, 3.5vw, 48px);
+  font-weight: 800;
+  line-height: 1.35;
+  color: #ffffff !important;
+  letter-spacing: -0.5px;
+  margin: 0 0 16px;
+}
+
+.viara-professional .vp-contact h2 > span {
+  color: #a7f3d0 !important;
+  background: linear-gradient(135deg, #a7f3d0 0%, #f6c747 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Section Description */
+.viara-professional .vp-contact .care-contact-grid > div > p {
+  color: #c0ded2 !important;
+  font-size: 16px;
+  line-height: 1.95;
+  max-width: 490px;
+  margin: 0 0 24px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Journey Steps Card — High-Trust Glassmorphism
+   ═══════════════════════════════════════════════════════════════ */
+.care-site .contact-journey {
+  margin-block: 28px 24px !important;
+  padding: 24px !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 12px 35px -10px rgba(0, 0, 0, 0.25);
+}
+
+.contact-journey h3 {
+  margin: 0 0 18px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #f6c747;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.contact-journey h3::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f6c747;
+  box-shadow: 0 0 8px rgba(246, 199, 71, 0.6);
+}
+
+.contact-journey ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.contact-journey li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 15px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.22s ease;
+}
+
+.contact-journey li:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(246, 199, 71, 0.30);
+  transform: translateX(-3px);
+}
+
+.care-site[dir=ltr] .contact-journey li:hover {
+  transform: translateX(3px);
+}
+
+.contact-journey li > span {
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(246, 199, 71, 0.20) 0%, rgba(0, 168, 134, 0.20) 100%);
+  border: 1px solid rgba(246, 199, 71, 0.40);
+  color: #f6c747;
+  font: 700 13px/1 Manrope, Arial, sans-serif;
+  flex-shrink: 0;
+}
+
+.contact-journey li strong {
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #ffffff;
+  display: block;
+}
+
+.care-site .contact-journey li p {
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: #b2cfc3 !important;
+  margin: 3px 0 0;
+  max-width: 440px;
+}
+
+.contact-journey > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: fit-content;
+  min-height: 40px;
+  margin-top: 16px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: rgba(246, 199, 71, 0.12);
+  border: 1px solid rgba(246, 199, 71, 0.30);
+  color: #f6c747;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.contact-journey > a:hover {
+  background: rgba(246, 199, 71, 0.22);
+  border-color: #f6c747;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Direct Contact Channels & Calculator Link
+   ═══════════════════════════════════════════════════════════════ */
+.vp-contact-direct {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-block: 20px 16px;
+}
+
+.vp-contact-direct a {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 15px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 13px;
+  font-weight: 600;
+  color: #daf0e6;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.vp-contact-direct a:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(246, 199, 71, 0.45);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.20);
+}
+
+.vp-contact-direct a[href*="wa.me"] {
+  background: rgba(37, 211, 102, 0.12);
+  border-color: rgba(37, 211, 102, 0.35);
+  color: #57e290;
+}
+
+.vp-contact-direct a[href*="wa.me"]:hover {
+  background: rgba(37, 211, 102, 0.22);
+  border-color: #25d366;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.25);
+}
+
+.care-site #care-calculator-link,
+.viara-professional #care-calculator-link {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 22px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, rgba(0, 123, 97, 0.35) 0%, rgba(246, 199, 71, 0.15) 100%) !important;
+  border: 1px solid rgba(246, 199, 71, 0.40) !important;
+  color: #f6c747 !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.care-site #care-calculator-link:hover,
+.viara-professional #care-calculator-link:hover {
+  background: linear-gradient(135deg, rgba(0, 123, 97, 0.55) 0%, rgba(246, 199, 71, 0.26) 100%) !important;
+  border-color: #f6c747 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.30);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Elevated Luxury Lead Form Card
+   ═══════════════════════════════════════════════════════════════ */
+.viara-professional .care-form {
+  border-radius: 24px !important;
+  border: 1px solid rgba(255, 255, 255, 0.90) !important;
+  border-top: 5px solid #007b61 !important;
+  background: #ffffff !important;
+  padding: clamp(26px, 3.2vw, 38px) !important;
+  box-shadow:
+    0 28px 75px -15px rgba(0, 18, 14, 0.55),
+    0 0 0 1px rgba(246, 199, 71, 0.20),
+    0 12px 28px rgba(0, 0, 0, 0.12) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.viara-professional .form-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #ebf2ee;
+  margin-bottom: 24px;
+}
+
+.viara-professional .form-heading h3 {
+  font-size: 23px;
+  font-weight: 800;
+  color: #082d24;
+  line-height: 1.4;
+}
+
+.viara-professional .form-heading p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #557266;
+  margin-top: 3px;
+}
+
+.viara-professional .form-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #edf6f1 0%, #e1f0e7 100%);
+  border: 1px solid #cce4d6;
+  color: #007b61;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 123, 97, 0.08);
+}
+
+.viara-professional .form-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 14px;
+}
+
+.viara-professional .form-fields > label,
+.viara-professional .form-extra-fields > label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #204135;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.viara-professional .form-fields input,
+.viara-professional .form-fields select,
+.viara-professional .form-fields textarea {
+  background: #fbfdfc;
+  border: 1.5px solid #d4e3dc;
+  border-radius: 10px;
+  font-size: 14.5px;
+  min-height: 48px;
+  padding: 11px 13px;
+  color: #0c2b22;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.viara-professional .form-fields input:hover,
+.viara-professional .form-fields select:hover,
+.viara-professional .form-fields textarea:hover {
+  border-color: #a4c9b9;
+  background: #ffffff;
+}
+
+.viara-professional .form-fields input:focus,
+.viara-professional .form-fields select:focus,
+.viara-professional .form-fields textarea:focus {
+  background: #ffffff;
+  border-color: #007b61;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 123, 97, 0.12);
+}
+
+.viara-professional .form-fields input::placeholder,
+.viara-professional .form-fields textarea::placeholder {
+  color: #839b92;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.viara-professional .form-extra {
+  grid-column: 1 / -1;
+  background: #f6faf7;
+  border: 1px solid #deebe2;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.viara-professional .form-extra summary {
+  padding: 12px 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1e4537;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.viara-professional .form-extra-fields {
+  padding: 14px;
+  border-top: 1px solid #e5ede8;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.viara-professional .consent {
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: #4e6b5f;
+  margin-top: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.viara-professional .consent input {
+  accent-color: #007b61;
+  min-width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  cursor: pointer;
+}
+
+.viara-professional .consent button {
+  color: #007b61;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.viara-professional .submit-button {
+  min-height: 54px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #007b61 0%, #005a46 100%);
+  border: 1px solid #007b61;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 123, 97, 0.35);
+  transition: all 0.25s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 18px;
+}
+
+.viara-professional .submit-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #058f71 0%, #007b61 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 123, 97, 0.45);
+}
+
+.viara-professional .form-fineprint {
+  font-size: 12px;
+  color: #698377;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 14px;
+  text-align: center;
+}
+
+.care-site form [aria-invalid=true] {
+  border-color: #b83d3d !important;
+  box-shadow: 0 0 0 3px rgba(184, 61, 61, 0.15) !important;
+}
+
+@media(max-width: 1000px) {
+  .viara-professional .vp-contact .care-contact-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .viara-professional .form-fields {
+    grid-template-columns: 1fr;
+  }
+  .viara-professional .form-extra-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media(max-width: 600px) {
+  .viara-professional .vp-contact {
+    padding-block: 90px 45px;
+  }
+  .care-site.viara-professional .vp-contact,
+  .care-site.viara-professional #contact,
+  section#contact {
+    scroll-margin-top: 0 !important;
+  }
+  .viara-professional .care-form {
+    padding: 22px 18px !important;
+    border-radius: 18px !important;
+  }
+  .care-site .contact-journey {
+    padding: 18px !important;
+    margin-block: 22px !important;
+  }
+}

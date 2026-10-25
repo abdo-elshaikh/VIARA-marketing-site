@@ -1,0 +1,61 @@
+/* Back-to-top control. Uses the shared VIARA brand tokens from brand-theme.css. */
+.care-to-top {
+  position: fixed;
+  z-index: 45;
+  inset-block-end: 24px;
+  inset-inline-end: 24px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--brand-line, #e29911);
+  border-radius: 12px;
+  background: var(--brand-mint, #edf6f0);
+  color: var(--brand-forest, #073e32);
+  box-shadow: 0 6px 18px #073e3217;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 10px;
+  transition: opacity 0.2s ease, translate 0.2s ease, visibility 0.2s, background 0.2s, color 0.2s;
+}
+
+.care-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  translate: 0 0;
+}
+
+.care-to-top:hover {
+  background: var(--brand-forest, #073e32);
+  border-color: var(--brand-forest, #073e32);
+  color: var(--brand-gold, #f6c747);
+}
+
+.care-to-top:focus-visible {
+  outline: 3px solid var(--focus-ring, #ad7632);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .care-to-top {
+    inset-block-end: 18px;
+    inset-inline-end: 14px;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .care-to-top {
+    transition: none;
+    translate: 0 0;
+  }
+}
+
+@media print {
+  .care-to-top {
+    display: none;
+  }
+}

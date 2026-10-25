@@ -1,6 +1,6 @@
-import ModernHome from './care-home';
+import CareHome from './care-home';
 import { readPublicContent, readPublishedReviews } from '../lib/site-server';
-import { homeMetadata, jsonLd, organizationSchema } from '../lib/seo';
+import { homeMetadata, jsonLd, organizationSchema, websiteSchema, faqSchema } from '../lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,13 +11,14 @@ export async function generateMetadata() {
 
 export default async function Home() {
   const [{ content }, reviews] = await Promise.all([readPublicContent(), readPublishedReviews()]);
+  const faq = faqSchema(content, 'ar');
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd(organizationSchema(content)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd({ '@graph': [organizationSchema(content), websiteSchema(content, 'ar'), ...(faq ? [faq] : [])] }) }}
       />
-      <ModernHome content={content} reviews={reviews} locale="ar" />
+      <CareHome content={content} reviews={reviews} locale="ar" />
     </>
   );
 }

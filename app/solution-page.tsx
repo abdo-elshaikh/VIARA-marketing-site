@@ -3,9 +3,10 @@ import { notFound } from 'next/navigation';
 import { readPublicContent, readPublishedReviews } from '../lib/site-server';
 import { txt, type Locale } from '../lib/site-content';
 import { findSolution, solutionPath, solutionSlugs } from '../lib/solutions';
-import { systemStory } from '../lib/system-stories';
+import { marketingSystemIds } from '../lib/healthcare-catalog.mjs';
 import { jsonLd, siteOrigin } from '../lib/seo';
 import SystemExperience from './system-experience';
+import { trackMarketingEvent } from '../lib/marketing-analytics';
 
 export async function solutionMetadata(slug: string, locale: Locale): Promise<Metadata> {
   const { content } = await readPublicContent();
@@ -18,7 +19,7 @@ export async function solutionMetadata(slug: string, locale: Locale): Promise<Me
     description,
     alternates: {
       canonical: solutionPath(product.id, locale),
-      languages: { ar: solutionPath(product.id, 'ar'), en: solutionPath(product.id, 'en') },
+      languages: { ar: solutionPath(product.id, 'ar'), en: solutionPath(product.id, 'en'), 'x-default': solutionPath(product.id, 'ar') },
     },
     openGraph: {
       title,
@@ -36,10 +37,7 @@ export default async function SolutionPage({ slug, locale }: { slug: string; loc
   const product = findSolution(content, slug);
   if (!product) notFound();
   const reviews = content.sections.reviews ? await readPublishedReviews(product.id) : [];
-  const category = systemStory(product.id).category;
-  const related = Object.keys(solutionSlugs).filter(id => id !== product.id && !(product.id === 'EHR' && id === 'EMR') && !(product.id === 'EMR' && id === 'EHR'))
-    .map(id => findSolution(content, solutionSlugs[id])).filter(item => item && systemStory(item.id).category === category).slice(0, 3)
-    .map(item => ({ id: item!.id, name: item!.name }));
+  const related = marketingSystemIds.filter(id => id !== product.id).map(id => findSolution(content, solutionSlugs[id])).filter((item): item is NonNullable<typeof item> => Boolean(item)).map(item => ({ id: item.id, name: item.name }));
   const origin = siteOrigin(), home = locale === 'en' ? '/en' : '/';
   const schema = {
     '@context': 'https://schema.org', '@graph': [

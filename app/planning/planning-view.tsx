@@ -1,5 +1,4 @@
 'use client';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import BrandPageHero from '../brand-page-hero';
 import { useSiteText } from '../../lib/site-copy';
@@ -9,15 +8,15 @@ import {
   ArrowUpRight,
   Check,
   Plus,
-  Building2,
-  Network,
   ShieldCheck,
   ArrowLeft,
   ArrowRight,
   ScanLine,
   Sparkles,
-  ChevronDown,
   TrendingUp,
+  Layers,
+  Route,
+  HelpCircle,
   X
 } from 'lucide-react';
 import { txt, type Locale, type SiteContent } from '../../lib/site-content';
@@ -32,8 +31,6 @@ import PlanningGovernanceCard from '../planning-governance-card';
 import PlanningPackagesMatrix from '../planning-packages-matrix';
 import PlanningRolloutRoadmap from '../planning-rollout-roadmap';
 import packageCatalog from '../../../backend/src/config/packageCatalog.json';
-
-type FacilityFilter = 'all' | 'single' | 'radiology' | 'network';
 
 const planLicenseDetails = Object.fromEntries(
   Object.values(packageCatalog.packages).map(plan => [
@@ -61,35 +58,6 @@ const planLicenseDetails = Object.fromEntries(
     }
   ])
 );
-
-const quickSpecs: Record<
-  string,
-  {
-    branches: { ar: string; en: string };
-    users: { ar: string; en: string };
-    scopeSummary: { ar: string; en: string };
-    recommendationTag: { ar: string; en: string };
-  }
-> = {
-  أساس: {
-    branches: { ar: 'فرع واحد مرخص', en: '1 Licensed Branch' },
-    users: { ar: 'حتى 25 مستخدماً', en: 'Up to 25 Users' },
-    scopeSummary: { ar: 'استقبال، مواعيد، ورديات الصندوق، وملف طبي', en: 'Reception, booking, billing & EMR' },
-    recommendationTag: { ar: 'الخيار الأنسب للعيادات والمراكز بفرع واحد', en: 'Ideal for single-branch clinics' }
-  },
-  نمو: {
-    branches: { ar: 'فرع واحد (توسعة موثقة)', en: '1 Branch (Expandable)' },
-    users: { ar: 'حتى 25 مستخدماً مرخصاً', en: 'Up to 25 Licensed Users' },
-    scopeSummary: { ar: 'تكامل كامل: RIS + PACS + بوابة المرضى QR', en: 'Full synergy: RIS + PACS + QR Portal' },
-    recommendationTag: { ar: 'الأكثر طلباً لمراكز الأشعة والتشخيص', en: 'Most Popular for Radiology Centers' }
-  },
-  مؤسسات: {
-    branches: { ar: 'فروع متعددة بلا حد مسبق', en: 'Unlimited Branches' },
-    users: { ar: 'مستخدمون بلا حد مسبق', en: 'Unlimited Users' },
-    scopeSummary: { ar: 'Enterprise شامل مع SSO/OIDC وحوكمة مركزية', en: 'Full Enterprise with SSO/OIDC & Governance' },
-    recommendationTag: { ar: 'الخيار الأنسب للشبكات ومجموعات المستشفيات', en: 'Ideal for Healthcare Groups & Networks' }
-  }
-};
 
 const faqs = [
   {
@@ -151,25 +119,14 @@ const faqs = [
 ];
 
 export default function PlanningView({ content, locale = 'ar' }: { content: SiteContent; locale?: Locale }) {
-  const en = locale === 'en', home = en ? '/en' : '/', prefix = en ? '/en' : '';
+  const en = locale === 'en', home = en ? '/en' : '/';
   const t = useSiteText(locale, content);
   const Arrow = en ? ArrowUpRight : ArrowUpLeft, Forward = en ? ArrowRight : ArrowLeft;
   const router = useRouter();
-  const [facilityFilter, setFacilityFilter] = useState<FacilityFilter>('all');
-  const [highlightedPlan, setHighlightedPlan] = useState<string | null>(null);
   const [storageError, setStorageError] = useState(false);
   const enabledPlans = content.plans.filter(p => p.enabled);
 
-  function handleFilterChange(filter: FacilityFilter) {
-    setFacilityFilter(filter);
-    if (filter === 'single') setHighlightedPlan('أساس');
-    else if (filter === 'radiology') setHighlightedPlan('نمو');
-    else if (filter === 'network') setHighlightedPlan('مؤسسات');
-    else setHighlightedPlan(null);
-  }
-
   function handleSelectPlan(planId: 'أساس' | 'نمو' | 'مؤسسات') {
-    setHighlightedPlan(planId);
     const target = document.getElementById(`plan-${planId}`);
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -201,7 +158,7 @@ export default function PlanningView({ content, locale = 'ar' }: { content: Site
   const [offer, setOffer] = useState('');
   const [scope, setScope] = useState<ScopeEstimate | null>(null);
   const [requestedSystems, setRequestedSystems] = useState<string[]>([]);
-  const [requestedFacility, setRequestedFacility] = useState('');
+  const [requestedFacility] = useState('');
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const planDialogRef = useRef<HTMLDialogElement>(null);
 
@@ -251,10 +208,6 @@ export default function PlanningView({ content, locale = 'ar' }: { content: Site
           {t('استكشف الباقات والتراخيص', 'Explore packages')}
           <Arrow size={18} />
         </a>
-        <a className="care-link" href="#package-matrix">
-          {t('مصفوفة المقارنة الفنية', 'Comparison matrix')}
-          <Forward size={17} />
-        </a>
         <a className="care-link" href="#archive">
           {t('قدّر سعة الأرشفة', 'Estimate archive capacity')}
           <Forward size={17} />
@@ -265,24 +218,24 @@ export default function PlanningView({ content, locale = 'ar' }: { content: Site
         {/* Navigation Bar */}
         <nav className="cp-section-nav" aria-label={t('أقسام صفحة الخطط', 'Planning page sections')}>
           <a href="#packages">
-            <span>01</span>
-            {t('الباقات والترخيص', 'Packages & Scope')}
-          </a>
-          <a href="#package-matrix">
-            <span>02</span>
-            {t('المقارنة الفنية', 'Comparison Matrix')}
+            <span className="cp-nav-num">01</span>
+            <Layers size={15} />
+            <span>{t('الباقات والترخيص', 'Packages & Scope')}</span>
           </a>
           <a href="#rollout">
-            <span>03</span>
-            {t('مراحل التنفيذ', 'Rollout Roadmap')}
+            <span className="cp-nav-num">02</span>
+            <Route size={15} />
+            <span>{t('مراحل التنفيذ', 'Rollout Roadmap')}</span>
           </a>
           <a href="#archive">
-            <span>04</span>
-            {t('حاسبة الأرشفة', 'Archive Estimator')}
+            <span className="cp-nav-num">03</span>
+            <ScanLine size={15} />
+            <span>{t('حاسبة الأرشفة والجدوى', 'Archive & ROI')}</span>
           </a>
           <a href="#faq">
-            <span>05</span>
-            {t('الأسئلة الشائعة', 'FAQ')}
+            <span className="cp-nav-num">04</span>
+            <HelpCircle size={15} />
+            <span>{t('الأسئلة الشائعة', 'FAQ')}</span>
           </a>
         </nav>
 
@@ -308,89 +261,15 @@ export default function PlanningView({ content, locale = 'ar' }: { content: Site
             </p>
           </div>
 
-          {/* Integrated Facility Filter Strip (Eliminates Repetitive Recommender Block) */}
-          <div className="cpm-facility-filter-strip">
-            <div className="cpm-filter-heading">
-              <Sparkles size={15} />
-              <span>{t('طابق حجم منشأتك لتسليط الضوء على الباقة الأنسب:', 'Match your facility type to highlight the recommended tier:')}</span>
-            </div>
-            <div className="cpm-filter-pills" role="tablist">
-              <button
-                type="button"
-                className={`cpm-segment-pill ${facilityFilter === 'all' ? 'is-active' : ''}`}
-                onClick={() => handleFilterChange('all')}
-              >
-                {t('جميع الباقات', 'All Packages')}
-              </button>
-              <button
-                type="button"
-                className={`cpm-segment-pill ${facilityFilter === 'single' ? 'is-active' : ''}`}
-                onClick={() => handleFilterChange('single')}
-              >
-                <Building2 size={15} />
-                <span>{t('عيادة أو مركز بفرع واحد', 'Single Clinic / Branch')}</span>
-              </button>
-              <button
-                type="button"
-                className={`cpm-segment-pill ${facilityFilter === 'radiology' ? 'is-active' : ''}`}
-                onClick={() => handleFilterChange('radiology')}
-              >
-                <ScanLine size={15} />
-                <span>{t('مركز أشعة تشخيصي', 'Diagnostic Radiology')}</span>
-                <span className="cpm-badge-rec">{t('الأكثر طلباً', 'Most Popular')}</span>
-              </button>
-              <button
-                type="button"
-                className={`cpm-segment-pill ${facilityFilter === 'network' ? 'is-active' : ''}`}
-                onClick={() => handleFilterChange('network')}
-              >
-                <Network size={15} />
-                <span>{t('مجموعة مراكز وشبكات', 'Multi-site Groups')}</span>
-              </button>
-            </div>
-
-            {facilityFilter !== 'all' && (
-              <div className="cpm-filter-insight-pill">
-                <Sparkles size={15} />
-                <span>
-                  {facilityFilter === 'single' &&
-                    t(
-                      'التوصية التشغيلية: باقة أساس توفر ضبطاً كاملاً لعمليات الفرع المستقل من استقبال ومواعيد وفواتير بكفاءة وانضباط.',
-                      'Operational guidance: Essential covers all single-branch workflows (booking, reception, billing) with speed and discipline.'
-                    )}
-                  {facilityFilter === 'radiology' &&
-                    t(
-                      'التوصية التشغيلية: باقة نمو هي المعيار الأنسب لمراكز الأشعة لربط الأجهزة بقوائم العمل MWL وأرشفة PACS وتسليم التقارير الفورية بترميز QR.',
-                      'Operational guidance: Growth is the benchmark for radiology centers, unifying DICOM MWL, PACS archiving, and QR report delivery.'
-                    )}
-                  {facilityFilter === 'network' &&
-                    t(
-                      'التوصية التشغيلية: باقة مؤسسات تمنحك حوكمة سحابية موحدة لجميع الفروع مع دعم الدخول الموحد SSO وتحليلات مقارنة.',
-                      'Operational guidance: Multi-site delivers unified multi-branch governance, SSO/OIDC support, and comparative analytics.'
-                    )}
-                </span>
-              </div>
-            )}
-          </div>
-
           {/* Cards Grid */}
           <div className="cp-plans-grid">
             {enabledPlans.map((plan, i) => {
-              const specs = quickSpecs[plan.id];
-              const isMatch = highlightedPlan === plan.id;
               return (
                 <article
                   key={plan.id}
                   id={`plan-${plan.id}`}
-                  className={`cp-plan-card ${plan.featured ? 'is-featured' : ''} ${isMatch ? 'is-highlighted' : ''}`}
+                  className={`cp-plan-card ${plan.featured ? 'is-featured' : ''}`}
                 >
-                  {isMatch && specs && (
-                    <div className="cp-plan-recommendation-tag">
-                      <Sparkles size={12} />
-                      <span>{txt(specs.recommendationTag, locale)}</span>
-                    </div>
-                  )}
-
                   <div className="cp-plan-top">
                     <span className="cp-plan-label-badge">{plan.label}</span>
                     <span className="cp-plan-num">0{i + 1}</span>
@@ -399,28 +278,12 @@ export default function PlanningView({ content, locale = 'ar' }: { content: Site
                   <h3>{txt(plan.name, locale)}</h3>
                   <p className="cp-plan-desc">{txt(plan.description, locale)}</p>
 
-                  {/* Micro Specs Grid */}
-                  {specs && (
-                    <div className="cp-plan-quick-specs">
-                      <div className="cp-spec-cell">
-                        <span className="cp-spec-lbl">{t('الفروع', 'Branches')}</span>
-                        <strong className="cp-spec-val">{txt(specs.branches, locale)}</strong>
-                      </div>
-                      <div className="cp-spec-cell">
-                        <span className="cp-spec-lbl">{t('المستخدمون', 'Users')}</span>
-                        <strong className="cp-spec-val">{txt(specs.users, locale)}</strong>
-                      </div>
-                      <div className="cp-spec-cell is-full">
-                        <span className="cp-spec-lbl">{t('التركيز التشغيلي', 'Core Focus')}</span>
-                        <strong className="cp-spec-val">{txt(specs.scopeSummary, locale)}</strong>
-                      </div>
-                    </div>
-                  )}
-
                   <ul className="cp-plan-features">
                     {plan.features.slice(0, 5).map((feature, index) => (
                       <li key={index}>
-                        <Check size={16} />
+                        <span className="cp-feat-check-wrap">
+                          <Check size={14} />
+                        </span>
                         <span>{txt(feature, locale)}</span>
                       </li>
                     ))}
@@ -436,16 +299,12 @@ export default function PlanningView({ content, locale = 'ar' }: { content: Site
                   <div className="cp-plan-card-actions">
                     <button
                       type="button"
-                      className="care-btn"
+                      className={`care-btn cp-plan-btn ${plan.featured ? 'is-featured-btn' : ''}`}
                       onClick={() => openPlanModal(plan.id)}
                     >
-                      {t('ناقش هذه الباقة', 'Discuss this package')}
+                      <span>{t('ناقش هذه الباقة', 'Discuss this package')}</span>
                       <Arrow size={16} />
                     </button>
-                    <a className="cp-plan-compare-jump" href="#package-matrix">
-                      <span>{t('عرض المواصفات في الجدول', 'View full specs in matrix')}</span>
-                      <ChevronDown size={14} />
-                    </a>
                   </div>
                 </article>
               );
@@ -456,12 +315,10 @@ export default function PlanningView({ content, locale = 'ar' }: { content: Site
           <PlanningGovernanceCard locale={locale} />
         </section>
 
-        {/* ── 02. Comprehensive Feature Comparison Matrix with Category Tabs ── */}
         <PlanningPackagesMatrix
           locale={locale}
           onChoosePlan={handleSelectPlan}
           onDiscussPlan={planId => openPlanModal(planId)}
-          activePlanId={highlightedPlan}
         />
 
         {/* ── 03. Rollout Roadmap & Peace-of-Mind Guarantees ── */}
@@ -473,41 +330,39 @@ export default function PlanningView({ content, locale = 'ar' }: { content: Site
             <div>
               <span className="care-eyebrow">
                 <Sparkles size={14} />
-                {t('04 / أدوات التخطيط وحساب الجدوى', '04 / PLANNING & ROI TOOLS')}
+                {t('03 / أدوات تقدير اختيارية', '03 / OPTIONAL ESTIMATES')}
               </span>
               <h2 id="cp-calc-head">
-                {t('تخطيط السعة والعائد المالي،', 'Capacity & financial ROI,')}
+                {t('تقدير السعة والوفورات،', 'Estimate capacity and savings,')}
                 <br />
-                <span>{t('بتقدير أقرب لواقع مركزك.', 'calculated around your operations.')}</span>
+                <span>{t('وفق مدخلاتك وافتراضات واضحة.', 'using your inputs and clear assumptions.')}</span>
               </h2>
             </div>
             <p>
               {t(
-                'قدّر سعة أرشفة الصور الطبية المطلوبة، أو احسب حجم التوفير المالي السنوي المباشر الناتج عن الاستغناء عن الأفلام المطبوعة وتسريع التقارير.',
-                'Estimate required imaging storage capacity, or calculate direct annual financial savings from digital delivery and AI drafting.'
+                'قدّر سعة الأرشفة أو وفورات الأفلام والوقت بناءً على المدخلات. هذه تقديرات أولية ولا تمثل عائدًا مثبتًا أو عرضًا سعريًا.',
+                'Estimate archive capacity or film and time savings from your inputs. These are indicative estimates, not proven returns or a commercial quote.'
               )}
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '22px', flexWrap: 'wrap' }}>
+          <div className="cp-estimator-tabs" role="tablist">
             <button
               type="button"
-              className={`care-btn ${calcTab === 'archive' ? '' : 'care-btn-secondary'}`}
-              style={{ fontSize: '13px', padding: '9px 18px', borderRadius: '8px', cursor: 'pointer' }}
+              className={`cp-estimator-tab-btn ${calcTab === 'archive' ? 'is-active' : ''}`}
               onClick={() => setCalcTab('archive')}
               aria-pressed={calcTab === 'archive'}
             >
               <ScanLine size={16} />
-              {t('تقدير سعة أرشفة الصور (PACS Storage)', 'PACS Storage Estimator')}
+              <span>{t('تقدير سعة أرشفة الصور (PACS Storage)', 'PACS Storage Estimator')}</span>
             </button>
             <button
               type="button"
-              className={`care-btn ${calcTab === 'roi' ? '' : 'care-btn-secondary'}`}
-              style={{ fontSize: '13px', padding: '9px 18px', borderRadius: '8px', cursor: 'pointer' }}
+              className={`cp-estimator-tab-btn ${calcTab === 'roi' ? 'is-active' : ''}`}
               onClick={() => setCalcTab('roi')}
               aria-pressed={calcTab === 'roi'}
             >
               <TrendingUp size={16} />
-              {t('حاسبة التوفير والعائد المالي (ROI Calculator)', 'Financial ROI Calculator')}
+              <span>{t('حاسبة التوفير والعائد المالي (ROI Calculator)', 'Financial ROI Calculator')}</span>
             </button>
           </div>
           <div className="cp-estimator-box">
@@ -530,7 +385,7 @@ export default function PlanningView({ content, locale = 'ar' }: { content: Site
         {/* ── 05. Frequently Asked Questions ── */}
         <section className="cp-section cp-faq" id="faq" aria-labelledby="cp-faq-head">
           <div>
-            <span className="care-eyebrow">{t('قبل اتخاذ القرار', 'BEFORE YOUR NEXT STEP')}</span>
+            <span className="care-eyebrow">{t('04 / قبل اتخاذ القرار', '04 / BEFORE YOUR NEXT STEP')}</span>
             <h2 id="cp-faq-head">
               {t('أسئلة متوقعة.', 'Expected questions.')}
               <br />
@@ -553,17 +408,20 @@ export default function PlanningView({ content, locale = 'ar' }: { content: Site
 
         {/* ── 06. Final CTA ── */}
         <section className="cp-next-step">
-          <div>
-            <span className="care-eyebrow">{t('لست متأكداً من نقطة البداية؟', 'UNSURE WHERE TO START?')}</span>
+          <div className="cp-next-step-copy">
+            <span className="care-eyebrow">
+              <Sparkles size={14} />
+              {t('لست متأكداً من نقطة البداية؟', 'UNSURE WHERE TO START?')}
+            </span>
             <h2>{t('لنرسم خطتك معاً.', 'Let’s shape your plan together.')}</h2>
             <p>{t('أخبرنا عن منشأتك وما تريد تحسينه أولاً وسيقوم مستشارونا التقنيون بإعداد دراسة النطاق المناسبة.', 'Tell us about your facility and our technical specialists will prepare the tailored scope study.')}</p>
           </div>
           <button
             type="button"
-            className="care-btn"
+            className="care-btn cp-next-step-btn"
             onClick={() => openPlanModal('لم أحدد بعد')}
           >
-            {t('تحدث مع فريقنا', 'Talk to our team')}
+            <span>{t('تحدث مع فريقنا', 'Talk to our team')}</span>
             <Arrow size={18} />
           </button>
         </section>

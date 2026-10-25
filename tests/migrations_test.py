@@ -13,7 +13,7 @@ class MigrationTests(unittest.TestCase):
         for path in paths[1:]: db.executescript(path.read_text())
         self.assertEqual(db.execute("SELECT user_id,locale,offer FROM inquiries WHERE id='legacy'").fetchone(),('owner','ar',''))
         tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        self.assertTrue({'site_settings','reviews','inquiries'}<=tables)
+        self.assertTrue({'site_settings','reviews','inquiries','site_revisions'}<=tables)
         db.close()
     def test_legacy_reviews_remain_unattributed_and_scoped_reviews_filter_correctly(self):
         db=sqlite3.connect(':memory:')

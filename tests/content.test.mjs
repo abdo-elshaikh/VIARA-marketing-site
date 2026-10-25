@@ -1,10 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {siteContentSchema,defaultContent,isOfferActive,cairoDay,offerSchema,L} from '../lib/site-content.ts';
+import {createDemoContent} from '../lib/demo-content.ts';
 import {reviewSchema} from '../lib/review.ts';
 import {matchesAdmin} from '../lib/access.ts';
 import {jsonLd,organizationSchema} from '../lib/seo.ts';
+import {readFileSync} from 'node:fs';
 const copy=()=>structuredClone(defaultContent);
+test('public package IDs and technical specifications use the backend issuance catalog',()=>{
+ const catalog=JSON.parse(readFileSync(new URL('../../backend/src/config/packageCatalog.json',import.meta.url),'utf8'));
+ const plans=Object.values(catalog.packages);
+ for(const plan of defaultContent.plans) assert.ok(plans.some(p=>p.id===plan.id));
+ const view=readFileSync(new URL('../app/planning/planning-view.tsx',import.meta.url),'utf8');
+ assert.match(view,/backend\/src\/config\/packageCatalog\.json/);
+ assert.match(view,/plan\.defaultMaxUsers/);
+ assert.match(view,/plan\.modules/);
+ assert.equal(view.includes('commercialPlanFeature'),false);
+});
 test('structured data escapes script boundaries and includes only supplied organization details',()=>{
  const content=copy();content.brand.name='</script><script>1</script>';
  content.contact.email='sales@example.com';content.contact.linkedin='https://www.linkedin.com/company/example';
@@ -19,7 +31,32 @@ test('structured data escapes script boundaries and includes only supplied organ
 test('default content is bilingual, valid and free of fabricated testimonials or offers',()=>{
  assert.equal(siteContentSchema.safeParse(defaultContent).success,true);
  assert.equal(defaultContent.offers.length,0);
+ assert.equal(defaultContent.journeys.length,5);
+ assert.equal(defaultContent.metrics.length,4);
  for(const product of defaultContent.products){assert.ok(product.name.ar&&product.name.en);for(const feature of product.features)assert.ok(feature.ar&&feature.en);}
+});
+test('default company content does not publish placeholder contacts or unverified credentials', () => {
+  const content = copy();
+  assert.equal(content.company.offices.length, 0);
+  assert.equal(content.company.support.length, 0);
+  assert.equal(content.company.credentials.length, 0);
+});
+test('sample content is editable, valid, preserves real contact and branding, and keeps factual drafts unpublished',()=>{
+ const current=copy();current.contact.email='contact@example.com';current.brand.name='Existing brand';current.brand.logo='/assets/viara-symbol.png';current.company.legalName=L('اسم المنشأة الحالي','Current organization name');
+ const sample=createDemoContent(current);
+ assert.equal(siteContentSchema.safeParse(sample).success,true);
+ assert.equal(sample.contact.email,current.contact.email);
+ assert.equal(sample.brand.name,current.brand.name);
+ assert.deepEqual(sample.company.legalName,current.company.legalName);
+ assert.equal(sample.company.offices.every(item=>!item.enabled),true);
+ assert.equal(sample.company.support.every(item=>!item.enabled),true);
+ assert.equal(sample.company.team.every(item=>!item.enabled),true);
+ assert.equal(sample.company.milestones.every(item=>!item.enabled),true);
+ assert.equal(sample.company.credentials.every(item=>!item.enabled),true);
+ assert.equal(sample.offers.length,1);
+ assert.equal(sample.offers[0].active,false);
+ assert.match(sample.offers[0].title.ar,/تجريبي/);
+ assert.equal(current.offers.length,0);
 });
 test('content rejects unsafe links, CSS injection and missing language content',()=>{
  for(const alter of [c=>c.contact.facebook='javascript:alert(1)',c=>c.brand.logo='data:image/svg+xml,<svg/>',c=>c.brand.primary='red;display:none',c=>c.hero.title.en='',c=>c.contact.email='invalid',c=>c.contact.phone='-------',c=>c.products.forEach(p=>p.enabled=false),c=>c.plans.forEach(p=>p.enabled=false)]){const content=copy();alter(content);assert.equal(siteContentSchema.safeParse(content).success,false);}
@@ -47,11 +84,13 @@ test('review validation requires consent, real content and a bounded rating, and
  assert.equal('status' in result,false);assert.equal('userId' in result,false);
 });
 test('existing saved content gains default page imagery without losing customized text',()=>{
- const legacy=copy();delete legacy.imagery;legacy.hero.title.ar='عنوان مخصص محفوظ';
+ const legacy=copy();delete legacy.imagery;delete legacy.journeys;delete legacy.metrics;legacy.hero.title.ar='عنوان مخصص محفوظ';
  const parsed=siteContentSchema.parse(legacy);
  assert.equal(parsed.hero.title.ar,'عنوان مخصص محفوظ');
  assert.equal(parsed.imagery.hero,'/assets/scenes/radiology-care.webp');
  assert.equal(parsed.imagery.care,'/assets/scenes/medical-team.webp');
+ assert.deepEqual(parsed.journeys,defaultContent.journeys);
+ assert.deepEqual(parsed.metrics,defaultContent.metrics);
  assert.equal(siteContentSchema.safeParse({...legacy,imagery:{hero:'javascript:alert(1)',care:'/assets/scenes/medical-team.webp'}}).success,false);
 });
 

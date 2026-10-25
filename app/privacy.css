@@ -1,0 +1,411 @@
+/* ==========================================================================
+   VIARA Healthcare Privacy & Security Policy Styles
+   ========================================================================== */
+
+.vp-privacy-page {
+  padding-bottom: 90px;
+}
+
+/* ── Trust Badges Strip ── */
+.vp-trust-strip {
+  margin-top: -24px;
+  margin-bottom: 45px;
+  position: relative;
+  z-index: 2;
+}
+
+.vp-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.vp-trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 123, 97, 0.16);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 60, 40, 0.04);
+  transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+}
+
+.vp-trust-badge:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 123, 97, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 123, 97, 0.08);
+}
+
+.vp-trust-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(0, 123, 97, 0.12) 0%, rgba(246, 199, 71, 0.14) 100%);
+  color: #007b61;
+  border: 1px solid rgba(0, 123, 97, 0.14);
+}
+
+.vp-trust-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.vp-trust-text strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: #06382c;
+  line-height: 1.3;
+}
+
+.vp-trust-text span {
+  font-size: 11px;
+  color: #5c7569;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Main Layout: Sticky Index + Content Cards ── */
+.vp-privacy-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: clamp(32px, 4vw, 55px);
+  align-items: start;
+}
+
+/* ── Sticky Table of Contents ── */
+.vp-privacy-nav {
+  position: sticky;
+  top: 115px;
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 123, 97, 0.16);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 50, 40, 0.04);
+}
+
+.vp-privacy-nav h3 {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #06382c;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 123, 97, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vp-privacy-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vp-privacy-nav a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #3b574a;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+}
+
+.vp-privacy-nav a:hover {
+  background: rgba(0, 123, 97, 0.08);
+  color: #007b61;
+  transform: translateX(-3px);
+}
+
+[dir="ltr"] .vp-privacy-nav a:hover {
+  transform: translateX(3px);
+}
+
+.vp-privacy-nav-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #007b61;
+  background: rgba(0, 123, 97, 0.1);
+  padding: 2px 6px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* ── Content Stream ── */
+.vp-privacy-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+}
+
+.vp-card {
+  padding: clamp(24px, 3.2vw, 36px);
+  background: #ffffff;
+  border: 1px solid rgba(0, 123, 97, 0.14);
+  border-radius: 18px;
+  box-shadow: 0 4px 18px rgba(0, 50, 40, 0.04);
+  scroll-margin-top: 120px;
+  transition: border-color 0.2s;
+}
+
+.vp-card:hover {
+  border-color: rgba(0, 123, 97, 0.26);
+}
+
+.vp-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 123, 97, 0.1);
+}
+
+.vp-card-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0, 123, 97, 0.12) 0%, rgba(246, 199, 71, 0.16) 100%);
+  color: #007b61;
+  border: 1px solid rgba(0, 123, 97, 0.14);
+  flex-shrink: 0;
+}
+
+.vp-card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.vp-card-title h2 {
+  font-size: clamp(19px, 2vw, 22px);
+  font-weight: 800;
+  color: #06382c;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.vp-card-title span {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #657e72;
+}
+
+.vp-card p {
+  font-size: 15px;
+  line-height: 1.85;
+  color: #3b574a;
+  margin: 0 0 14px 0;
+}
+
+.vp-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Healthcare Notice / Warning Callout ── */
+.vp-alert {
+  display: flex;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin: 18px 0;
+  align-items: flex-start;
+}
+
+.vp-alert-amber {
+  background: #fef9eb;
+  border: 1px solid #f6c747;
+  color: #614805;
+}
+
+.vp-alert-amber svg {
+  color: #b8860b;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.vp-alert-emerald {
+  background: #edf7f3;
+  border: 1px solid rgba(0, 123, 97, 0.28);
+  color: #074738;
+}
+
+.vp-alert-emerald svg {
+  color: #007b61;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.vp-alert-text {
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.vp-alert-text strong {
+  display: block;
+  font-weight: 800;
+  margin-bottom: 3px;
+}
+
+/* ── Bullet Points ── */
+.vp-list {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 18px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vp-list li {
+  position: relative;
+  padding-inline-start: 22px;
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: #3b574a;
+}
+
+.vp-list li::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  inset-inline-start: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #007b61;
+  box-shadow: 0 0 0 3px rgba(0, 123, 97, 0.15);
+}
+
+/* ── Data Grid ── */
+.vp-data-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.vp-data-item {
+  padding: 14px 16px;
+  background: #f7faf8;
+  border: 1px solid rgba(0, 123, 97, 0.12);
+  border-radius: 12px;
+}
+
+.vp-data-item strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #06382c;
+  margin-bottom: 4px;
+}
+
+.vp-data-item span {
+  display: block;
+  font-size: 12px;
+  color: #557263;
+  line-height: 1.6;
+}
+
+/* ── Contact DPO Box ── */
+.vp-contact-box {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 123, 97, 0.12);
+}
+
+.vp-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  background: #f7faf8;
+  border: 1px solid rgba(0, 123, 97, 0.12);
+  border-radius: 12px;
+  color: #074738;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.vp-contact-item:hover {
+  background: #ffffff;
+  border-color: rgba(0, 123, 97, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 123, 97, 0.08);
+  color: #007b61;
+}
+
+.vp-contact-icon {
+  color: #007b61;
+  flex-shrink: 0;
+}
+
+/* ── Responsive Queries ── */
+@media (max-width: 1100px) {
+  .vp-trust-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .vp-privacy-layout {
+    grid-template-columns: 240px 1fr;
+    gap: 28px;
+  }
+}
+
+@media (max-width: 900px) {
+  .vp-privacy-layout {
+    grid-template-columns: 1fr;
+  }
+  .vp-privacy-nav {
+    position: relative;
+    top: 0;
+    margin-bottom: 10px;
+  }
+  .vp-privacy-nav ul {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  .vp-contact-box {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .vp-trust-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .vp-privacy-nav ul {
+    grid-template-columns: 1fr;
+  }
+  .vp-data-grid {
+    grid-template-columns: 1fr;
+  }
+  .vp-card {
+    padding: 20px 16px;
+  }
+}

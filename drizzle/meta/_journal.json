@@ -22,6 +22,13 @@
       "when": 1792169647219,
       "tag": "0002_superb_zzzax",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792447962368,
+      "tag": "0003_soft_dragon_man",
+      "breakpoints": true
     }
   ]
 }

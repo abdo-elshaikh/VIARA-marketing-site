@@ -1,7 +1,86 @@
-import type {SVGProps} from 'react';
-type Props=SVGProps<SVGSVGElement>&{size?:number};
-const props=(size=18)=>({width:size,height:size,viewBox:'0 0 24 24','aria-hidden':true as const});
-export function Facebook({size,...rest}:Props){return <svg {...props(size)} {...rest} fill="currentColor"><path d="M14 22v-9h3l.5-3H14V8c0-1 .4-1.5 1.6-1.5H18V3.3c-.5-.1-1.7-.3-3-.3-3.1 0-5 1.9-5 5v2H7v3h3v9z"/></svg>;}
-export function Instagram({size,...rest}:Props){return <svg {...props(size)} {...rest} fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>;}
-export function Linkedin({size,...rest}:Props){return <svg {...props(size)} {...rest} fill="currentColor"><rect x="3" y="9" width="4" height="12" rx=".4"/><circle cx="5" cy="4.8" r="2.2"/><path d="M10 9h3.8v1.6c.6-1.1 1.8-2 3.6-2 3 0 3.6 2 3.6 5V21h-4v-6.4c0-1.5-.1-2.6-1.6-2.6-1.6 0-1.8 1.4-1.8 2.8V21H10z"/></svg>;}
-export function Youtube({size,...rest}:Props){return <svg {...props(size)} {...rest} fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 6 3-6 3z" fill="currentColor" stroke="none"/></svg>;}
+import type { SVGProps } from 'react';
+
+type Props = SVGProps<SVGSVGElement> & { size?: number };
+const props = (size = 18) => ({
+  width: size,
+  height: size,
+  viewBox: '0 0 24 24',
+  'aria-hidden': true as const,
+});
+
+export function Facebook({ size, ...rest }: Props) {
+  return (
+    <svg {...props(size)} {...rest} fill="currentColor">
+      <path d="M14 22v-9h3l.5-3H14V8c0-1 .4-1.5 1.6-1.5H18V3.3c-.5-.1-1.7-.3-3-.3-3.1 0-5 1.9-5 5v2H7v3h3v9z" />
+    </svg>
+  );
+}
+
+export function Instagram({ size, ...rest }: Props) {
+  return (
+    <svg {...props(size)} {...rest} fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function Linkedin({ size, ...rest }: Props) {
+  return (
+    <svg {...props(size)} {...rest} fill="currentColor">
+      <rect x="3" y="9" width="4" height="12" rx=".4" />
+      <circle cx="5" cy="4.8" r="2.2" />
+      <path d="M10 9h3.8v1.6c.6-1.1 1.8-2 3.6-2 3 0 3.6 2 3.6 5V21h-4v-6.4c0-1.5-.1-2.6-1.6-2.6-1.6 0-1.8 1.4-1.8 2.8V21H10z" />
+    </svg>
+  );
+}
+
+export function Youtube({ size, ...rest }: Props) {
+  return (
+    <svg {...props(size)} {...rest} fill="none" stroke="currentColor" strokeWidth="1.7">
+      <rect x="2" y="5" width="20" height="14" rx="4" />
+      <path d="m10 9 6 3-6 3z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function XIcon({ size, ...rest }: Props) {
+  return (
+    <svg {...props(size)} {...rest} fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+export function WhatsApp({ size, ...rest }: Props) {
+  return (
+    <svg {...props(size)} {...rest} fill="currentColor">
+      <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.41a8.16 8.16 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.64c-.25.7-.74 1.28-1.4 1.64-.66.36-1.47.47-2.31.29-1.39-.31-2.93-1.33-4.34-2.73-1.41-1.41-2.42-2.95-2.73-4.34-.18-.84-.07-1.65.29-2.31.36-.66.94-1.15 1.64-1.4.37-.13.78-.1 1.13.08.35.18.61.5.73.88l.6 1.9c.12.38.07.8-.13 1.14l-.56.97c.45.69 1.01 1.32 1.65 1.86.64.54 1.36.97 2.14 1.28l.97-.56c.34-.2.76-.25 1.14-.13l1.9.6c.38.12.7.38.88.73.18.35.21.76.08 1.13" />
+    </svg>
+  );
+}
+
+export function Telegram({ size, ...rest }: Props) {
+  return (
+    <svg {...props(size)} {...rest} fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z" />
+    </svg>
+  );
+}
+
+export function Snapchat({ size, ...rest }: Props) {
+  return (
+    <svg {...props(size)} {...rest} fill="currentColor">
+      <path d="M12.03 2.13c-3.13 0-5.32 2.22-5.32 5.06 0 .82.19 1.89.5 2.62-.26.1-.63.22-1.04.28-.48.07-.94.3-.94.75 0 .61.85.86 1.48.96.22.04.42.06.6.09-.16.5-.47 1.34-1.22 1.63-.44.17-.89.13-1.35.08-.38-.04-.81-.09-1.09.28-.21.28-.15.68.21.99.6.51 1.48.59 2.24.66.42.04.82.08 1.13.23.63.3 1.14.95 1.54 1.94.32.79.87 1.17 1.63 1.17.47 0 .96-.15 1.5-.46.52-.3 1.06-.61 1.76-.61s1.24.31 1.76.61c.54.31 1.03.46 1.5.46.76 0 1.31-.38 1.63-1.17.4-.99.91-1.64 1.54-1.94.31-.15.71-.19 1.13-.23.76-.07 1.64-.15 2.24-.66.36-.31.42-.71.21-.99-.28-.37-.71-.32-1.09-.28-.46.05-.91.09-1.35-.08-.75-.29-1.06-1.13-1.22-1.63.18-.03.38-.05.6-.09.63-.1 1.48-.35 1.48-.96 0-.45-.46-.68-.94-.75-.41-.06-.78-.18-1.04-.28.31-.73.5-1.8.5-2.62 0-2.84-2.19-5.06-5.32-5.06z" />
+    </svg>
+  );
+}
+
+export function Github({ size, ...rest }: Props) {
+  return (
+    <svg {...props(size)} {...rest} fill="currentColor">
+      <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z" />
+    </svg>
+  );
+}

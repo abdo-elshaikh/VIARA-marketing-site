@@ -1,0 +1,161 @@
+{
+  "timestamp": "2026-10-20T16:40:22.248Z",
+  "dryRun": true,
+  "hasMagick": false,
+  "summary": {
+    "total": 18,
+    "converted": 0,
+    "skipped": 0,
+    "failed": 0,
+    "totalOriginalSizeMB": "16.81",
+    "totalNewSizeMB": "5.61",
+    "totalSavedMB": "11.21",
+    "savedPercent": 67
+  },
+  "results": [
+    {
+      "file": "/public/assets/scenes/diagnostic-pacs.jpg",
+      "action": "dry-run",
+      "originalSizeKB": 670,
+      "newSizeKB": 335,
+      "savedKB": 335,
+      "savedPercent": 50
+    },
+    {
+      "file": "/public/assets/scenes/healthcare-command.jpg",
+      "action": "dry-run",
+      "originalSizeKB": 778,
+      "newSizeKB": 389,
+      "savedKB": 389,
+      "savedPercent": 50
+    },
+    {
+      "file": "/public/assets/scenes/hospital-inpatient.jpg",
+      "action": "dry-run",
+      "originalSizeKB": 765,
+      "newSizeKB": 382,
+      "savedKB": 382,
+      "savedPercent": 50
+    },
+    {
+      "file": "/public/assets/scenes/viara-brand-hero-v3.png",
+      "action": "dry-run",
+      "originalSizeKB": 2215,
+      "newSizeKB": 664,
+      "savedKB": 1550,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/scenes/viara-brand-hero.png",
+      "action": "dry-run",
+      "originalSizeKB": 724,
+      "newSizeKB": 217,
+      "savedKB": 507,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/system/portal-doctor.png",
+      "action": "dry-run",
+      "originalSizeKB": 1205,
+      "newSizeKB": 362,
+      "savedKB": 844,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/system/portal-hub.png",
+      "action": "dry-run",
+      "originalSizeKB": 1238,
+      "newSizeKB": 371,
+      "savedKB": 866,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/system/portal-patient.png",
+      "action": "dry-run",
+      "originalSizeKB": 1224,
+      "newSizeKB": 367,
+      "savedKB": 857,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/system/viara-system-appointments.png",
+      "action": "dry-run",
+      "originalSizeKB": 862,
+      "newSizeKB": 259,
+      "savedKB": 604,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/system/viara-system-dashboard.png",
+      "action": "dry-run",
+      "originalSizeKB": 800,
+      "newSizeKB": 240,
+      "savedKB": 560,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/system/viara-system-login.png",
+      "action": "dry-run",
+      "originalSizeKB": 664,
+      "newSizeKB": 199,
+      "savedKB": 465,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/system/viara-system-modality.png",
+      "action": "dry-run",
+      "originalSizeKB": 790,
+      "newSizeKB": 237,
+      "savedKB": 553,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/system/viara-system-pacs-workstation.jpg",
+      "action": "dry-run",
+      "originalSizeKB": 670,
+      "newSizeKB": 335,
+      "savedKB": 335,
+      "savedPercent": 50
+    },
+    {
+      "file": "/public/assets/system/viara-system-reception-cms.png",
+      "action": "dry-run",
+      "originalSizeKB": 925,
+      "newSizeKB": 278,
+      "savedKB": 648,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/system/viara-system-ris-worklist.png",
+      "action": "dry-run",
+      "originalSizeKB": 767,
+      "newSizeKB": 230,
+      "savedKB": 537,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/viara-brand-logo-only.png",
+      "action": "dry-run",
+      "originalSizeKB": 1507,
+      "newSizeKB": 452,
+      "savedKB": 1055,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/viara-brand.png",
+      "action": "dry-run",
+      "originalSizeKB": 724,
+      "newSizeKB": 217,
+      "savedKB": 507,
+      "savedPercent": 70
+    },
+    {
+      "file": "/public/assets/viara-symbol.png",
+      "action": "dry-run",
+      "originalSizeKB": 689,
+      "newSizeKB": 207,
+      "savedKB": 482,
+      "savedPercent": 70
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+/* Styles for the lead form scope/estimate summaries (extracted from the retired premium sheet). */
+.scope-request-summary{margin-block:20px;padding:16px;border:1px solid var(--line);border-radius:10px;background:#f3f8f4}
+.scope-request-summary>div{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.scope-request-summary h4{font-size:15px;line-height:1.7}
+.scope-request-summary .icon-button{min-width:44px;min-height:44px}
+.scope-request-summary p{white-space:pre-wrap;font-size:14px;line-height:1.8;margin-block:12px;overflow-wrap:anywhere}
+.scope-request-summary a{font-size:14px;text-decoration:underline}
+.selected-offer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-block:16px;padding:12px 15px;border:1px solid var(--line);border-radius:9px;background:#f6f9f4;font-size:13px;line-height:1.7}
+.selected-offer button{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:#fff;flex-shrink:0}
+.selected-offer button:hover{background:var(--mint)}
+
+/* Selected Plan Badge */
+.selected-plan-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-block: 16px 20px;
+  padding: 16px 18px;
+  border: 1.5px solid #a8cba5;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f3f8f1 0%, #ebf5e8 100%);
+  box-shadow: 0 4px 14px rgba(36, 90, 69, 0.06);
+}
+
+.selected-plan-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.selected-plan-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.selected-plan-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--care-green);
+  text-transform: uppercase;
+}
+
+.selected-plan-kicker svg {
+  color: var(--care-green);
+}
+
+.selected-plan-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.selected-plan-name-row strong {
+  font-size: 18px;
+  color: #17382d;
+}
+
+.selected-plan-edition {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: #ffffff;
+  border: 1px solid #c8dbc5;
+  border-radius: 6px;
+  color: #2b573e;
+}
+
+.selected-plan-content p {
+  font-size: 13px;
+  color: #496352;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.selected-plan-clear {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #c5d8c3;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #55705e;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.selected-plan-clear:hover {
+  background: #ddead7;
+  color: #17382d;
+}
+

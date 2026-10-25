@@ -23,6 +23,10 @@ test('valid requests are normalized, including Arabic phone digits', () => {
   assert.equal(result.name, 'مركز تجريبي');
   assert.equal(result.phone, '+20 1012345678');
 });
+test('AI is a valid selectable marketing product in a request', () => {
+  const result = inquirySchema.parse({ ...valid, interest: 'AI' });
+  assert.equal(result.interest, 'AI');
+});
 test('invalid contact details, consent, identifiers, scopes and spam are rejected', () => {
   for (const invalid of [
     { email: 'no-email' }, { phone: '-------' }, { phone: 'call-me' }, { consent: false },

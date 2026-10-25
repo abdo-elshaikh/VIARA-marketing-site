@@ -1,0 +1,96 @@
+{
+  "analyzed": "2026-10-20T16:19:12.498Z",
+  "largeImages": [
+    {
+      "path": "/public/assets/scenes/diagnostic-pacs.jpg",
+      "sizeKB": 670,
+      "sizeMB": "0.65"
+    },
+    {
+      "path": "/public/assets/scenes/healthcare-command.jpg",
+      "sizeKB": 778,
+      "sizeMB": "0.76"
+    },
+    {
+      "path": "/public/assets/scenes/hospital-inpatient.jpg",
+      "sizeKB": 765,
+      "sizeMB": "0.75"
+    },
+    {
+      "path": "/public/assets/scenes/viara-brand-hero-v3.png",
+      "sizeKB": 2215,
+      "sizeMB": "2.16"
+    },
+    {
+      "path": "/public/assets/scenes/viara-brand-hero.png",
+      "sizeKB": 724,
+      "sizeMB": "0.71"
+    },
+    {
+      "path": "/public/assets/system/portal-doctor.png",
+      "sizeKB": 1205,
+      "sizeMB": "1.18"
+    },
+    {
+      "path": "/public/assets/system/portal-hub.png",
+      "sizeKB": 1238,
+      "sizeMB": "1.21"
+    },
+    {
+      "path": "/public/assets/system/portal-patient.png",
+      "sizeKB": 1224,
+      "sizeMB": "1.20"
+    },
+    {
+      "path": "/public/assets/system/viara-system-appointments.png",
+      "sizeKB": 862,
+      "sizeMB": "0.84"
+    },
+    {
+      "path": "/public/assets/system/viara-system-dashboard.png",
+      "sizeKB": 800,
+      "sizeMB": "0.78"
+    },
+    {
+      "path": "/public/assets/system/viara-system-login.png",
+      "sizeKB": 664,
+      "sizeMB": "0.65"
+    },
+    {
+      "path": "/public/assets/system/viara-system-modality.png",
+      "sizeKB": 790,
+      "sizeMB": "0.77"
+    },
+    {
+      "path": "/public/assets/system/viara-system-pacs-workstation.jpg",
+      "sizeKB": 670,
+      "sizeMB": "0.65"
+    },
+    {
+      "path": "/public/assets/system/viara-system-reception-cms.png",
+      "sizeKB": 925,
+      "sizeMB": "0.90"
+    },
+    {
+      "path": "/public/assets/system/viara-system-ris-worklist.png",
+      "sizeKB": 767,
+      "sizeMB": "0.75"
+    },
+    {
+      "path": "/public/assets/viara-brand-logo-only.png",
+      "sizeKB": 1507,
+      "sizeMB": "1.47"
+    },
+    {
+      "path": "/public/assets/viara-brand.png",
+      "sizeKB": 724,
+      "sizeMB": "0.71"
+    },
+    {
+      "path": "/public/assets/viara-symbol.png",
+      "sizeKB": 689,
+      "sizeMB": "0.67"
+    }
+  ],
+  "totalSizeMB": "16.81"
+}

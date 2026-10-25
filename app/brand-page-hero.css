@@ -1,0 +1,360 @@
+/* ═══════════════════════════════════════════════════════════════
+   BrandPageHero — Authentic Arabic Girih & DICOM Radiology Fusion
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ─────────────────────────────────────────────── */
+/* !important overrides generic brand-theme.css `.br-page-hero { background:#f3f8f4 }` */
+.br-page-hero {
+  position: relative;
+  overflow: hidden;
+  padding-top: 86px;
+  background:
+    radial-gradient(circle at 90% 12%, rgba(0, 123, 97, 0.09) 0%, transparent 45%),
+    radial-gradient(circle at 10% 88%, rgba(246, 199, 71, 0.07) 0%, transparent 45%),
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.85) 0%, transparent 60%),
+    linear-gradient(
+      152deg,
+      #ddeee6 0%,
+      #e8f4ed 32%,
+      #f4f9f6 68%,
+      #edf6f1 100%
+    ) !important;
+  border-bottom: 1px solid var(--brand-line, #dce8e1);
+}
+
+/* ── Decorative Layer (Arabesque + DICOM Reticle + Calibrated Ruler) ── */
+.br-hero-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* 1. Islamic Geometric Girih Canvas */
+.br-decor-arabesque {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.br-decor-girih-rect {
+  filter: drop-shadow(0 0 1px rgba(0, 123, 97, 0.12));
+}
+
+/* 2. DICOM Gantry Scanner Reticle */
+.br-decor-gantry {
+  position: absolute;
+  inset-inline-end: clamp(10px, 2.5vw, 45px);
+  top: clamp(15px, 2vw, 45px);
+  width: clamp(250px, 25vw, 360px);
+  height: clamp(250px, 25vw, 360px);
+  opacity: 0.95;
+  filter: drop-shadow(0 6px 20px rgba(0, 123, 97, 0.08));
+}
+
+.br-gantry-rotating-group {
+  animation: br-gantry-spin 120s linear infinite;
+}
+
+.br-gantry-center-arabesque {
+  filter: drop-shadow(0 0 8px rgba(0, 123, 97, 0.15));
+}
+
+/* 3. Opposite Collimator Alignment Bracket */
+.br-decor-collimator {
+  position: absolute;
+  inset-inline-start: clamp(16px, 3.5vw, 60px);
+  top: clamp(20px, 3vw, 50px);
+  width: 110px;
+  height: 110px;
+  opacity: 0.85;
+  filter: drop-shadow(0 2px 8px rgba(0, 123, 97, 0.06));
+}
+
+/* 4. Bottom Calibrated PACS Millimeter Metric Scale */
+.br-decor-ruler {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-inline: clamp(16px, 3vw, 36px);
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.55), transparent);
+}
+
+.br-decor-ruler svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.br-ruler-tag {
+  position: relative;
+  z-index: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--brand-forest, #073e32);
+  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 2px 9px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 123, 97, 0.18);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ── Content Layer ──────────────────────────────────────────── */
+.br-hero-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Centered Glassmorphic Breadcrumb ───────────────────────── */
+.br-breadcrumb-nav-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 26px;
+}
+
+.br-page-hero .br-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 123, 97, 0.16);
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(7, 62, 50, 0.04);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.br-breadcrumb-link {
+  color: #4b6357;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.18s ease;
+}
+
+.br-breadcrumb-link:hover {
+  color: var(--brand-primary, #007b61);
+}
+
+.br-breadcrumb-arrow {
+  color: #8fa69a;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.br-breadcrumb-current {
+  color: var(--brand-ink, #123d33);
+  font-weight: 700;
+}
+
+/* ── Hero Body ──────────────────────────────────────────────── */
+.br-unified-hero-body {
+  padding-block: 48px 62px;
+}
+
+/* Eyebrow & Telemetry Row */
+.br-eyebrow-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.br-page-hero .br-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--brand-primary, #007b61);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Radar Pulse Beacon */
+.br-radar-beacon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.br-radar-core {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand-primary, #007b61);
+  box-shadow: 0 0 6px rgba(0, 123, 97, 0.7);
+}
+
+.br-radar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--brand-primary, #007b61);
+  opacity: 0.75;
+  animation: br-radar-ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Radiology Telemetry Badge */
+.br-radiology-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 13px;
+  border-radius: 999px;
+  background: rgba(0, 123, 97, 0.08);
+  border: 1px solid rgba(0, 123, 97, 0.22);
+  color: var(--brand-forest, #073e32);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  box-shadow: 0 1px 4px rgba(7, 62, 50, 0.03);
+  line-height: 1.6;
+}
+
+.br-radiology-icon {
+  color: var(--brand-primary, #007b61);
+  flex-shrink: 0;
+}
+
+/* Title & Accent Typography */
+.br-unified-hero-body h1 {
+  font-size: clamp(38px, 4.4vw, 62px);
+  line-height: 1.26;
+  letter-spacing: -1.2px;
+  margin: 0;
+  color: #0d3129;
+  font-weight: 800;
+}
+
+.br-unified-hero-body h1 em {
+  font-style: normal;
+  color: var(--brand-primary, #007b61);
+  text-shadow: 0 2px 24px rgba(0, 123, 97, 0.16);
+}
+
+.br-unified-hero-body > p {
+  font-size: 17.5px;
+  line-height: 1.95;
+  color: #435b51;
+  max-width: 620px;
+  margin-top: 22px;
+  font-weight: 450;
+}
+
+/* ── Hero Note ──────────────────────────────────────────────── */
+.br-hero-note {
+  display: block;
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: #556e62;
+  opacity: 0.9;
+  max-width: 580px;
+  line-height: 1.75;
+}
+
+/* ── Keyframe Animations ────────────────────────────────────── */
+@keyframes br-gantry-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes br-radar-ping {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.85;
+  }
+  75%, 100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* ── Responsive Refinements ─────────────────────────────────── */
+@media (max-width: 900px) {
+  .br-unified-hero-body {
+    padding-block: 38px 52px;
+  }
+  .br-decor-gantry {
+    opacity: 0.65;
+    width: 240px;
+    height: 240px;
+    top: -20px;
+  }
+  .br-decor-collimator {
+    display: none;
+  }
+  .br-ruler-tag {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .br-page-hero {
+    padding-top: 72px;
+  }
+  .br-unified-hero-body {
+    padding-block: 30px 42px;
+  }
+  .br-unified-hero-body h1 {
+    font-size: 31px;
+    letter-spacing: -0.5px;
+  }
+  .br-unified-hero-body > p {
+    font-size: 15.5px;
+  }
+  .br-decor-gantry {
+    width: 170px;
+    height: 170px;
+    inset-inline-end: -25px;
+    top: -20px;
+    opacity: 0.45;
+  }
+  .br-radiology-badge {
+    font-size: 9px;
+    padding: 3px 9px;
+  }
+  .br-page-hero > .br-hero-wrap > .br-breadcrumb {
+    font-size: 11px;
+    padding: 5px 12px;
+  }
+}
+
+/* ── Accessibility ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .br-gantry-rotating-group,
+  .br-radar-ring {
+    animation: none !important;
+  }
+}
+

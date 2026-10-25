@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
-import { ADMIN_COOKIE_NAME } from '../../../../lib/admin-auth';
+import { ADMIN_COOKIE_NAME, sameOrigin } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST() {
+export async function POST(request: Request) {
+  if (!sameOrigin(request)) {
+    return NextResponse.json({ error: 'مصدر الطلب غير صحيح.' }, { status: 403 });
+  }
   const response = NextResponse.json({ ok: true });
   response.cookies.set(ADMIN_COOKIE_NAME, '', {
     httpOnly: true,
+    secure: true,
     path: '/',
     maxAge: 0
   });
@@ -18,6 +22,7 @@ export async function GET(request: Request) {
   const response = NextResponse.redirect(url);
   response.cookies.set(ADMIN_COOKIE_NAME, '', {
     httpOnly: true,
+    secure: true,
     path: '/',
     maxAge: 0
   });

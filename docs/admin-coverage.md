@@ -1,5 +1,5 @@
 # Admin Panel Coverage Report
-**Date:** 2025-07-10  
+**Date:** 2026-10-17  
 **Scope:** `app/admin/admin-client.tsx` vs `lib/site-content.ts` (SiteContent type)  
 **Build status:** ✅ Clean (no changes required — full coverage already existed)
 
@@ -19,6 +19,8 @@
 | `sections.offers` | boolean toggle | Offers tab | ✅ Editable |
 | `sections.reviews` | boolean toggle | Reviews tab | ✅ Editable |
 | `faqs` | array of `{ id, question, answer }` | Content → "Frequently asked questions" | ✅ Editable (add/remove/edit) |
+| `journeys` | five stages: `title`, `description`, `team`, `question` | Content → "Care journey stages" | ✅ Bilingual copy editable; system mappings and icons remain fixed |
+| `metrics` | four `{ value, label }` entries | Content → "Homepage metrics" | ✅ Bilingual values and labels editable; verify claims before publishing |
 | `products` | array: `id`, `name`, `headline`, `description`, `features[]`, `note`, `image`, `enabled` | Systems & plans → "VIARA systems" | ✅ Editable (all fields per system) |
 | `catalog.categories` | array of `{ id, name }` — 4 items | Systems & plans → "Care areas & facility recommendations" | ✅ Names editable |
 | `catalog.facilities` | array of `{ id, name, systems[] }` — 5 items | Systems & plans → "Care areas & facility recommendations" | ✅ Names + system checkboxes editable |
@@ -27,50 +29,27 @@
 | `copy` | free-form key/value record of `Localized` strings | "All page text" tab (CopyEditor) | ✅ Editable |
 | `company` | all company fields | "Company information" tab (CompanyEditor) | ✅ Editable |
 
-**Summary: All 17 top-level keys / section groups in `SiteContent` are covered in the admin panel.  
-No missing sections were found — no code changes were required.**
+**Summary: All `SiteContent` keys and section groups are covered in the admin panel.**
 
 ---
 
-## 2. What Was Added in This Task
+## 2. What Was Improved
 
-**Nothing was added.** A complete audit confirmed full coverage already exists across the admin's 9 navigation tabs.
+- Failed inquiry and review reads now return an explicit `503` error instead of an empty list that looks successful.
+- Inquiry and review list errors are shown independently, and unavailable data is not presented as a zero count in the dashboard or as a fresh navigation badge.
+- Failed inquiry status updates no longer change the local record or show a success message.
+- Inquiry search now trims the query and matches facility, branch, system, plan, offer, and request details as well as contact fields.
+- The inquiry inbox shows filtered/total counts and offers a one-click way to clear active filters.
+- Clipboard errors are surfaced, and the admin brand link uses Next.js navigation.
+- Journey stage copy and homepage metrics are editable in Arabic and English; journey system mappings remain fixed.
 
 ---
 
-## 3. What Remains NOT Editable (and Why)
+## 3. Fixed Application Structure
 
 ### Journeys page data (`app/journeys-view.tsx`)
 
-The five care journey stages are defined as a hardcoded `journeys` array in `journeys-view.tsx`:
-
-```ts
-const journeys = [
-  { icon, title: {ar, en}, description: {ar, en}, team: {ar, en}, systems: string[], question: {ar, en} },
-  // × 5 stages
-]
-```
-
-**This data is NOT in `site-content.ts` and NOT editable in the admin panel.**
-
-**Reason it is NOT in the schema:** This is structural/navigational content that defines the interactive care journey explorer experience. The stage titles, descriptions, team labels, and guiding questions are tightly coupled to which `systems[]` IDs are shown per stage — changing them incorrectly would break the system catalog mapping. It is treated as application logic, not operator-configurable marketing copy.
-
-**Recommendation for a future iteration:** If operators need to customize journey stage text, these fields can be added to `site-content.ts` as a new `journeys` array of type:
-
-```ts
-journeys: z.array(z.object({
-  title: requiredLocalized,
-  description: requiredLocalized,
-  team: localizedSchema,
-  question: localizedSchema,
-})).length(5)
-```
-
-The `systems[]` IDs and `icon` assignments would remain hardcoded (as they drive the display logic). The `journeys` key would then appear in the admin panel's "Content" tab with a `Pair` field per text field per stage. This would require:
-1. Adding the schema key to `siteContentSchema` in `site-content.ts`
-2. Setting a default in `defaultContent` matching the current hardcoded values
-3. Replacing the hardcoded strings in `journeys-view.tsx` with `content.journeys[i].title` etc.
-4. Adding a "Journey stages" Panel to the admin `content` tab
+Journey stage copy is editable in the admin panel. The five stages remain fixed in order, and their system mappings and icons stay hardcoded so changing copy cannot break catalog links.
 
 ---
 
@@ -99,10 +78,7 @@ API routes confirmed to exist:
 
 ## 5. Issues and Conflicts Found
 
-None found. The admin panel already had complete, correct coverage of all `SiteContent` fields before this task ran.
-
-**One item documented for product owner's attention (from Task 2 audit):**  
-`app/modern-home.tsx` contains hardcoded marketing metrics (`99.98%`, `100+`, `4.8M+`, `98.6%`) with no sample-data disclaimer. These are not part of `site-content.ts` and are not editable in the admin. This is a product/marketing decision — see `docs/task2-fake-data-audit.md` section 5 for details.
+Homepage metrics are editable under Site content, and the cloud availability badge uses the same managed value as the first metric. The admin reminds publishers to verify public-facing figures and their sources before publishing.
 
 ---
 
@@ -111,7 +87,7 @@ None found. The admin panel already had complete, correct coverage of all `SiteC
 | Admin Tab | Sections Managed |
 |---|---|
 | Overview | Dashboard metrics (read-only) |
-| Site content | `hero`, `about`, `sections.about`, `faqs` |
+| Site content | `hero`, `about`, `sections.about`, `faqs`, `journeys`, `metrics` |
 | Company information | `company` (via CompanyEditor) |
 | All page text | `copy` (via CopyEditor) |
 | Systems & plans | `products`, `catalog`, `plans` |

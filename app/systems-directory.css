@@ -1,0 +1,1403 @@
+/* ==========================================================================
+   VIARA SYSTEMS DIRECTORY STYLESHEET (systems-directory.css)
+   Clean, Uncluttered, High-Usability Medical Enterprise Aesthetic
+   ========================================================================== */
+
+.care-site .vsd-page {
+  background: #fbfdfc;
+  color: #142a22;
+  --vsd-line: #dbe8e1;
+  --vsd-muted: #536e62;
+  --vsd-emerald: #007b61;
+  --vsd-emerald-dark: #005a46;
+  --vsd-mint: #eef6f2;
+  --vsd-gold: #f6c747;
+}
+
+.care-site .vsd-page.has-selection {
+  padding-bottom: 120px;
+}
+
+/* ── Hero Custom Button ── */
+.vsd-hero-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.vsd-hero-compare-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  color: #005a46 !important;
+  border: 1px solid #c9ded4;
+  min-height: 52px;
+  padding: 12px 22px;
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vsd-hero-compare-btn:hover {
+  background: #edf7f3;
+  border-color: #007b61;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 123, 97, 0.12);
+}
+
+/* ── Hero Quick Clinical Trust Stats Strip ── */
+.vsd-hero-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.vsd-hero-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 123, 97, 0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0c3d2e;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(8px);
+}
+
+.vsd-hero-stat-pill svg {
+  color: #007b61;
+}
+
+/* ── Main Directory Section ── */
+.care-site .vsd-directory-clean {
+  padding-block: 54px 72px;
+}
+
+/* ── Connected Clinical Synergy Pipeline ── */
+.vsd-synergy-pipeline {
+  background: linear-gradient(135deg, #f0f7f3 0%, #e6f3eb 100%);
+  border: 1px solid #cbe3d4;
+  border-radius: 14px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.vsd-pipeline-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #073e32;
+}
+
+.vsd-pipeline-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  flex-shrink: 0;
+}
+
+.vsd-pipeline-steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vsd-pipeline-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vsd-pipeline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid #cde0d5;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #163f30;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.vsd-pipeline-btn:hover {
+  background: #007b61;
+  color: #ffffff;
+  border-color: #007b61;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 97, 0.15);
+}
+
+.vsd-pipe-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #073e32;
+  color: #f7f9f2;
+  font-size: 10px;
+  font-weight: 800;
+  direction: ltr;
+}
+
+.vsd-pipeline-btn:hover .vsd-pipe-badge {
+  background: #ffffff;
+  color: #073e32;
+}
+
+.vsd-pipe-num {
+  font-size: 9.5px;
+  color: #769586;
+}
+
+.vsd-pipeline-btn:hover .vsd-pipe-num {
+  color: #c9e5d8;
+}
+
+.vsd-pipe-title {
+  font-size: 11px;
+}
+
+.vsd-pipeline-arrow {
+  color: #8cb8a1;
+  display: grid;
+  place-items: center;
+}
+
+/* ── Section Clean Heading ── */
+.vsd-clean-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.vsd-heading-text {
+  max-width: 720px;
+}
+
+.vsd-clean-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #007b61;
+  background: #edf6f2;
+  border: 1px solid #d4e7de;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+
+.vsd-clean-heading h2 {
+  font-size: clamp(28px, 3vw, 42px);
+  font-weight: 800;
+  line-height: 1.35;
+  color: #0c2b20;
+  margin: 0 0 12px;
+  letter-spacing: -0.8px;
+}
+
+.vsd-clean-heading p {
+  font-size: 16px;
+  line-height: 1.85;
+  color: #4f6b5f;
+  margin: 0;
+}
+
+.vsd-compare-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #005a46;
+  border: 1px solid #ccdcd4;
+  padding: 10px 18px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.vsd-compare-pill-btn:hover {
+  background: #edf6f2;
+  border-color: #007b61;
+  color: #004d3b;
+  transform: translateY(-1px);
+}
+
+/* ── Smart Control Hub ── */
+.vsd-control-hub {
+  background: #ffffff;
+  border: 1px solid #dce8e2;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 20px rgba(12, 43, 32, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Domain Tabs */
+.vsd-domain-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vsd-domain-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f4f8f6;
+  border: 1px solid #dce7e1;
+  color: #3b574b;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vsd-domain-tab:hover {
+  background: #edf6f2;
+  color: #005a46;
+  border-color: #b8ded0;
+}
+
+.vsd-domain-tab.is-active {
+  background: #005a46;
+  border-color: #005a46;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 90, 70, 0.2);
+}
+
+.vsd-tab-count {
+  font-size: 10.5px;
+  font-weight: 800;
+  font-family: Manrope, Arial, sans-serif;
+  background: rgba(0, 0, 0, 0.08);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.vsd-domain-tab.is-active .vsd-tab-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Actions Dock: Search & View Toggle */
+.vsd-actions-dock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid #edf4f0;
+  padding-top: 10px;
+}
+
+.vsd-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 480px;
+  background: #f7faf8;
+  border: 1px solid #d5e5dc;
+  border-radius: 10px;
+  padding: 0 12px;
+  transition: all 0.2s;
+}
+
+.vsd-search-box:focus-within {
+  border-color: #007b61;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 97, 0.12);
+}
+
+.vsd-search-icon {
+  color: #658577;
+  flex-shrink: 0;
+}
+
+.vsd-search-box input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 10px 10px;
+  font-size: 13px;
+  color: #0c2b20;
+  outline: none;
+}
+
+.vsd-search-box input::placeholder {
+  color: #799488;
+}
+
+.vsd-clear-search {
+  background: transparent;
+  border: 0;
+  color: #799488;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.vsd-clear-search:hover {
+  color: #0c2b20;
+}
+
+/* View Mode Switcher */
+.vsd-view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #edf4f0;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.vsd-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  color: #4b6659;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.vsd-view-btn:hover {
+  color: #005a46;
+}
+
+.vsd-view-btn.is-active {
+  background: #ffffff;
+  color: #005a46;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Status Line */
+.vsd-status-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 4px 6px;
+  font-size: 12.5px;
+  color: #607c70;
+  font-weight: 600;
+}
+
+.vsd-basket-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #007b61;
+  background: #edf6f2;
+  border: 1px solid #cfe5db;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* ── VIEW 1: Streamlined Grid Cards ── */
+.vsd-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.vsd-clean-card {
+  background: #ffffff;
+  border: 1px solid #d9e7de;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(12, 43, 32, 0.04);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  position: relative;
+}
+
+.vsd-clean-card:hover {
+  transform: translateY(-3px);
+  border-color: #a7d4c1;
+  box-shadow: 0 12px 32px rgba(0, 90, 70, 0.1);
+}
+
+.vsd-clean-card.is-selected {
+  border-color: #007b61;
+  box-shadow: 0 0 0 2px #007b61, 0 12px 32px rgba(0, 123, 97, 0.14);
+}
+
+/* Card Header */
+.vsd-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  background: #f7faf8;
+  border-bottom: 1px solid #e5eee8;
+}
+
+.vsd-brand-ident {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vsd-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: #edf6f2;
+  color: #007b61;
+  border: 1px solid #d0e7dc;
+  flex-shrink: 0;
+}
+
+.vsd-code-badge {
+  display: block;
+  font-family: Manrope, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0c2b20;
+  line-height: 1.2;
+}
+
+.vsd-role-kicker {
+  display: block;
+  font-size: 10.5px;
+  color: #5c796d;
+  line-height: 1.3;
+}
+
+/* Scope Quick Toggle Button */
+.vsd-scope-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #c9ded4;
+  color: #3b574a;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.vsd-scope-quick-btn:hover {
+  background: #edf6f2;
+  border-color: #007b61;
+  color: #005a46;
+}
+
+.vsd-scope-quick-btn.is-added {
+  background: #007b61;
+  border-color: #007b61;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 123, 97, 0.25);
+}
+
+/* Card Image Preview */
+.vsd-preview-container {
+  position: relative;
+  height: 195px;
+  background: #112d22;
+  overflow: hidden;
+}
+
+.vsd-preview-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.vsd-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.vsd-preview-img-brand {
+  object-position: center;
+}
+
+.vsd-preview-img-ui {
+  object-position: top center;
+}
+
+.vsd-clean-card:hover .vsd-preview-img {
+  transform: scale(1.03);
+}
+
+.vsd-preview-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 28, 21, 0.1) 0%, rgba(8, 28, 21, 0.75) 100%);
+  pointer-events: none;
+}
+
+.vsd-screen-tag {
+  position: absolute;
+  bottom: 10px;
+  inset-inline-start: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 24, 18, 0.8);
+  backdrop-filter: blur(8px);
+  color: #e5f7f1;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.vsd-screen-tag-brand {
+  background: rgba(7, 62, 50, 0.9);
+  border-color: rgba(246, 199, 71, 0.6);
+  color: #f6c747;
+  font-weight: 700;
+}
+
+/* Perspective Toggle Dock on Card Image: [ 3D Scene | Live UI ] */
+.vsd-preview-toggle-dock {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  display: flex;
+  gap: 4px;
+  z-index: 3;
+  background: rgba(0, 24, 18, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  padding: 3px;
+}
+
+.vsd-toggle-pill {
+  border: 0;
+  background: transparent;
+  color: #c9ded4;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.vsd-toggle-pill:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.vsd-toggle-pill.is-active {
+  background: #007b61;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.vsd-preview-dots {
+  position: absolute;
+  bottom: 10px;
+  inset-inline-end: 12px;
+  display: flex;
+  gap: 4px;
+  z-index: 2;
+}
+
+.vsd-dot-btn {
+  background: rgba(0, 24, 18, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  font-size: 9px;
+  font-family: Manrope, Arial, sans-serif;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.vsd-dot-btn:hover,
+.vsd-dot-btn.is-active {
+  background: #007b61;
+  border-color: #f6c747;
+  color: #ffffff;
+}
+
+/* Card Content */
+.vsd-card-content {
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.vsd-card-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0c2b20;
+  line-height: 1.35;
+}
+
+.vsd-card-desc {
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: #557265;
+  min-height: 48px;
+}
+
+/* Technical Specification Badges */
+.vsd-spec-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+.vsd-spec-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: #f1f7f4;
+  border: 1px solid #d5e7dd;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #204d3a;
+  white-space: nowrap;
+}
+
+/* Target Audience Badge */
+.vsd-target-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f8f5;
+  border: 1px solid #e1ede7;
+  border-radius: 6px;
+  padding: 7px 10px;
+  margin: 14px 0 12px;
+  font-size: 11.5px;
+  color: #3b5a4d;
+  font-weight: 600;
+}
+
+.vsd-team-icon {
+  color: #007b61;
+  flex-shrink: 0;
+}
+
+/* Highlights List */
+.vsd-highlights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.vsd-highlight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: #4b6659;
+  line-height: 1.6;
+}
+
+.vsd-highlight-check {
+  color: #008769;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* Card Footer Action */
+.vsd-card-footer {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #edf4f0;
+}
+
+.vsd-details-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #005a46 0%, #007b61 100%);
+  color: #ffffff !important;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 90, 70, 0.16);
+}
+
+.vsd-details-btn:hover {
+  background: linear-gradient(135deg, #004d3b 0%, #006e57 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 90, 70, 0.24);
+}
+
+/* ── VIEW 2: Compact High-Efficiency Table Mode ── */
+.vsd-table-wrapper {
+  background: #ffffff;
+  border: 1px solid #dce8e2;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(12, 43, 32, 0.04);
+  margin-top: 16px;
+}
+
+.vsd-compact-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: start;
+}
+
+.vsd-compact-table thead {
+  background: #f4f8f6;
+  border-bottom: 1px solid #dbe6e0;
+}
+
+.vsd-compact-table th {
+  padding: 14px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #005a46;
+  text-align: start;
+}
+
+.vsd-compact-table tbody tr {
+  border-bottom: 1px solid #edf4f0;
+  transition: background 0.18s;
+}
+
+.vsd-compact-table tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.vsd-compact-table tbody tr:hover {
+  background: #f7faf8;
+}
+
+.vsd-compact-table tbody tr.is-row-selected {
+  background: #f0f7f3;
+}
+
+.vsd-compact-table td {
+  padding: 14px 18px;
+  vertical-align: middle;
+}
+
+/* Identity Cell */
+.vsd-row-id-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vsd-row-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #edf6f2;
+  color: #007b61;
+  border: 1px solid #d2e7dd;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.vsd-row-code {
+  font-family: Manrope, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0c2b20;
+  display: block;
+}
+
+.vsd-row-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #244b3c;
+  display: block;
+  white-space: nowrap;
+}
+
+/* Role Cell */
+.vsd-row-role-text {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #007b61;
+  margin-bottom: 3px;
+}
+
+.vsd-row-desc-text {
+  margin: 0;
+  font-size: 12px;
+  color: #557265;
+  line-height: 1.6;
+  max-width: 320px;
+}
+
+/* Audience Cell */
+.vsd-audience-badge {
+  display: inline-block;
+  background: #f2f7f4;
+  border: 1px solid #dce8e1;
+  color: #4b6659;
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Thumbnail Cell */
+.vsd-row-thumb-link {
+  display: block;
+  width: 80px;
+  height: 50px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #dce8e1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.vsd-row-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vsd-no-thumb {
+  color: #8da498;
+}
+
+/* Action Buttons Cell */
+.vsd-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vsd-row-scope-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #c9ded4;
+  color: #3b574a;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.vsd-row-scope-btn:hover {
+  background: #edf6f2;
+  border-color: #007b61;
+}
+
+.vsd-row-scope-btn.is-active {
+  background: #007b61;
+  border-color: #007b61;
+  color: #ffffff;
+}
+
+.vsd-row-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #007b61;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #edf6f2;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.vsd-row-view-btn:hover {
+  background: #e2f1ea;
+  color: #004d3b;
+}
+
+/* ── Empty State ── */
+.vsd-clean-empty {
+  padding: 64px 24px;
+  text-align: center;
+  background: #f7faf8;
+  border: 1px dashed #cde2d7;
+  border-radius: 16px;
+  margin-top: 24px;
+}
+
+.vsd-empty-icon {
+  color: #8dae9f;
+  margin-bottom: 14px;
+}
+
+.vsd-clean-empty h3 {
+  font-size: 20px;
+  color: #0c2b20;
+  margin: 0 0 8px;
+}
+
+.vsd-clean-empty p {
+  font-size: 14px;
+  color: #557265;
+  margin: 0 0 20px;
+}
+
+/* ── Comparison Modal Dialog ── */
+.vsd-modal-dialog {
+  border: 0;
+  border-radius: 20px;
+  padding: 0;
+  background: transparent;
+  width: min(1080px, calc(100% - 32px));
+  max-height: 90vh;
+}
+
+.vsd-modal-dialog::backdrop {
+  background: rgba(10, 32, 24, 0.65);
+  backdrop-filter: blur(8px);
+}
+
+.vsd-modal-sheet {
+  background: #ffffff;
+  border: 1px solid #cce2d6;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.3);
+}
+
+.vsd-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 28px;
+  background: #f4f8f6;
+  border-bottom: 1px solid #dce7e1;
+}
+
+.vsd-modal-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #007b61;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+
+.vsd-modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0c2b20;
+}
+
+.vsd-modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #d5e5dc;
+  background: #ffffff;
+  color: #4b6659;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
+}
+
+.vsd-modal-close:hover {
+  background: #edf6f2;
+  color: #0c2b20;
+}
+
+.vsd-modal-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+}
+
+/* ── Next Step Clean Banner ── */
+.vsd-next-clean {
+  padding-block: 40px 60px;
+}
+
+.vsd-next-clean-card {
+  background: linear-gradient(135deg, #073e32 0%, #005a46 60%, #007b61 100%);
+  border-radius: 20px;
+  padding: 44px 48px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  box-shadow: 0 16px 48px rgba(7, 62, 50, 0.16);
+  position: relative;
+  overflow: hidden;
+}
+
+.vsd-next-clean-card:before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -20%;
+  width: 60%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(246, 199, 71, 0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.vsd-next-copy {
+  max-width: 640px;
+  position: relative;
+  z-index: 1;
+}
+
+.vsd-next-kicker {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #f6c747;
+  letter-spacing: 0.8px;
+  margin-bottom: 12px;
+}
+
+.vsd-next-clean-card h2 {
+  font-size: clamp(26px, 2.5vw, 36px);
+  font-weight: 800;
+  line-height: 1.35;
+  margin: 0 0 12px;
+  color: #ffffff;
+}
+
+.vsd-next-clean-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.85;
+  color: #cde4d9;
+}
+
+.vsd-next-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.vsd-next-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #f6c747;
+  color: #0c2b20 !important;
+  padding: 13px 26px;
+  border-radius: 9px;
+  font-size: 14.5px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(246, 199, 71, 0.25);
+  white-space: nowrap;
+}
+
+.vsd-next-primary-btn:hover {
+  background: #ffda6e;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(246, 199, 71, 0.35);
+}
+
+.vsd-next-secondary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #d8ede3 !important;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 8px 12px;
+  transition: all 0.2s;
+}
+
+.vsd-next-secondary-link:hover {
+  color: #ffffff !important;
+}
+
+/* ── Floating Smart Scope Basket ── */
+.vsd-floating-basket {
+  position: fixed;
+  bottom: 24px;
+  inset-inline: 0;
+  margin-inline: auto;
+  width: min(880px, calc(100% - 32px));
+  background: rgba(12, 43, 32, 0.94);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(246, 199, 71, 0.4);
+  border-radius: 16px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  z-index: 50;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  animation: vsd-basket-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes vsd-basket-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.vsd-basket-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.vsd-basket-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #f6c747;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.vsd-basket-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vsd-basket-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: Manrope, Arial, sans-serif;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.vsd-chip-remove {
+  background: transparent;
+  border: 0;
+  color: #d1e5db;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 1px;
+}
+
+.vsd-chip-remove:hover {
+  color: #ff8080;
+}
+
+.vsd-basket-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.vsd-basket-clear {
+  background: transparent;
+  border: 0;
+  color: #a3c7b7;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 10px;
+  transition: all 0.2s;
+}
+
+.vsd-basket-clear:hover {
+  color: #ffffff;
+}
+
+.vsd-basket-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f6c747 0%, #e5b326 100%);
+  color: #0c2b20 !important;
+  font-size: 13.5px;
+  font-weight: 800;
+  padding: 9px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(246, 199, 71, 0.25);
+  white-space: nowrap;
+}
+
+.vsd-basket-submit:hover {
+  background: #ffda6e;
+  transform: translateY(-1px);
+}
+
+/* ── Responsive Adaptations ── */
+@media (max-width: 1100px) {
+  .vsd-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .vsd-next-clean-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 36px 32px;
+  }
+
+  .vsd-next-buttons {
+    width: 100%;
+  }
+
+  .vsd-next-primary-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .vsd-clean-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .vsd-control-hub {
+    padding: 12px;
+  }
+
+  .vsd-actions-dock {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vsd-search-box {
+    max-width: 100%;
+  }
+
+  .vsd-view-toggle {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .vsd-view-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .vsd-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vsd-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .vsd-compact-table {
+    min-width: 650px;
+  }
+
+  .vsd-floating-basket {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 14px;
+    bottom: 16px;
+  }
+
+  .vsd-basket-actions {
+    justify-content: space-between;
+  }
+
+  .vsd-basket-submit {
+    flex: 1;
+    justify-content: center;
+  }
+}

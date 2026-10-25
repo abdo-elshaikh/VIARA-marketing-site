@@ -1,4 +1,5 @@
 'use client';
+import { useSiteText } from '../lib/site-copy';
 
 import { useState, type FormEvent } from 'react';
 import { Star, LoaderCircle, CheckCircle2 } from 'lucide-react';
@@ -6,7 +7,7 @@ import type { Locale } from '../lib/site-content';
 
 export default function ReviewForm({ locale, systemId }: { locale: Locale; systemId?: string }) {
   const en = locale === 'en';
-  const t = (ar: string, eng: string) => en ? eng : ar;
+  const t = useSiteText(locale);
   const [rating, setRating] = useState(5);
   const [state, setState] = useState('idle');
   const [error, setError] = useState('');
@@ -18,7 +19,7 @@ export default function ReviewForm({ locale, systemId }: { locale: Locale; syste
     setError('');
     const f = new FormData(e.currentTarget);
     try {
-      const response = await fetch('/api/reviews', {
+      const response = await fetch(`/api/reviews?lang=${locale}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

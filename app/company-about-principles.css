@@ -1,0 +1,101 @@
+.care-site.viara-professional .co-principles-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.72fr);
+  align-items: end;
+  gap: 48px;
+}
+
+.co-principles-intro {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.co-principles-intro p {
+  max-width: 470px;
+  margin: 0;
+  color: var(--care-muted);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.co-principles-intro a {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  color: var(--brand-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.co-principles-intro a:hover {
+  color: var(--brand-forest);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.care-site.viara-professional .co-principles {
+  align-items: stretch;
+}
+
+.care-site.viara-professional .co-principles > article {
+  display: flex;
+  min-height: 235px;
+  flex-direction: column;
+  padding: 25px;
+}
+
+.care-site.viara-professional .co-principles > article > .co-principle-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.co-principle-icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid #dcebe0;
+  border-radius: 13px;
+  background: #f0f7f1;
+  color: var(--brand-primary);
+}
+
+.co-principle-number {
+  color: #92a79a;
+  font: 700 12px Manrope, Arial, sans-serif;
+  letter-spacing: 1px;
+}
+
+.care-site.viara-professional .co-principles > article h3 {
+  margin-bottom: 8px;
+}
+
+.care-site.viara-professional .co-principles > article p {
+  margin: 0;
+}
+
+@media (max-width: 850px) {
+  .care-site.viara-professional .co-principles-heading {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 0.8fr);
+    gap: 25px;
+  }
+}
+
+@media (max-width: 700px) {
+  .care-site.viara-professional .co-principles-heading {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .co-principles-intro {
+    gap: 6px;
+  }
+
+  .care-site.viara-professional .co-principles > article {
+    min-height: 0;
+  }
+}
