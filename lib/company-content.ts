@@ -44,6 +44,7 @@ export const initialCompany = {
 initialCompany.offices = [];
 initialCompany.support = [];
 initialCompany.credentials = [];
+initialCompany.milestones[0].enabled = false;
 initialCompany.milestones[0].body = text(
   'تطوير منظومة VIARA التشغيلية لسير عمل الأشعة والأرشفة والبوابات والذكاء الاصطناعي المساند، مع مراجعة نطاق كل بيئة قبل التفعيل.',
   'Development of VIARA workflows for radiology, imaging archives, portals and assisted AI, with each environment reviewed before activation.'

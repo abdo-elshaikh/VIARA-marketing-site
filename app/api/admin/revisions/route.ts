@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getAdmin, sameOrigin } from '../../../../lib/admin-auth';
-import { listRevisions, restoreRevision } from '../../../../lib/site-revisions';
+import { listRevisions, restoreRevision, InvalidRevisionContentError, RevisionConflictError } from '../../../../lib/site-revisions';
 import { invalidatePublicContent } from '../../../../lib/site-server';
 
 export const dynamic = 'force-dynamic';
@@ -29,6 +29,8 @@ export async function POST(request: Request) {
     invalidatePublicContent();
     return NextResponse.json({ version: result.version }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
+    if (error instanceof InvalidRevisionContentError) return NextResponse.json({ error: 'تحتوي النسخة على حقول أو روابط غير صالحة ولا يمكن نشرها مباشرة. / This revision contains invalid fields or links and cannot be published directly.' }, { status: 400 });
+    if (error instanceof RevisionConflictError) return NextResponse.json({ error: 'نُشرت نسخة أحدث أثناء الاستعادة. حدّث المحتوى قبل المحاولة مجددًا. / A newer version was published during restoration. Reload before retrying.' }, { status: 409 });
     console.error('Failed to restore revision:', error);
     return NextResponse.json({ error: 'تعذر استعادة النسخة / Could not restore the revision' }, { status: 503 });
   }

@@ -109,7 +109,7 @@ export default function PlanningFacilityMatcher({
         <p>
           {en
             ? 'Select your operational scale to see the recommended package and baseline architecture tailored to your daily workflow.'
-            : 'اختر حجم وطبيعة عمل منشأتك لنقترح لك الباقة الأنسب ونقاط التجهيز الموصى بها قبل طلب العرض الفني.'}
+            : 'اختر حجم وطبيعة عمل منشأتك لنقترح لك الباقة الأنسب ونقاط التجهيز الموصى بها قبل جلسة التحليل والعرض الفني.'}
         </p>
       </div>
 

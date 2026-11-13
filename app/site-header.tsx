@@ -1,8 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowUpLeft, ArrowUpRight, ArrowLeft, ArrowRight, Menu, X, Globe2, ChevronDown, ScanLine, Layers3, Building2, ClipboardList, Users, Sparkles } from 'lucide-react';
-import { txt, type Locale, type SiteContent } from '../lib/site-content';
+import { ArrowUpLeft, ArrowUpRight, ArrowLeft, ArrowRight, Menu, X, Globe2, ChevronDown, ScanLine, Layers3, Building2, ClipboardList, Users, Sparkles, Gift } from 'lucide-react';
+import { isOfferActive, txt, type Locale, type SiteContent } from '../lib/site-content';
 import { useSiteText } from '../lib/site-copy';
 import { marketingSystemIds } from '../lib/healthcare-catalog.mjs';
 import { solutionPath } from '../lib/solutions';
@@ -18,6 +18,7 @@ export default function SiteHeader({ content, locale, current, alternateHref }: 
   const products = marketingSystemIds.flatMap(id => content.products.filter(product => product.id === id && product.enabled));
   const icons: Record<string, typeof ScanLine> = { RIS: ScanLine, PACS: Layers3, AI: Sparkles, CMS: Building2, PORTAL: Users };
   const links = getNavLinks(locale, { includeCapabilities: true });
+  const hasActiveOffers = Boolean(content.sections.offers && content.offers?.some(o => isOfferActive(o)));
   const close = () => { setOpen(false); setSystemsOpen(false); };
   useEffect(() => {
     let frame = 0;
@@ -27,7 +28,29 @@ export default function SiteHeader({ content, locale, current, alternateHref }: 
   }, []);
   useEffect(() => {
     if (!open && !systemsOpen) return;
-    const key = (event: KeyboardEvent) => { if (event.key !== 'Escape') return; event.preventDefault(); if (systemsOpen) { setSystemsOpen(false); systemsButton.current?.focus(); } else { setOpen(false); menuButton.current?.focus(); } };
+    const key = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (systemsOpen) { setSystemsOpen(false); systemsButton.current?.focus(); }
+        else { setOpen(false); menuButton.current?.focus(); }
+        return;
+      }
+      if (open && event.key === 'Tab') {
+        const focusable = header.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable || focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
     const outside = (event: PointerEvent) => { if (event.target instanceof Node && !header.current?.contains(event.target)) close(); };
     const media = matchMedia('(min-width: 1151px)'), resize = () => close();
     document.addEventListener('keydown', key); document.addEventListener('pointerdown', outside); media.addEventListener('change', resize);
@@ -37,7 +60,16 @@ export default function SiteHeader({ content, locale, current, alternateHref }: 
     if (open) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = prev; };
+      // Move focus into the first navigation link
+      requestAnimationFrame(() => {
+        const nav = header.current?.querySelector<HTMLElement>('#care-navigation');
+        const first = nav?.querySelector<HTMLElement>('a[href], button:not([disabled])');
+        first?.focus();
+      });
+      return () => {
+        document.body.style.overflow = prev;
+        menuButton.current?.focus();
+      };
     }
   }, [open]);
   return <header className={`vh-header vh-signature ${scrolled ? 'is-scrolled' : ''}`} ref={header} onBlur={event => { if (event.relatedTarget instanceof Node && !event.currentTarget.contains(event.relatedTarget)) close(); }}>
@@ -47,10 +79,26 @@ export default function SiteHeader({ content, locale, current, alternateHref }: 
         <span className="vh-navigation-label">{t('استكشف VIARA', 'EXPLORE VIARA')}</span>
         <div className="vh-navigation-links">{links.map(link => link.id === 'systems' ? <div className={`vh-systems ${systemsOpen ? 'is-expanded' : ''}`} key={link.id}><div className={`vh-nav-system-label ${current === 'systems' ? 'is-current' : ''}`}><Link href={link.href} aria-current={current === 'systems' ? 'page' : undefined} onClick={close}>{link.label}</Link><button ref={systemsButton} type="button" aria-label={t('عرض قائمة الأنظمة', 'Show systems list')} aria-expanded={systemsOpen} aria-controls="vh-system-links" onClick={() => setSystemsOpen(!systemsOpen)}><ChevronDown size={13} /></button></div>
           <div id="vh-system-links" className="vh-products" hidden={!systemsOpen}><div className="vh-products-heading"><span>{t('حلول متخصصة لمركزك', 'PURPOSE-BUILT FOR YOUR CENTER')}</span><bdi>{products.map(product => product.id).join(' · ')}</bdi></div>{products.map(product => { const Icon = icons[product.id] || Building2; return <Link className="vh-product" data-system={product.id} href={solutionPath(product.id, locale)} key={product.id} onClick={close}><span className="vh-product-icon"><Icon size={21} strokeWidth={1.6} /></span><span><strong>{txt(product.name, locale)}</strong><small>{txt(product.features[0] || product.description, locale)}</small></span><bdi>{product.id}</bdi><Forward size={15} /></Link>; })}<Link className="vh-products-all" href={`${prefix}/systems`} onClick={close}>{t('استكشف جميع الأنظمة', 'Explore all systems')}<Arrow size={16} /></Link></div>
-        </div> : <Link className="vh-nav-link" href={link.href} key={link.id} aria-current={current === link.id ? 'page' : undefined} onClick={close}>{link.label}</Link>)}</div>
-        <div className="vh-mobile-actions"><Link className="vh-mobile-requests" href={`${prefix}/requests`} onClick={close}><ClipboardList size={18} />{t('متابعة طلباتي', 'My requests')}</Link><Link className="vh-demo" href={`${home}#contact`} onClick={close}>{t('اطلب عرضاً', 'Book a demo')}<Arrow size={17} /></Link></div>
+        </div> : <Link className="vh-nav-link" href={link.href} key={link.id} aria-current={current === link.id ? 'page' : undefined} onClick={close}>{link.label}</Link>)}
+          {hasActiveOffers && (
+            <Link href={`${home}#offers`} className="vh-nav-offers-pill" onClick={close}>
+              <span className="vh-nav-offers-icon"><Gift size={13} /></span>
+              <span>{t('العروض والفرص', 'Offers & Deals')}</span>
+              <span className="vh-nav-offers-dot" aria-hidden="true" />
+            </Link>
+          )}
+        </div>
+        <div className="vh-mobile-actions">
+          {hasActiveOffers && (
+            <Link className="vh-mobile-offers" href={`${home}#offers`} onClick={close}>
+              <Gift size={18} />
+              <span>{t('عروض وفرص خاصة', 'Special Offers')}</span>
+              <span className="vh-mobile-offers-badge">{t('خصومات التدشين', 'LAUNCH DEALS')}</span>
+            </Link>
+          )}
+          <Link className="vh-mobile-requests" href={`${prefix}/requests`} onClick={close}><ClipboardList size={18} />{t('متابعة طلباتي', 'My requests')}</Link><Link className="vh-demo" href={`${home}#contact`} onClick={close}>{t('ابدأ جلسة تحليل', 'Start a workflow review')}<Arrow size={17} /></Link></div>
       </nav>
-      <div className="vh-header-actions"><Link className="vh-requests" href={`${prefix}/requests`} aria-current={current === 'requests' ? 'page' : undefined} aria-label={t('متابعة طلباتي', 'My requests')} title={t('متابعة طلباتي', 'My requests')}><ClipboardList size={19} strokeWidth={1.6} /></Link><a className="vh-language" href={alternateHref} hrefLang={en ? 'ar' : 'en'} aria-label={t('التبديل إلى الإنجليزية', 'Switch to Arabic')}><Globe2 size={16} /><span>{en ? 'العربية' : 'EN'}</span></a><span className="vh-actions-divider" aria-hidden="true" /><Link className="vh-demo vh-desktop-demo" href={`${home}#contact`}>{t('اطلب عرضاً', 'Book a demo')}<Arrow size={17} /></Link><button className="vh-menu-button" type="button" ref={menuButton} aria-expanded={open} aria-controls="care-navigation" aria-label={open ? t('إغلاق القائمة', 'Close menu') : t('فتح القائمة', 'Open menu')} onClick={() => { setOpen(!open); setSystemsOpen(false); }}>{open ? <X size={21} /> : <Menu size={21} />}</button></div>
+      <div className="vh-header-actions"><Link className="vh-requests" href={`${prefix}/requests`} aria-current={current === 'requests' ? 'page' : undefined} aria-label={t('متابعة طلباتي', 'My requests')} title={t('متابعة طلباتي', 'My requests')}><ClipboardList size={19} strokeWidth={1.6} /></Link><a className="vh-language" href={alternateHref} hrefLang={en ? 'ar' : 'en'} aria-label={t('التبديل إلى الإنجليزية', 'Switch to Arabic')}><Globe2 size={16} /><span>{en ? 'العربية' : 'EN'}</span></a><span className="vh-actions-divider" aria-hidden="true" /><Link className="vh-demo vh-desktop-demo" href={`${home}#contact`}>{t('ابدأ جلسة تحليل', 'Start a workflow review')}<Arrow size={17} /></Link><button className="vh-menu-button" type="button" ref={menuButton} aria-expanded={open} aria-controls="care-navigation" aria-label={open ? t('إغلاق القائمة', 'Close menu') : t('فتح القائمة', 'Open menu')} onClick={() => { setOpen(!open); setSystemsOpen(false); }}>{open ? <X size={21} /> : <Menu size={21} />}</button></div>
     </div>
   </header>;
 }

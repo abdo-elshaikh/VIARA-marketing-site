@@ -120,7 +120,7 @@ export default function PlanningRolloutRoadmap({ locale }: { locale: Locale }) {
           <h2 id="cpr-roadmap-head">
             {en ? 'Four structured phases.' : 'أربع مراحل تنفيذ مدروسة.'}
             <br />
-            <span>{en ? 'Zero clinical downtime.' : 'وصفر انقطاع في سير العمل السريري.'}</span>
+            <span>{en ? 'Designed to protect workflow continuity.' : 'مصمم لحماية استمرارية سير العمل السريري.'}</span>
           </h2>
         </div>
         <p>

@@ -1,4 +1,6 @@
 # Admin Panel Coverage Report
+> Superseded for functional behavior by [the 2026-10-26 settings review](admin-settings-review-2026-10-26.ar.md). Field editability alone did not prove that a setting affected the public pages.
+
 **Date:** 2026-10-17  
 **Scope:** `app/admin/admin-client.tsx` vs `lib/site-content.ts` (SiteContent type)  
 **Build status:** ✅ Clean (no changes required — full coverage already existed)

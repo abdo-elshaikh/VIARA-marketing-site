@@ -234,7 +234,7 @@ export default function PrivacyView({
               </header>
               <p>
                 {t(
-                  'عند تفاعلك مع الموقع أو إرسال طلب عرض تجريبي، نقوم بجمع البيانات التالية بالقدر اللازم فقط لتحقيق الغرض:',
+                  'عند تفاعلك مع الموقع أو إرسال طلب جلسة تحليل، نقوم بجمع البيانات التالية بالقدر اللازم فقط لتحقيق الغرض:',
                   'When interacting with our website or requesting a demonstration, we collect only the necessary institutional information:',
                 )}
               </p>

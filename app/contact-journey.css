@@ -92,9 +92,7 @@ section#contact {
 
 .viara-professional .vp-contact h2 > span {
   color: #a7f3d0 !important;
-  background: linear-gradient(135deg, #a7f3d0 0%, #f6c747 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  display: inline;
 }
 
 /* Section Description */
@@ -301,15 +299,13 @@ section#contact {
    Elevated Luxury Lead Form Card
    ═══════════════════════════════════════════════════════════════ */
 .viara-professional .care-form {
-  border-radius: 24px !important;
-  border: 1px solid rgba(255, 255, 255, 0.90) !important;
-  border-top: 5px solid #007b61 !important;
+  border-radius: 16px !important;
+  border: 1px solid #d3e4dc !important;
   background: #ffffff !important;
   padding: clamp(26px, 3.2vw, 38px) !important;
   box-shadow:
-    0 28px 75px -15px rgba(0, 18, 14, 0.55),
-    0 0 0 1px rgba(246, 199, 71, 0.20),
-    0 12px 28px rgba(0, 0, 0, 0.12) !important;
+    0 24px 60px -15px rgba(0, 18, 14, 0.35),
+    0 10px 24px rgba(0, 0, 0, 0.08) !important;
   position: relative;
   overflow: hidden;
 }

@@ -1,0 +1,18 @@
+/* Sign-in: a focused form with a compact, branded introduction. */
+.br-admin-entry{background:#f3f6f4;grid-template-columns:minmax(320px,.9fr) minmax(0,1.1fr)}
+.br-admin-story{background:radial-gradient(ellipse at 15% 15%,#245d48 0,transparent 65%),#103c30;border:0}
+.br-admin-story h1{line-height:1.55;font-size:clamp(36px,3.6vw,56px)}
+.br-admin-story>div>p{color:#c3d4ca}.br-admin-story li small{color:#b5cbbb}
+.br-admin-story li>span{background:#ffffff0c;border-color:#ffffff24;color:#d0dfce}
+.br-admin-access{gap:28px;padding:32px clamp(28px,5vw,80px)}
+.br-admin-login-card{width:100%;max-width:450px;background:#fff;border:1px solid #dce5df;border-radius:20px;padding:36px;box-shadow:0 16px 60px #16392d09}
+.br-admin-login-card>.br-eyebrow{color:#557362;letter-spacing:.7px}.br-admin-login-card h2{font-size:32px;margin:10px 0;color:#173e30}
+.br-admin-login-card>p{color:#5f7367;line-height:1.9;margin-bottom:27px}.br-access-icon{width:48px;height:48px;margin-bottom:20px;border-color:#d7e6da;background:#eef5ef;color:#346a50;border-radius:14px}
+.br-access-input{min-height:49px;background:#fbfcfb;border-color:#cddbd1;border-radius:9px}.br-access-input:focus-within{border-color:#42836b;box-shadow:0 0 0 3px #007b6114}
+.br-admin-login-card form>label{color:#355342;font-size:13px}.br-access-input input{min-width:0;color:#173e30;font-size:15px}.br-access-input input::placeholder{color:#7c8c83;font-size:13px}.br-access-input>button{color:#537561;min-width:38px;min-height:42px}
+.br-access-submit{min-height:49px;border-radius:9px;background:#12664e;border-color:#12664e;box-shadow:0 5px 12px #12664e14}.br-access-submit:hover:not(:disabled){background:#0b513d}.br-access-submit:disabled{cursor:wait}
+.br-alert{color:#8c3e29;background:#fff4ef;border-color:#eacbbb;border-radius:9px}.br-alert:focus{outline:2px solid #b86f50;outline-offset:3px}.br-caps-warning{margin:-8px 0 16px;color:#855e1e;font-size:12px;line-height:1.7}.br-admin-access-note{border-top:1px solid #e6ece7;padding-top:18px;margin-top:23px;color:#61756a;font-size:11px}
+.br-admin-access-top>button{min-height:40px;min-width:64px}.br-admin-access-top>a{min-height:40px;display:inline-flex;align-items:center;gap:7px}
+@media(max-width:900px){.br-admin-entry{grid-template-columns:.8fr 1.2fr}.br-admin-access{padding:24px}.br-admin-login-card{padding:28px}}
+@media(max-width:760px){.br-admin-entry{grid-template-columns:1fr}.br-admin-story{padding:22px 24px;gap:14px}.br-admin-story h1{font-size:25px;margin:8px 0 0}.br-admin-story h1 em{display:inline}.br-admin-access{padding:20px;gap:20px}.br-admin-login-card{padding:26px 23px;border-radius:15px;max-width:480px}.br-admin-login-card h2{font-size:29px}.br-admin-copyright{margin-top:0}}
+@media(max-width:380px){.br-admin-access{padding:16px}.br-admin-login-card{padding:22px 18px}.br-admin-story h1{font-size:22px}}

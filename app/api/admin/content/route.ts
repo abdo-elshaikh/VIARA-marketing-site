@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { getAdmin, sameOrigin } from '../../../../lib/admin-auth';
 import { readContent, invalidatePublicContent } from '../../../../lib/site-server';
 import { archiveRevision } from '../../../../lib/site-revisions';
-import { siteContentSchema } from '../../../../lib/site-content';
+import { publishContentSchema } from '../../../../lib/publish-content';
 import { getDb } from '../../../../db';
 import { siteSettings } from '../../../../db/schema';
 export const dynamic='force-dynamic';
@@ -19,7 +19,7 @@ export async function PUT(request:Request) {
   try {
     const raw=await request.text();
     if(raw.length>2000000) return NextResponse.json({error:'المحتوى أكبر من المسموح / Content too large'},{status:413});
-    const data=z.object({version:z.number().int().nonnegative(),content:siteContentSchema}).safeParse(JSON.parse(raw));
+    const data=z.object({version:z.number().int().nonnegative(),content:publishContentSchema}).safeParse(JSON.parse(raw));
     if(!data.success) return NextResponse.json({error:'راجع حقول المحتوى / Check content fields',fields:data.error.issues.map(i=>({path:i.path.join('.'),message:i.message}))},{status:400});
     const {version,content}=data.data;const next=version+1;const updatedAt=Date.now();const db=getDb();
     const existing=version===0?null:await db.select().from(siteSettings).where(eq(siteSettings.key,'main')).get();

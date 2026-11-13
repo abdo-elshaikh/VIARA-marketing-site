@@ -169,9 +169,8 @@
   align-items: center;
   gap: 12px;
   padding: 14px 18px;
-  background: linear-gradient(135deg, #f0f7ef 0%, #e8f3e6 100%);
+  background: #f0f7ef;
   border: 1px solid #c2dec7;
-  border-inline-start: 4px solid #16654b;
   border-radius: 12px;
   font-size: 13.5px;
   color: #153e2c;

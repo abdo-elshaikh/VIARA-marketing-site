@@ -2,9 +2,10 @@ import { getAdmin } from '../../lib/admin-auth';
 import { readContent, readPublicContent } from '../../lib/site-server';
 import AdminClient from './admin-client';
 import AdminLoginForm from './admin-login-form';
+import { siteOrigin } from '../../lib/seo';
 import './admin.css';
-import './admin-redesign.css';
 import './admin-workspace.css';
+import './admin-login.css';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'إدارة الموقع | VIARA', robots: { index: false, follow: false } };
@@ -28,5 +29,5 @@ export default async function AdminPage() {
       </main>
     );
   }
-  return <AdminClient initial={initial} name={admin.displayName} />;
+  return <AdminClient initial={initial} name={admin.displayName} siteUrl={siteOrigin()} />;
 }

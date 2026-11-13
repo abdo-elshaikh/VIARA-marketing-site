@@ -16,8 +16,8 @@ export function homeMetadata(content: SiteContent, locale: Locale): Metadata {
   const title = content.seo.title[locale];
   const description = content.seo.description[locale];
   return { title, description, alternates: { canonical: locale === 'en' ? '/en' : '/', languages: languageAlternates('/', '/en') },
-    openGraph: { title, description, locale: locale === 'en' ? 'en_GB' : 'ar_EG', type: 'website', images: [{ url: '/assets/viara-social.png', width: 1200, height: 630 }] },
-    twitter: { card: 'summary_large_image', title, description, images: ['/assets/viara-social.png'] } };
+    openGraph: { title, description, locale: locale === 'en' ? 'en_GB' : 'ar_EG', type: 'website', images: [{ url: content.imagery.hero }] },
+    twitter: { card: 'summary_large_image', title, description, images: [content.imagery.hero] } };
 }
 
 /** Metadata for a bilingual subpage: canonical, hreflang (incl. x-default) and per-locale social cards. */
@@ -44,7 +44,7 @@ export function organizationSchema(content: SiteContent) {
     logo: new URL(content.brand.logo, siteOrigin()).href,
     ...(content.contact.email ? { email: content.contact.email } : {}),
     ...(content.contact.phone ? { telephone: content.contact.phone } : {}),
-    sameAs: [content.contact.facebook, content.contact.instagram, content.contact.linkedin, content.contact.youtube, content.contact.x].filter(Boolean) };
+    sameAs: [content.contact.facebook, content.contact.instagram, content.contact.linkedin, content.contact.youtube, content.contact.x, content.contact.telegram, content.contact.snapchat, content.contact.github].filter(Boolean) };
 }
 
 export function websiteSchema(content: SiteContent, locale: Locale) {

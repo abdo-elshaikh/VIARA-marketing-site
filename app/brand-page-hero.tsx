@@ -148,7 +148,7 @@ export default function BrandPageHero({
         {/* 2. Precision DICOM Radiology Gantry Reticle with nested Arabesque Star Aperture */}
         <div className="br-decor-gantry" aria-hidden="true">
           <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
-            <g className="br-gantry-rotating-group" transform-origin="160 160">
+            <g className="br-gantry-rotating-group" style={{ transformOrigin: '160px 160px' }}>
               {/* Outer scanning degree track */}
               <circle cx="160" cy="160" r="150" fill="none" stroke="#007b61" strokeWidth="0.8" opacity="0.22" strokeDasharray="3 4" />
               <circle cx="160" cy="160" r="134" fill="none" stroke="#007b61" strokeWidth="1.1" opacity="0.28" />

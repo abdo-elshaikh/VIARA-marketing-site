@@ -123,7 +123,7 @@
   padding: 8px 12px;
   background: #fff;
   color: #174833;
-  font-family: Arial, sans-serif;
+  font-family: 'Manrope', var(--font-body), system-ui, sans-serif;
   font-size: 18px;
   font-weight: 600;
   box-shadow: 0 2px 5px rgba(7, 62, 50, 0.03);
@@ -207,7 +207,7 @@
   font-size: 16px;
   color: #fffefb;
   margin-top: 4px;
-  font-family: Arial, sans-serif;
+  font-family: 'Manrope', var(--font-body), system-ui, sans-serif;
 }
 .roi-calculator .roi-breakdown {
   display: grid;

@@ -1,6 +1,10 @@
-import { desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import { getDb } from '../db';
 import { siteRevisions, siteSettings } from '../db/schema';
+import { publishContentSchema } from './publish-content';
+
+export class InvalidRevisionContentError extends Error {}
+export class RevisionConflictError extends Error {}
 
 export const MAX_REVISIONS = 20;
 
@@ -48,17 +52,21 @@ export async function restoreRevision(revisionId: string): Promise<{ version: nu
   const db = getDb();
   const revision = await db.select().from(siteRevisions).where(eq(siteRevisions.id, revisionId)).get();
   if (!revision) return null;
+  let value: string;
+  try { value = JSON.stringify(publishContentSchema.parse(JSON.parse(revision.value))); }
+  catch { throw new InvalidRevisionContentError('Revision contains invalid content'); }
   const current = await db.select().from(siteSettings).where(eq(siteSettings.key, 'main')).get();
 
   const updatedAt = Date.now();
   if (!current) {
-    await db.insert(siteSettings).values({
+    const inserted = await db.insert(siteSettings).values({
       key: 'main',
-      value: revision.value,
+      value,
       version: 1,
       updatedBy: 'admin',
       updatedAt
-    });
+    }).onConflictDoNothing().returning({ version: siteSettings.version });
+    if (!inserted.length) throw new RevisionConflictError('A newer version exists');
     return { version: 1 };
   }
 
@@ -67,11 +75,11 @@ export async function restoreRevision(revisionId: string): Promise<{ version: nu
 
   const nextVersion = current.version + 1;
   const updated = await db.update(siteSettings).set({
-    value: revision.value,
+    value,
     version: nextVersion,
     updatedBy: 'admin',
     updatedAt
-  }).where(eq(siteSettings.key, 'main')).returning({ version: siteSettings.version });
-  if (!updated.length) return null; // Concurrent write; caller may retry.
+  }).where(and(eq(siteSettings.key, 'main'), eq(siteSettings.version, current.version))).returning({ version: siteSettings.version });
+  if (!updated.length) throw new RevisionConflictError('A newer version exists');
   return { version: nextVersion };
 }

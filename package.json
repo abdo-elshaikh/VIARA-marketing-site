@@ -6,12 +6,13 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "seed:preview": "node --experimental-strip-types scripts/seed-local-preview.mjs",
     "install:ci": "bash scripts/install-pnpm.sh",
     "dev": "node scripts/run-framework.mjs dev",
     "build": "node scripts/run-framework.mjs build",
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
-    "test": "node --experimental-strip-types --test tests/inquiry.test.mjs tests/content.test.mjs tests/home-hero.test.mjs && python tests/migrations_test.py",
+    "test": "node --experimental-strip-types --test tests/inquiry.test.mjs tests/content.test.mjs tests/home-hero.test.mjs tests/admin-navigation.test.mjs tests/offers-expiry.test.mjs tests/system-captures.test.mjs && python tests/migrations_test.py && python tests/local_preview_seed_test.py",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate"
   },

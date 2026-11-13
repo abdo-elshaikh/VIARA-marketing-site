@@ -32,9 +32,10 @@ import { careCatalog, txt, type Locale, type SiteContent } from '../lib/site-con
 import { marketingSystemIds, normalizeCatalogSearch } from '../lib/healthcare-catalog.mjs';
 import { useSiteText } from '../lib/site-copy';
 import { solutionPath } from '../lib/solutions';
-import { systemCaptures } from '../lib/system-captures';
+import { getSystemCaptures } from '../lib/system-captures';
 import CareFrame from './care-frame';
 import SystemComparison from './system-comparison';
+import SystemSynergyMap from './system-synergy-map';
 import BrandPageHero from './brand-page-hero';
 import './systems-directory.css';
 import './systems-usability.css';
@@ -307,14 +308,14 @@ export default function CareDirectory({ content, locale }: { content: SiteConten
           </div>
 
           {/* Quick High-Trust Badges */}
-          <div className="vsd-hero-stats-row" aria-label={t('مؤشرات الاعتماد الطبي', 'Clinical accreditation specs')}>
+          <div className="vsd-hero-stats-row" aria-label={t('مؤشرات الأنظمة والتشغيل', 'Clinical system specifications')}>
             <span className="vsd-hero-stat-pill">
               <Cpu size={14} />
               <span>{t('5 أنظمة متكاملة ومترابطة', '5 Native Integrated Systems')}</span>
             </span>
             <span className="vsd-hero-stat-pill">
               <ShieldCheck size={14} />
-              <span>{t('100% معايير DICOM 3.0 & HL7', '100% DICOM 3.0 & HL7 Compliant')}</span>
+              <span>{t('تكامل مع معايير DICOM 3.0 و HL7', 'DICOM 3.0 & HL7 Standard Integration')}</span>
             </span>
             <span className="vsd-hero-stat-pill">
               <HardDrive size={14} />
@@ -322,10 +323,13 @@ export default function CareDirectory({ content, locale }: { content: SiteConten
             </span>
             <span className="vsd-hero-stat-pill">
               <Activity size={14} />
-              <span>{t('دعم فني وتدريب ميداني', 'Clinical SLA & Hands-on Onboarding')}</span>
+              <span>{t('دعم فني وتدريب ميداني', 'Technical Support & Hands-on Onboarding')}</span>
             </span>
           </div>
         </BrandPageHero>
+
+        {/* ── Interactive Clinical Synergy Flow Map ── */}
+        <SystemSynergyMap locale={locale} onSelectSystem={toggle} />
 
         {/* ── Main Systems Directory Section ── */}
         <section className="care-wrap vsd-directory-clean" id="system-directory" aria-labelledby="vsd-directory-title">
@@ -334,7 +338,7 @@ export default function CareDirectory({ content, locale }: { content: SiteConten
             <div className="vsd-heading-text">
               <span className="vsd-clean-kicker">
                 <Sparkles size={13} />
-                {t('دليل الأنظمة الطبية المعتمدة', 'CERTIFIED CLINICAL SYSTEMS DIRECTORY')}
+                {t('دليل منظومة الأنظمة السريرية', 'CLINICAL SYSTEMS DIRECTORY')}
               </span>
               <h2 id="vsd-directory-title">
                 {t('أنظمة متخصصة. أدوار تشغيلية واضحة.', 'Specialized systems. Focused roles.')}
@@ -496,7 +500,7 @@ export default function CareDirectory({ content, locale }: { content: SiteConten
                 const product = content.products.find(item => item.id === system.id)!;
                 const Icon = icons[system.id] || Building2;
                 const chosen = selected.includes(system.id);
-                const captures = systemCaptures[system.id] || [];
+                const captures = getSystemCaptures(system.id, locale);
                 const captureIdx = activeCaptures[system.id] || 0;
                 const currentCapture = captures[captureIdx] || captures[0];
                 const brandVisual = systemBrandVisuals[system.id];
@@ -697,7 +701,7 @@ export default function CareDirectory({ content, locale }: { content: SiteConten
                     const Icon = icons[system.id] || Building2;
                     const chosen = selected.includes(system.id);
                     const brandVisual = systemBrandVisuals[system.id];
-                    const captures = systemCaptures[system.id] || [];
+                    const captures = getSystemCaptures(system.id, locale);
                     const currentCapture = captures[0];
 
                     return (

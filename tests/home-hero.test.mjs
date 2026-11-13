@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { enabledHeroVisuals, heroVisuals, nextHeroId, HERO_ROTATION_MS } from '../lib/home-hero-visuals.ts';
+import { startingGoals, startingSystems } from '../lib/home-starting-scope.ts';
 
 test('hero rotation uses only explicitly enabled supported products', () => {
   const products = [
@@ -28,5 +29,29 @@ test('every branded hero illustration is local, bilingual and distinct', () => {
     assert.ok(visual.title.ar && visual.title.en && visual.alt.ar && visual.alt.en);
     assert.ok(existsSync(new URL(`../public${visual.image}`, import.meta.url)), visual.image);
     assert.ok(['radiology', 'medical'].includes(visual.facility));
+  }
+});
+
+test('scope finder keeps starting scopes within the facility and enabled catalog', () => {
+  const products = ['RIS', 'PACS', 'CMS', 'PORTAL', 'AI', 'HIS'].map(id => ({ id, enabled: true }));
+  assert.deepEqual(startingSystems(products, 'radiology', 'connected'), ['RIS', 'PACS', 'PORTAL']);
+  assert.deepEqual(startingSystems(products, 'medical', 'connected'), ['CMS', 'PORTAL']);
+  assert.deepEqual(startingSystems(products, 'medical', 'imaging'), []);
+  assert.equal(startingGoals('medical').includes('assistance'), false);
+  products.find(product => product.id === 'PACS').enabled = false;
+  assert.deepEqual(startingSystems(products, 'radiology', 'imaging'), []);
+  assert.deepEqual(startingSystems(products, 'radiology', 'connected'), ['RIS', 'PORTAL']);
+});
+
+test('scope finder safely handles empty and unknown selections without mutating products', () => {
+  const products = [{ id: 'CMS', enabled: true }, { id: 'CMS', enabled: true }];
+  const original = structuredClone(products);
+  assert.deepEqual(startingSystems(products, 'medical', 'operations'), ['CMS']);
+  assert.deepEqual(products, original);
+  assert.deepEqual(startingSystems([], 'medical', 'operations'), []);
+  for (const unknown of ['unknown', '__proto__', 'toString']) {
+    assert.deepEqual(startingSystems(products, unknown, 'operations'), []);
+    assert.deepEqual(startingSystems(products, 'medical', unknown), []);
+    assert.deepEqual(startingGoals(unknown), []);
   }
 });

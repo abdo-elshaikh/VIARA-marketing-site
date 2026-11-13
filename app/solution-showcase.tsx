@@ -6,7 +6,7 @@ import { txt, type Locale, type SiteContent } from '../lib/site-content';
 import { marketingSystemIds } from '../lib/healthcare-catalog.mjs';
 import { useSiteText } from '../lib/site-copy';
 import { solutionPath } from '../lib/solutions';
-import { systemCaptures } from '../lib/system-captures';
+import { getSystemCaptures } from '../lib/system-captures';
 
 const icons = { RIS: ScanLine, PACS: Layers3, AI: Sparkles, CMS: Building2, PORTAL: Users };
 
@@ -41,11 +41,11 @@ export default function SolutionShowcase({ content, locale, onDiscuss }: {
         <h3>{txt(product.headline, locale)}</h3>
         <p>{txt(product.description, locale)}</p>
         <ul>{product.features.map((feature, index) => <li key={index}><Check size={17} />{txt(feature, locale)}</li>)}</ul>
-        <div className="vp-product-actions"><Link className="care-btn care-btn-small" href={solutionPath(product.id, locale)}>{t('اكتشف النظام', 'Explore this system')}<Arrow size={17} /></Link><button type="button" className="care-link" onClick={() => onDiscuss(product.id)}>{t('اطلب عرضاً', 'Book a demo')}<Arrow size={16} /></button></div>
+        <div className="vp-product-actions"><Link className="care-btn care-btn-small" href={solutionPath(product.id, locale)}>{t('اكتشف النظام', 'Explore this system')}<Arrow size={17} /></Link><button type="button" className="care-link" onClick={() => onDiscuss(product.id)}>{t('ناقش احتياج مركزك', 'Discuss your center’s needs')}<Arrow size={16} /></button></div>
       </div>
       <div className="vp-product-visual">
         {(() => {
-          const captures = systemCaptures[product.id] || [];
+          const captures = getSystemCaptures(product.id, locale);
           const capture = captures[0];
           return capture ? <Link className="vp-product-capture" href={solutionPath(product.id, locale)} aria-label={`${t('استكشف واجهات', 'Explore interfaces for')} ${txt(product.name, locale)}`}><img src={capture.image} alt={txt(capture.title, locale)} width={capture.width} height={capture.height} loading="lazy" /><span>{txt(capture.title, locale)}</span></Link> : <div className="vp-product-visual-empty"><bdi>{product.id}</bdi><span>{t('استكشف تفاصيل النظام وواجهاته', 'Explore system details and interfaces')}</span></div>;
         })()}

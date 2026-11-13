@@ -1,0 +1,482 @@
+/* ==========================================================================
+   VIARA HOMEPAGE OFFERS & INCENTIVES STYLESHEET (home-offers.css)
+   Ultra-Compact & Animated Enterprise Medical Offers Showcase
+   ========================================================================== */
+
+.care-site .home-offers-section {
+  padding-block: clamp(38px, 4.5vw, 56px);
+  background: radial-gradient(circle at 50% 15%, #0e3a2b 0%, #072319 50%, #03140e 100%);
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgba(246, 199, 71, 0.25);
+  border-bottom: 1px solid rgba(246, 199, 71, 0.25);
+  color: #ffffff;
+}
+
+/* Ambient Shimmer */
+.care-site .home-offers-section::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  inset-inline-start: 15%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(246, 199, 71, 0.07) 0%, rgba(0, 123, 97, 0.05) 50%, transparent 70%);
+  pointer-events: none;
+}
+
+.care-site .home-offers-section::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  inset-inline-end: 15%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(0, 168, 126, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Compact Header & Switcher Tabs ── */
+.home-offers-compact-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
+}
+
+.home-offers-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.home-offers-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(246, 199, 71, 0.12);
+  border: 1px solid rgba(246, 199, 71, 0.4);
+  color: #ffd875;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 4px 13px;
+  border-radius: 20px;
+  width: max-content;
+}
+
+.home-offers-kicker svg {
+  color: #f6c747;
+}
+
+.home-offers-compact-title {
+  font-size: clamp(20px, 2.3vw, 27px);
+  font-weight: 800;
+  line-height: 1.3;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.home-offers-title-accent {
+  color: #b4f2d0;
+  display: inline;
+}
+
+/* Switcher Tabs */
+.home-offers-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 18, 12, 0.65);
+  padding: 4px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.home-offers-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9eb9ac;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.home-offers-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.home-offers-tab-btn.is-active {
+  background: linear-gradient(135deg, #ffd972 0%, #f6c747 100%);
+  color: #07261a;
+  font-weight: 800;
+  box-shadow: 0 2px 10px rgba(246, 199, 71, 0.35);
+}
+
+.home-offers-tab-badge {
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(7, 38, 26, 0.2);
+}
+
+.home-offers-tab-btn.is-active .home-offers-tab-badge {
+  background: #07261a;
+  color: #f6c747;
+}
+
+/* ── Compact Animated Spotlight Card ── */
+.home-offers-compact-card {
+  display: grid;
+  grid-template-columns: 38% 62%;
+  background: linear-gradient(135deg, #09281e 0%, #061c15 100%);
+  border: 1px solid rgba(246, 199, 71, 0.28);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.45);
+  position: relative;
+  z-index: 2;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.home-offers-compact-card:hover {
+  border-color: #f6c747;
+  box-shadow: 0 20px 55px rgba(246, 199, 71, 0.18), 0 0 0 1px rgba(246, 199, 71, 0.35);
+}
+
+/* Media Side */
+.compact-offer-media {
+  position: relative;
+  overflow: hidden;
+  min-height: 270px;
+  background: #03120c;
+}
+
+.compact-offer-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.45s ease;
+  animation: offerFadeIn 0.38s ease-out;
+}
+
+.home-offers-compact-card:hover .compact-offer-img {
+  transform: scale(1.05);
+}
+
+.compact-offer-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(3, 20, 14, 0.15) 0%, rgba(3, 20, 14, 0.75) 100%);
+  pointer-events: none;
+}
+
+.compact-offer-discount {
+  position: absolute;
+  top: 14px;
+  inset-inline-start: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: linear-gradient(135deg, #ffd972 0%, #f6c747 60%, #e0a316 100%);
+  border-radius: 16px;
+  color: #07261a;
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 3;
+}
+
+.compact-offer-expiry {
+  position: absolute;
+  bottom: 12px;
+  inset-inline-start: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  background: rgba(3, 18, 13, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(246, 199, 71, 0.3);
+  border-radius: 6px;
+  color: #f1f8f5;
+  font-size: 11px;
+  font-weight: 700;
+  z-index: 3;
+}
+
+.compact-offer-expiry svg {
+  color: #f6c747;
+}
+
+/* Content Side */
+.compact-offer-content {
+  padding: clamp(20px, 2.5vw, 28px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  animation: offerSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.compact-offer-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.compact-offer-meta-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.compact-offer-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  background: rgba(246, 199, 71, 0.12);
+  border: 1px solid rgba(246, 199, 71, 0.45);
+  border-radius: 14px;
+  color: #ffd76b;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.compact-offer-clinical-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  background: rgba(180, 242, 208, 0.12);
+  border: 1px solid rgba(180, 242, 208, 0.35);
+  border-radius: 14px;
+  color: #b4f2d0;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.compact-offer-plan-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  color: #e5f2ec;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.compact-offer-counter {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #6a9683;
+  letter-spacing: 1px;
+  font-family: monospace;
+}
+
+.compact-offer-title {
+  font-size: clamp(17px, 1.8vw, 21px);
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.38;
+  margin: 0;
+}
+
+.compact-offer-desc {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #b7d6c8;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Compact Perks Inline */
+.compact-offer-perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.compact-offer-perk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 18, 12, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #e5f2ec;
+}
+
+.compact-offer-perk-chip svg {
+  color: #ffd666;
+  flex-shrink: 0;
+}
+
+/* Action & Controls Footer */
+.compact-offer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.compact-offer-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  background: linear-gradient(135deg, #ffd768 0%, #f6c747 50%, #e0a316 100%);
+  color: #07261a !important;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.22s ease;
+  box-shadow: 0 4px 14px rgba(246, 199, 71, 0.32);
+  white-space: nowrap;
+}
+
+.compact-offer-cta-btn:hover {
+  background: linear-gradient(135deg, #ffea9f 0%, #f6c747 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(246, 199, 71, 0.45);
+}
+
+.compact-offer-cta-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.compact-offer-cta-btn:hover svg:last-child {
+  transform: translate(-3px, -3px);
+}
+
+[dir='ltr'] .compact-offer-cta-btn:hover svg:last-child {
+  transform: translate(3px, -3px);
+}
+
+/* Slider Arrow Buttons */
+.compact-offer-nav-btns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.compact-offer-arrow-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #e5f4ed;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.compact-offer-arrow-btn:hover {
+  background: #f6c747;
+  color: #07261a;
+  border-color: #f6c747;
+  transform: scale(1.06);
+}
+
+/* Bottom Auto-Slide Progress Bar */
+.compact-offer-progress-track {
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.compact-offer-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f6c747, #ffea9f);
+  width: 100%;
+  transform-origin: left center;
+  animation: compactTimerProgress 6s linear infinite;
+}
+
+[dir='rtl'] .compact-offer-progress-fill {
+  transform-origin: right center;
+}
+
+.home-offers-compact-card.is-paused .compact-offer-progress-fill {
+  animation-play-state: paused;
+}
+
+/* Animations */
+@keyframes offerFadeIn {
+  from { opacity: 0; transform: scale(1.02); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes offerSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes compactTimerProgress {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .home-offers-compact-card {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-offer-media {
+    min-height: 200px;
+    max-height: 220px;
+  }
+
+  .compact-offer-actions {
+    flex-wrap: wrap;
+  }
+
+  .compact-offer-cta-btn {
+    width: 100%;
+    max-width: none;
+  }
+}

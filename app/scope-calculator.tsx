@@ -35,7 +35,7 @@ export default function ScopeCalculator({ locale, onChoose }: { locale: Locale; 
         {!parsed.success && <p className="ae-error" role="alert">{t('أدخل أعداداً صحيحة ضمن الحدود الموضحة لإكمال التقدير.', 'Enter whole numbers within the shown limits to complete the estimate.')}</p>}
         <details className="ae-method"><summary>{t('كيف تُحسب السعة؟', 'How is capacity calculated?')}<ChevronDown size={14} /></summary><p>{t('الفحوصات اليومية × أيام العمل × الفروع × متوسط حجم الفحص × سنوات الاحتفاظ × (1 + النسخ الإضافية).', 'Daily exams × operating days × branches × average study size × retention years × (1 + additional copies).')}</p><p>{t('GiB = 1024 MiB، وTiB = 1024 GiB.', 'GiB = 1024 MiB; TiB = 1024 GiB.')}</p></details>
         <p className="ae-disclaimer">{t('تقدير أولي وليس عرض سعر. لا يشمل النمو المستقبلي أو الأرشيف السابق أو مساحة تشغيل التخزين؛ تُراجع هذه العوامل فنياً.', 'A preliminary estimate, not a quote. Future growth, existing archives and storage overhead require technical review.')}</p>
-        <button type="button" className="ae-choose" disabled={!parsed.success} onClick={() => { if (parsed.success) onChoose(parsed.data); }}><span>{t('أرفق التقدير بطلب العرض', 'Use estimate in my inquiry')}</span><Arrow size={17} /></button>
+        <button type="button" className="ae-choose" disabled={!parsed.success} onClick={() => { if (parsed.success) onChoose(parsed.data); }}><span>{t('أرفق التقدير بجلسة التحليل', 'Use estimate in my workflow review')}</span><Arrow size={17} /></button>
       </div>
     </div>
   </section>;

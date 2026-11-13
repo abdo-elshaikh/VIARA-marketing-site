@@ -1,9 +1,9 @@
 'use client';
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import Link from 'next/link';
 import {
   LayoutDashboard, FileText, Layers3, Gift, MessageSquare, Mail, Settings2, Search, Save,
-  ExternalLink, Globe2, Plus, Trash2, Upload, CheckCircle2, LoaderCircle, ChevronDown, Star,
+  ExternalLink, Globe2, Plus, Trash2, Upload, CheckCircle2, LoaderCircle, ChevronDown,
   Download, RefreshCw, Menu, X, ShieldCheck, ArrowUpLeft, MessageCircle, Copy, Sparkles, Check, History
 } from 'lucide-react';
 import { isOfferActive, siteContentSchema, txt, L, type SiteContent, type Localized, type Locale, type PublicReview } from '../../lib/site-content';
@@ -13,6 +13,21 @@ import { statuses } from '../../lib/request-status';
 import { choiceLabel } from '../../lib/choice-labels';
 import CompanyEditor from './company-editor';
 import CopyEditor from './copy-editor';
+import { publishContentSchema, secureLinkSchema, secureImageSchema } from '../../lib/publish-content';
+import { SettingInput, SettingsImage, BrandPreview, SearchPreview, ContactPreview, SettingsSummary } from './settings-preview';
+import { ADMIN_DRAFT_KEY, readAdminDraft, type AdminDraft } from '../../lib/admin-draft';
+import { adminTabs, adminSections, resolveAdminDestination, parseAdminHash, adminHash, searchAdminDestinations, adminFieldDestination } from '../../lib/admin-navigation';
+
+const AdminSectionContext = createContext('');
+const adminIcons: Record<string, typeof LayoutDashboard> = { overview: LayoutDashboard, content: FileText, company: ShieldCheck, copy: Globe2, products: Layers3, offers: Gift, reviews: MessageSquare, leads: Mail, settings: Settings2 };
+const mobileQuery = '(max-width: 760px)';
+const subscribeViewport = (notify: () => void) => {
+  const media = window.matchMedia(mobileQuery);
+  media.addEventListener('change', notify);
+  return () => media.removeEventListener('change', notify);
+};
+const readViewport = () => window.matchMedia(mobileQuery).matches;
+const serverViewport = () => false;
 
 type Initial = { content: SiteContent; version: number; updatedAt: number };
 type Lead = {
@@ -98,8 +113,9 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 }
 
 function Panel({ title, description, children, id }: { title: string; description?: string; children: ReactNode; id?: string }) {
+  const activeSection = useContext(AdminSectionContext);
   return (
-    <section className="cms-panel" id={id}>
+    <section className="cms-panel" id={id} tabIndex={-1} hidden={Boolean(id && activeSection && id !== activeSection)}>
       <div className="cms-panel-head">
         <h2>{title}</h2>
         {description && <p>{description}</p>}
@@ -109,12 +125,18 @@ function Panel({ title, description, children, id }: { title: string; descriptio
   );
 }
 
-export default function AdminClient({ initial, name }: { initial: Initial; name: string }) {
+export default function AdminClient({ initial, name, siteUrl }: { initial: Initial; name: string; siteUrl: string }) {
   const [locale, setLocale] = useState<Locale>('ar');
   const en = locale === 'en';
   const t = (ar: string, eng: string) => en ? eng : ar;
 
   const [tab, setTab] = useState('overview');
+  const [activeSection, setActiveSection] = useState('');
+  const [commandOpen, setCommandOpen] = useState(false);
+  const commandDialog = useRef<HTMLDialogElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const menuRef = useRef<HTMLButtonElement>(null);
+  const smallScreen = useSyncExternalStore(subscribeViewport, readViewport, serverViewport);
   const [mobileNav, setMobileNav] = useState(false);
   const [navSearch, setNavSearch] = useState('');
   const navSearchRef = useRef<HTMLInputElement>(null);
@@ -122,11 +144,15 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
   const [version, setVersion] = useState(initial.version);
   const [updated, setUpdated] = useState(initial.updatedAt);
   const [dirty, setDirty] = useState(false);
+  const [recoverableDraft, setRecoverableDraft] = useState<AdminDraft | null>(null);
+  const [localSavedAt, setLocalSavedAt] = useState(0);
+  const [localSaveFailed, setLocalSaveFailed] = useState(false);
   const [demoDraft, setDemoDraft] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [validationIssues, setValidationIssues] = useState<ReturnType<typeof adminFieldDestination>[]>([]);
   const [copyNotice, setCopyNotice] = useState('');
 
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -141,64 +167,150 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
 
   const [manual, setManual] = useState({ name: '', role: '', organization: '', quote: '', rating: 5, locale: 'ar', consent: false, systemId: '' });
 
-  const tabs = [
-    { id: 'overview', icon: LayoutDashboard, label: t('نظرة عامة', 'Overview'), description: t('ملخص سريع للطلبات والمراجعات والعناصر التي تحتاج إلى متابعة.', 'A quick view of requests, reviews and items that need attention.') },
-    { id: 'content', icon: FileText, label: t('محتوى الموقع', 'Site content'), description: t('حرر محتوى الصفحة الرئيسية والأسئلة الشائعة ورحلة الرعاية.', 'Edit homepage content, FAQs and the care journey.') },
-    { id: 'company', icon: ShieldCheck, label: t('بيانات الشركة', 'Company information'), description: t('حدّث صفحة عن VIARA والمعلومات المؤسسية القابلة للنشر.', 'Update the About VIARA page and publishable company information.') },
-    { id: 'copy', icon: Globe2, label: t('نصوص جميع الصفحات', 'All page text'), description: t('ابحث عن نصوص الواجهات والصفحات وعدّل النسختين العربية والإنجليزية.', 'Find page and interface copy, then edit Arabic and English versions.') },
-    { id: 'products', icon: Layers3, label: t('الأنظمة والباقات', 'Systems & plans'), description: t('أدر تفاصيل الأنظمة والباقات ونطاقها التجاري.', 'Manage system details, package content and commercial scope.') },
-    { id: 'offers', icon: Gift, label: t('العروض', 'Offers'), description: t('أنشئ العروض الفعلية وحدد شروطها وتاريخ انتهائها.', 'Create actual offers and set their terms and expiry dates.') },
-    { id: 'reviews', icon: MessageSquare, label: t('آراء العملاء', 'Customer reviews'), description: t('راجع موافقات النشر واربط الآراء بالأنظمة ذات الصلة.', 'Review publication consent and link testimonials to relevant systems.') },
-    { id: 'leads', icon: Mail, label: t('طلبات العملاء', 'Customer requests'), description: t('ابحث في الطلبات الواردة وحدّث مراحل المتابعة.', 'Search incoming requests and update their follow-up status.') },
-    { id: 'settings', icon: Settings2, label: t('الهوية والتواصل', 'Brand & contact'), description: t('اضبط أصول الهوية وبيانات التواصل التي تظهر للزوار.', 'Configure brand assets and contact details shown to visitors.') }
-  ];
+  const tabs = adminTabs.map(item => ({ ...item, icon: adminIcons[item.id], label: txt(item.label, locale), description: txt(item.description, locale) }));
   const navGroups = [
-    { label: t('المساحة والمحتوى', 'Workspace & content'), ids: ['overview', 'content', 'company', 'copy'] },
-    { label: t('إدارة الأعمال', 'Business operations'), ids: ['products', 'offers', 'reviews', 'leads'] },
-    { label: t('إعدادات النظام', 'System settings'), ids: ['settings'] }
+    { label: t('مساحة العمل', 'WORKSPACE'), ids: ['overview'] },
+    { label: t('المحتوى والتخصيص', 'CONTENT & CUSTOMIZATION'), ids: ['content', 'company', 'copy', 'products'] },
+    { label: t('العملاء والمتابعة', 'CUSTOMERS & FOLLOW-UP'), ids: ['leads', 'reviews', 'offers'] },
+    { label: t('الإعدادات', 'SETTINGS'), ids: ['settings'] },
   ];
-  const searchTerm = navSearch.trim().toLocaleLowerCase();
-  const filteredNavGroups = navGroups.map(group => {
-    const groupMatches = group.label.toLocaleLowerCase().includes(searchTerm);
-    return { ...group, items: tabs.filter(item => group.ids.includes(item.id) && (!searchTerm || groupMatches || item.label.toLocaleLowerCase().includes(searchTerm))) };
-  }).filter(group => group.items.length > 0);
+  const filteredNavGroups = navGroups.map(group => ({ ...group, items: tabs.filter(item => group.ids.includes(item.id)) }));
   const currentGroup = navGroups.find(group => group.ids.includes(tab));
-  const sectionLinks: Record<string, { id: string; label: string }[]> = {
-    content: [
-      { id: 'cms-section-home', label: t('الواجهة الرئيسية', 'Homepage') },
-      { id: 'cms-section-about', label: t('عن VIARA', 'About VIARA') },
-      { id: 'cms-section-faq', label: t('الأسئلة الشائعة', 'FAQs') },
-      { id: 'cms-section-journey', label: t('رحلة الرعاية', 'Care journey') },
-      { id: 'cms-section-metrics', label: t('مؤشرات الصفحة', 'Page metrics') }
-    ],
-    products: [
-      { id: 'cms-section-systems', label: t('الأنظمة', 'Systems') },
-      { id: 'cms-section-facilities', label: t('أنواع المنشآت', 'Facility types') },
-      { id: 'cms-section-plans', label: t('الباقات والأسعار', 'Packages & pricing') }
-    ],
-    settings: [
-      { id: 'cms-section-brand', label: t('الهوية البصرية', 'Brand identity') },
-      { id: 'cms-section-imagery', label: t('صور الصفحة', 'Page imagery') },
-      { id: 'cms-section-contact', label: t('بيانات التواصل', 'Contact details') },
-      { id: 'cms-section-seo', label: t('محركات البحث', 'Search metadata') }
-    ],
-    reviews: [
-      { id: 'cms-section-moderation', label: t('مراجعة الآراء', 'Review moderation') },
-      { id: 'cms-section-add-review', label: t('إضافة رأي', 'Add a review') }
-    ]
-  };
+  const sectionLinks = Object.fromEntries(tabs.map(item => [item.id, adminSections.filter(section => section.tab === item.id).map(section => ({ id: section.id, label: txt(section.label, locale) }))]));
+  const searchResults = searchAdminDestinations(navSearch).slice(0, 24);
 
+  function clearLocalDraft() {
+    try { sessionStorage.removeItem(ADMIN_DRAFT_KEY); } catch { /* Storage may be disabled. */ }
+    setRecoverableDraft(null);
+    setLocalSavedAt(0);
+  }
+
+  function recoverDraft() {
+    if (!recoverableDraft || recoverableDraft.baseVersion !== version) return;
+    if (dirty && !window.confirm(t('استبدال تعديلاتك الحالية بالمسودة المستعادة؟', 'Replace your current edits with the recovered draft?'))) return;
+    setDraft(recoverableDraft.content);
+    setDemoDraft(recoverableDraft.demo);
+    setDirty(true);
+    setRecoverableDraft(null);
+    setMessage(t('استُعيدت المسودة محليًا. راجعها ثم احفظ وانشر عندما تكون جاهزة.', 'Draft restored locally. Review it, then save and publish when ready.'));
+  }
+
+  function downloadRecovery() {
+    if (!recoverableDraft) return;
+    const url = URL.createObjectURL(new Blob([JSON.stringify(recoverableDraft.content, null, 2)], { type: 'application/json' }));
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `viara-draft-v${recoverableDraft.baseVersion}.json`;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      try {
+        const stored = readAdminDraft(sessionStorage.getItem(ADMIN_DRAFT_KEY));
+        if (stored && JSON.stringify(stored.content) !== JSON.stringify(initial.content)) setRecoverableDraft(stored);
+      } catch { setLocalSaveFailed(true); }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [initial.content]);
+
+  useEffect(() => {
+    if (!dirty || recoverableDraft) return;
+    const timer = window.setTimeout(() => {
+      // Retain the last complete draft while required fields are temporarily empty.
+      if (!siteContentSchema.safeParse(draft).success) return;
+      try {
+        const savedAt = Date.now();
+        sessionStorage.setItem(ADMIN_DRAFT_KEY, JSON.stringify({ content: draft, baseVersion: version, savedAt, demo: demoDraft }));
+        setLocalSavedAt(savedAt);
+        setLocalSaveFailed(false);
+      } catch { setLocalSaveFailed(true); }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [draft, dirty, version, demoDraft, recoverableDraft]);
+
+  function navigate(nextTab: string, section = '') {
+    const target = resolveAdminDestination(nextTab, section);
+    setTab(target.tab);
+    setActiveSection(target.section);
+    setMobileNav(false);
+    setCommandOpen(false);
+    setNavSearch('');
+    setMessage('');
+    const hash = adminHash(target);
+    if (window.location.hash !== hash) window.history.pushState(null, '', hash);
+    requestAnimationFrame(() => {
+      const element = document.getElementById(target.section || 'admin-main');
+      element?.scrollIntoView({ block: 'start', behavior: 'auto' });
+      element?.focus({ preventScroll: true });
+    });
+  }
+
+  useEffect(() => {
+    const applyLocation = () => {
+      const target = parseAdminHash(window.location.hash);
+      setTab(target.tab);
+      setActiveSection(target.section);
+      setMobileNav(false);
+      setCommandOpen(false);
+      setNavSearch('');
+      requestAnimationFrame(() => {
+        const element = document.getElementById(target.section || 'admin-main');
+        element?.scrollIntoView({ block: 'start', behavior: 'auto' });
+        element?.focus({ preventScroll: true });
+      });
+    };
+    const frame = requestAnimationFrame(applyLocation);
+    window.addEventListener('popstate', applyLocation);
+    window.addEventListener('hashchange', applyLocation);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('popstate', applyLocation);
+      window.removeEventListener('hashchange', applyLocation);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (commandOpen && !commandDialog.current?.open) {
+      commandDialog.current?.showModal();
+      navSearchRef.current?.focus();
+    } else if (!commandOpen && commandDialog.current?.open) commandDialog.current.close();
+  }, [commandOpen]);
+
+  useEffect(() => {
+    if (!mobileNav || !smallScreen || commandOpen) return;
+    const returnTarget = menuRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const frame = requestAnimationFrame(() => sidebarRef.current?.querySelector<HTMLButtonElement>('button')?.focus());
+    const trap = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setMobileNav(false); return; }
+      if (event.key !== 'Tab') return;
+      const items = [...(sidebarRef.current?.querySelectorAll<HTMLElement>('a[href],button:not(:disabled),input:not(:disabled),[tabindex="0"]') || [])].filter(item => item.getClientRects().length > 0);
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', trap);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', trap);
+      returnTarget?.focus();
+    };
+  }, [mobileNav, smallScreen, commandOpen]);
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
-        navSearchRef.current?.focus();
+        setCommandOpen(true);
       }
-      if (event.key === 'Escape' && navSearch) setNavSearch('');
+      if (event.key === 'Escape') setMobileNav(false);
     }
     window.addEventListener('keydown', handleShortcut);
     return () => window.removeEventListener('keydown', handleShortcut);
-  }, [navSearch]);
+  }, []);
 
   useEffect(() => {
     function leave(e: BeforeUnloadEvent) {
@@ -244,7 +356,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
     setDraft(current => createDemoContent(current));
     setDirty(true);
     setDemoDraft(true);
-    setTab('content');
+    navigate('content');
     setMessage(t('حُمّلت البيانات التجريبية كمسودة. راجعها واستبدل البيانات الإرشادية قبل النشر.', 'Sample data loaded as a draft. Review it and replace guidance fields before publishing.'));
     setError('');
   }
@@ -283,6 +395,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
       setVersion(result.version);
       setUpdated(result.updatedAt);
       setDirty(false);
+      clearLocalDraft();
       setDemoDraft(false);
       setMessage(t('تمت استعادة النسخة ونشرها كإصدار جديد.', 'Revision restored and published as a new version.'));
       await loadLists();
@@ -301,9 +414,13 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
     ))) return;
     setError('');
     setMessage('');
-    const parsed = siteContentSchema.safeParse(draft);
+    setValidationIssues([]);
+    const parsed = publishContentSchema.safeParse(draft);
     if (!parsed.success) {
-      setError(t('راجع هذه الحقول: ', 'Check these fields: ') + parsed.error.issues.map(i => `${i.path.join('.')} — ${i.message}`).slice(0, 8).join(' | '));
+      const issues = parsed.error.issues.map(issue => adminFieldDestination(issue.path));
+      setValidationIssues(issues.filter((issue, index) => issues.findIndex(item => item.section === issue.section && item.tab === issue.tab) === index));
+      setError(t('تعذر النشر. راجع الحقول المطلوبة والروابط والأرقام في الأقسام التالية، وأكمل اللغتين حيث يلزم.', 'Could not publish. Check required fields, URLs and numbers in these sections, and complete both languages where required.'));
+      if (issues[0]) navigate(issues[0].tab, issues[0].section);
       return;
     }
     setSaving(true);
@@ -312,6 +429,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
       setVersion(result.version);
       setUpdated(result.updatedAt);
       setDirty(false);
+      clearLocalDraft();
       setDemoDraft(false);
       setMessage(t('تم حفظ ونشر المحتوى بنجاح. يظهر للزوار فورًا عند تحديث الصفحة.', 'Content published. Visitors will see it when they refresh.'));
     } catch (e) {
@@ -331,6 +449,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
       setVersion(result.version);
       setUpdated(result.updatedAt);
       setDirty(false);
+      clearLocalDraft();
       setDemoDraft(false);
       setMessage(t('تم تحميل النسخة المنشورة.', 'Published content loaded.'));
     } catch (e) {
@@ -340,8 +459,12 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
     }
   }
 
-  async function upload(file: File | undefined, target: 'logo' | 'hero' | 'care' = 'logo') {
+  async function upload(file: File | undefined, target: 'logo' | 'hero' | 'care' | { offerIndex: number } = 'logo') {
     if (!file) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size === 0 || file.size > 3 * 1024 * 1024) {
+      setError(t('اختر صورة PNG أو JPEG أو WebP لا يزيد حجمها على 3 ميجابايت.', 'Choose a PNG, JPEG or WebP image no larger than 3 MB.'));
+      return;
+    }
     setError('');
     setUploading(true);
     try {
@@ -351,8 +474,13 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
       const data = await response.json() as { url?: string; error?: string };
       if (!response.ok || !data.url) throw new Error(data.error || 'Upload failed');
       mutate(next => {
-        if (target === 'logo') next.brand.logo = data.url!;
-        else next.imagery[target] = data.url!;
+        if (typeof target === 'object' && 'offerIndex' in target) {
+          next.offers[target.offerIndex].image = data.url!;
+        } else if (target === 'logo') {
+          next.brand.logo = data.url!;
+        } else {
+          next.imagery[target] = data.url!;
+        }
       });
       setMessage(t('تم رفع الصورة. انشر التعديلات لإظهارها على الموقع.', 'Image uploaded. Publish your changes to display it.'));
     } catch (e) {
@@ -433,25 +561,19 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
 
   return (
     <div className="cms brand-admin" style={{ '--brand-primary': draft.brand.primary } as React.CSSProperties} lang={locale} dir={en ? 'ltr' : 'rtl'}>
-      <a className="cms-skip-link" href="#admin-main">{t('انتقل إلى المحتوى الرئيسي', 'Skip to main content')}</a>
-      <aside id="admin-sidebar" className={`cms-sidebar ${mobileNav ? 'open' : ''}`} aria-label={t('قائمة الإدارة', 'Administration menu')}>
+      <a className="cms-skip-link" href="#admin-main" onClick={event => { event.preventDefault(); document.getElementById('admin-main')?.focus(); }}>{t('انتقل إلى المحتوى الرئيسي', 'Skip to main content')}</a>
+      <aside id="admin-sidebar" ref={sidebarRef} inert={smallScreen && !mobileNav} className={`cms-sidebar ${mobileNav ? 'open' : ''}`} aria-label={t('قائمة الإدارة', 'Administration menu')}>
+        <button type="button" className="cms-sidebar-close cms-icon" onClick={() => setMobileNav(false)} aria-label={t('إغلاق قائمة الإدارة', 'Close administration menu')}><X size={19} /></button>
         <Link href="/" className="cms-brand">
           <img src={draft.brand.logo} alt="" width={46} height={42} />
           <span dir="ltr">{draft.brand.name}<small>CONTROL CENTER</small></span>
         </Link>
         <span className="cms-sidebar-label">{t('لوحة التحكم', 'CONTROL CENTER')}</span>
-        <label className="cms-nav-search">
+        <button type="button" className="cms-nav-search" onClick={() => setCommandOpen(true)}>
           <Search size={16} aria-hidden="true" />
-          <input
-            ref={navSearchRef}
-            type="search"
-            value={navSearch}
-            onChange={event => setNavSearch(event.target.value)}
-            placeholder={t('ابحث في أقسام الإدارة', 'Search workspace')}
-            aria-label={t('ابحث في أقسام الإدارة', 'Search workspace')}
-          />
+          <span>{t('ابحث عن إعداد أو أداة', 'Find a setting or tool')}</span>
           <kbd>Ctrl K</kbd>
-        </label>
+        </button>
         <nav aria-label={t('أقسام الإدارة', 'Administration navigation')}>
           {filteredNavGroups.map(group => (
             <div className="cms-nav-group" key={group.label}>
@@ -463,10 +585,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   className={tab === item.id ? 'active' : ''}
                   aria-current={tab === item.id ? 'page' : undefined}
                   onClick={() => {
-                    setTab(item.id);
-                    setMobileNav(false);
-                    setNavSearch('');
-                    setMessage('');
+                    navigate(item.id);
                   }}
                 >
                   <item.icon size={19} />
@@ -519,7 +638,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
 
       <div className="cms-workspace">
         <header className="cms-topbar">
-      <button type="button" className="cms-mobile-menu cms-icon" onClick={() => setMobileNav(!mobileNav)} aria-label={t('قائمة الإدارة', 'Administration menu')} aria-expanded={mobileNav} aria-controls="admin-sidebar">
+      <button type="button" ref={menuRef} className="cms-mobile-menu cms-icon" onClick={() => setMobileNav(!mobileNav)} aria-label={t('قائمة الإدارة', 'Administration menu')} aria-expanded={mobileNav} aria-controls="admin-sidebar">
             <Menu size={20} />
           </button>
           <div>
@@ -528,12 +647,13 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
             <p className="cms-page-description">{current.description}</p>
           </div>
           <div className="cms-top-actions">
+            <button type="button" className="cms-command-trigger cms-icon" onClick={() => setCommandOpen(true)} aria-label={t('البحث في الإعدادات والأدوات', 'Search settings and tools')}><Search size={18} /></button>
             <button type="button" className="cms-icon" onClick={() => setLocale(en ? 'ar' : 'en')} aria-label={en ? 'العربية' : 'English'} title={t('تغيير اللغة', 'Change language')}>
               <Globe2 size={18} />
             </button>
             <a href={en ? '/en' : '/'} target="_blank" rel="noopener noreferrer" className="cms-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-              <span>{t('معاينة الموقع المنشور', 'Live preview')}</span>
+              <span>{t('فتح النسخة المنشورة', 'Open published site')}</span>
               <ExternalLink size={14} />
             </a>
             <button type="button" className="cms-publish" disabled={saving || uploading || !dirty} onClick={publish}>
@@ -559,6 +679,11 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
         </div>
 
         <main className="cms-main" id="admin-main" tabIndex={-1}>
+          {recoverableDraft && <section className="cms-draft-recovery" aria-label={t('استعادة المسودة', 'Draft recovery')}>
+            <div><h2>{t('لديك مسودة محلية قابلة للاستعادة', 'A local draft is available')}</h2><p>{recoverableDraft.baseVersion === version ? t('لم تُنشر هذه التعديلات. يمكنك استعادتها أو تنزيل نسخة منها أو تجاهلها.', 'These changes are unpublished. Restore them, download a copy, or discard them.') : t('نُشرت نسخة أحدث منذ إنشاء هذه المسودة. نزّلها للمقارنة؛ الاستعادة المباشرة متوقفة لحماية النسخة الأحدث.', 'A newer version was published after this draft. Download it for comparison; direct restoration is disabled to protect the newer version.')} <time dateTime={new Date(recoverableDraft.savedAt).toISOString()}>{new Date(recoverableDraft.savedAt).toLocaleString(en ? 'en-GB' : 'ar-EG', { timeZone: 'Africa/Cairo' })}</time></p></div>
+            <div><button type="button" className="cms-publish" disabled={recoverableDraft.baseVersion !== version} onClick={recoverDraft}>{t('استعادة المسودة', 'Restore draft')}</button><button type="button" className="cms-secondary" onClick={downloadRecovery}><Download size={14} />{t('تنزيل نسخة', 'Download copy')}</button><button type="button" className="cms-secondary" onClick={clearLocalDraft}>{t('تجاهل', 'Discard')}</button></div>
+          </section>}
+          {dirty && <div className="cms-draft-note" role="status"><FileText size={16} /><span>{t('تعديلاتك مسودة حتى تضغط «حفظ ونشر». فتح الموقع يعرض النسخة المنشورة فقط.', 'Your changes remain a draft until you choose Save & publish. Opening the website shows only published content.')} {localSaveFailed ? t('الحفظ المحلي غير متاح في هذا المتصفح.', 'Local recovery storage is unavailable in this browser.') : localSavedAt > 0 ? t('آخر مسودة مكتملة محفوظة في هذا التبويب لاستعادتها بعد التحديث.', 'The last complete draft is saved in this tab for recovery after a refresh.') : t('تُحفظ نسخة للاستعادة عند اكتمال الحقول المطلوبة.', 'A recovery copy is saved when required fields are complete.')}</span></div>}
           {demoDraft && (
             <div className="cms-alert demo-warning" role="status">
               <ShieldCheck size={18} />
@@ -570,8 +695,8 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
           )}
           {error && (
             <div className="cms-alert error" role="alert">
-              <span>{error}</span>
-              <button type="button" onClick={() => setError('')} aria-label="Close"><X size={15} /></button>
+              <div><span>{error}</span>{validationIssues.length > 0 && <div className="cms-validation-links">{validationIssues.map(issue => <button type="button" key={issue.tab + issue.section} onClick={() => navigate(issue.tab, issue.section)}>{txt(issue.label, locale)}<ArrowUpLeft size={14} /></button>)}</div>}</div>
+              <button type="button" onClick={() => { setError(''); setValidationIssues([]); }} aria-label={t('إغلاق', 'Close')}><X size={15} /></button>
             </div>
           )}
           {message && (
@@ -581,16 +706,16 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
             </div>
           )}
 
-          {sectionLinks[tab] && (
+          {sectionLinks[tab]?.length > 0 && (
             <nav className="cms-section-jump" aria-label={t('انتقال إلى قسم', 'Jump to section')}>
               <span>{t('انتقال سريع', 'JUMP TO')}</span>
               {sectionLinks[tab].map(section => (
-                <a key={section.id} href={`#${section.id}`}>{section.label}</a>
+                <button type="button" key={section.id} aria-current={activeSection === section.id ? 'page' : undefined} onClick={() => navigate(tab, section.id)}>{section.label}</button>
               ))}
             </nav>
           )}
 
-          <fieldset className="cms-form-area" disabled={saving}>
+          <AdminSectionContext.Provider value={activeSection}><fieldset className="cms-form-area" disabled={saving}>
             {tab === 'overview' && (
               <>
                 <div className="cms-welcome">
@@ -609,12 +734,16 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   </div>
                   <div className="cms-quick-actions-grid">
                     {[
-                      { id: 'content', icon: FileText, title: t('تحديث محتوى الموقع', 'Update website content'), detail: t('الواجهة والأسئلة الشائعة', 'Homepage and FAQs') },
-                      { id: 'products', icon: Layers3, title: t('مراجعة الأنظمة والباقات', 'Review systems & plans'), detail: t('النطاق والمزايا المعروضة', 'Published scope and features') },
-                      { id: 'leads', icon: Mail, title: t('متابعة طلبات العملاء', 'Follow up on requests'), detail: t('عرض الطلبات وحالاتها', 'View requests and statuses') },
-                      { id: 'settings', icon: Settings2, title: t('ضبط الهوية والتواصل', 'Set brand & contact'), detail: t('الشعار وبيانات الوصول', 'Logo and contact details') }
+                      { id: 'settings', section: 'cms-section-brand', icon: Settings2, title: t('الشعار والألوان', 'Logo & colors'), detail: t('اسم الموقع وهويته البصرية', 'Site name and visual identity') },
+                      { id: 'settings', section: 'cms-section-contact', icon: Mail, title: t('التواصل والروابط', 'Contact & links'), detail: t('الهاتف والبريد والشبكات الاجتماعية', 'Phone, email and social channels') },
+                      { id: 'settings', section: 'cms-section-imagery', icon: Upload, title: t('صور الموقع', 'Website imagery'), detail: t('إدارة الصور ومصادرها', 'Manage imagery and sources') },
+                      { id: 'settings', section: 'cms-section-seo', icon: Globe2, title: t('محركات البحث', 'Search metadata'), detail: t('العنوان والوصف باللغتين', 'Titles and descriptions in both languages') },
+                      { id: 'content', section: 'cms-section-home', icon: FileText, title: t('مقدمة الرئيسية', 'Homepage introduction'), detail: t('العنوان والوصف والإجراء الأساسي', 'Headline, description and primary action') },
+                      { id: 'copy', section: '', icon: Globe2, title: t('نصوص الصفحات', 'Page copy'), detail: t('العربية والإنجليزية في مكان واحد', 'Arabic and English in one place') },
+                      { id: 'products', section: 'cms-section-plans', icon: Layers3, title: t('الباقات والأسعار', 'Packages & pricing'), detail: t('المحتوى التجاري المعروض', 'Published commercial content') },
+                      { id: 'leads', section: '', icon: Mail, title: t('طلبات العملاء', 'Customer requests'), detail: t('السجلات وحالات المتابعة', 'Records and follow-up statuses') }
                     ].map(action => (
-                      <button key={action.id} type="button" onClick={() => setTab(action.id)}>
+                      <button key={`${action.id}/${action.section}`} type="button" onClick={() => navigate(action.id, action.section)}>
                         <span className="cms-quick-action-icon"><action.icon size={19} /></span>
                         <span><b>{action.title}</b><small>{action.detail}</small></span>
                         <ArrowUpLeft size={16} aria-hidden="true" />
@@ -623,7 +752,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   </div>
                 </section>
 
-                <Panel title={t('تهيئة بيانات تجريبية قابلة للتعديل', 'Prepare editable sample data')} description={t(
+                <details className="cms-utility"><summary><Sparkles size={17} /><span>{t('أدوات المسودة والبيانات التجريبية', 'Draft & sample content tools')}</span><ChevronDown size={17} /></summary><Panel title={t('تهيئة بيانات تجريبية قابلة للتعديل', 'Prepare editable sample data')} description={t(
                   'حمّل محتوى ثنائي اللغة للصفحات والأنظمة والباقات، مع مسودات مخفية للشركة وعرض توضيحي غير مفعّل. لن يُنشر شيء قبل مراجعتك واختيار «حفظ ونشر».',
                   'Load bilingual page, system and package content, with hidden company drafts and an inactive sample offer. Nothing is published until you review it and choose Save & publish.'
                 )}>
@@ -636,7 +765,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                       <Sparkles size={15} />{t('تحميل البيانات التجريبية', 'Load sample data')}
                     </button>
                   </div>
-                </Panel>
+                </Panel></details>
 
                 <div className="cms-metrics">
                   {[
@@ -645,7 +774,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                     { label: t('آراء قيد المراجعة', 'Reviews to moderate'), value: loading ? '—' : reviewError ? t('خطأ', 'Error') : reviews.filter(r => r.status === 'pending').length, icon: MessageSquare, go: 'reviews' },
                     { label: t('عروض مفعلة', 'Enabled offers'), value: draft.offers.filter(o => o.active).length, icon: Gift, go: 'offers' }
                   ].map(m => (
-                    <button type="button" key={m.label} onClick={() => setTab(m.go)}>
+                    <button type="button" key={m.label} onClick={() => navigate(m.go)}>
                       <span><m.icon size={20} />{m.label}</span>
                       <strong>{loading ? '—' : m.value}</strong>
                       <small>{t('عرض التفاصيل', 'View details')}<ArrowUpLeft size={13} /></small>
@@ -653,7 +782,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   ))}
                 </div>
 
-                <Panel title={t('نسخ المحتوى السابقة', 'Previous content versions')} description={t(
+                <details className="cms-utility"><summary><History size={17} /><span>{t('سجل النشر واستعادة النسخ', 'Publishing history & restore')}</span><ChevronDown size={17} /></summary><Panel title={t('نسخ المحتوى السابقة', 'Previous content versions')} description={t(
                   'يُحفظ آخر 20 نسخة عند كل عملية نشر. الاستعادة تُصدر النسخة المختارة كإصدار جديد ولا تمحو التاريخ.',
                   'The last 20 publishes are kept. Restoring publishes the chosen version as a new version and never erases history.'
                 )}>
@@ -680,7 +809,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                       ))}
                     </ul>
                   )}
-                </Panel>
+                </Panel></details>
 
                 <div className="cms-two-columns">
                   <Panel title={t('خطوات تجهيز الموقع', 'Make it yours')} description={t('المحتوى الافتراضي جاهز باللغتين ومُعرب بالكامل مع هوية VIARA.', 'The default bilingual content is pre-configured with your healthcare branding.')}>
@@ -690,7 +819,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                         { done: draft.offers.length > 0, title: t('العروض الحقيقية', 'Your actual offers'), detail: t('عنوان ووصف وتاريخ انتهاء لكل عرض.', 'A title, description and expiry for each offer.'), go: 'offers' },
                         { done: reviews.some(r => r.status === 'approved'), title: t('آراء موثوقة', 'Authentic reviews'), detail: t('انشر الآراء بعد موافقة أصحابها.', 'Publish reviews with their authors’ consent.'), go: 'reviews' }
                       ].map(item => (
-                        <button type="button" key={item.go} onClick={() => setTab(item.go)}>
+                        <button type="button" key={item.go} onClick={() => navigate(item.go)}>
                           <span className={item.done ? 'done' : ''}><CheckCircle2 size={20} /></span>
                           <div>
                             <b>{item.title}</b>
@@ -713,7 +842,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                     ) : leads.length ? (
                       <div className="cms-recent">
                         {leads.slice(0, 5).map(l => (
-                          <button key={l.id} type="button" onClick={() => setTab('leads')}>
+                          <button key={l.id} type="button" onClick={() => navigate('leads')}>
                             <span>{l.name.slice(0, 1)}</span>
                             <div>
                               <b>{l.organization}</b>
@@ -795,7 +924,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   </div>
                 </Panel>
 
-                <Panel id="cms-section-metrics" title={t('مؤشرات الصفحة الرئيسية', 'Homepage metrics')} description={t('تحقق من دقة كل رقم ومصدره قبل نشره؛ هذه مؤشرات تسويقية تظهر للزوار.', 'Verify every figure and its source before publishing; these are public-facing marketing claims.')}>
+                <Panel id="cms-section-metrics" title={t('مؤشرات الصفحة الرئيسية', 'Homepage metrics')} description={t('هذه حقول محفوظة للتصاميم السابقة، ولا يعرضها تصميم الرئيسية الحالي. لا تستخدمها لتوقع ظهور أرقام في الصفحة.', 'These fields are retained for earlier layouts and are not displayed by the current homepage design.')}>
                   {draft.metrics.map((metric, i) => (
                     <div key={i}>
                       <Pair label={t(`قيمة المؤشر ${i + 1}`, `Metric ${i + 1} value`)} value={metric.value} onChange={v => mutate(n => { n.metrics[i].value = v; })} />
@@ -806,7 +935,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
               </>
             )}
 
-            {tab === 'company' && <Panel title={t('بيانات الشركة وصفحة عنا', 'Company information & About page')}><CompanyEditor value={draft.company} locale={locale} onChange={v => mutate(n => { n.company = v; })} /></Panel>}
+            {tab === 'company' && <Panel title={t('بيانات الشركة وصفحة عنا', 'Company information & About page')}><CompanyEditor value={draft.company} locale={locale} section={activeSection} onChange={v => mutate(n => { n.company = v; })} /></Panel>}
             {tab === 'copy' && <Panel title={t('نصوص جميع الصفحات', 'All page text')} description={t('ابحث باسم الصفحة أو النص. الأنظمة وبيانات الشركة والباقات لها حقول مستقلة.', 'Search by page or text. Systems, company information and packages have dedicated editors.')}><CopyEditor value={draft.copy} locale={locale} onChange={v => mutate(n => { n.copy = v; })} /></Panel>}
             {tab === 'products' && (
               <>
@@ -903,9 +1032,68 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                             </select>
                           </label>
                         </div>
-                        <button type="button" className="cms-secondary danger" onClick={() => mutate(n => { n.offers.splice(i, 1); })}>
-                          <Trash2 size={14} />{t('حذف العرض', 'Remove offer')}
-                        </button>
+
+                        {/* Offer Image Uploader & Media Showcase */}
+                        <div className="cms-offer-image-box" style={{ marginTop: '16px', padding: '16px', background: '#f8faf9', border: '1px solid #dce7e1', borderRadius: '12px' }}>
+                          <span className="cms-field-label" style={{ display: 'block', fontWeight: 700, marginBottom: '8px', color: '#005a46' }}>
+                            {t('صورة العرض الترويجية (المميزة والملفتة)', 'Promotional Offer Featured Image')}
+                          </span>
+                          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '12px' }}>
+                            <div style={{ width: '180px', height: '110px', borderRadius: '10px', overflow: 'hidden', background: '#0a2e22', border: '1px solid #c8ded3', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                              {o.image ? (
+                                <img src={o.image} alt={txt(o.title, locale)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                <div style={{ textAlign: 'center', color: '#7ea494', padding: '8px' }}>
+                                  <Gift size={24} style={{ margin: '0 auto 4px', display: 'block', opacity: 0.6 }} />
+                                  <span style={{ fontSize: '11px', display: 'block' }}>{t('بدون صورة مخصصة', 'No custom image')}</span>
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              <label className="cms-secondary" style={{ cursor: 'pointer' }}>
+                                {uploading ? <LoaderCircle size={15} className="spin" /> : <Upload size={15} />}
+                                {t('رفع صورة للعرض', 'Upload offer image')}
+                                <input
+                                  className="cms-file-input"
+                                  type="file"
+                                  accept="image/png,image/jpeg,image/webp"
+                                  disabled={uploading}
+                                  onChange={e => {
+                                    void upload(e.target.files?.[0], { offerIndex: i });
+                                    e.target.value = '';
+                                  }}
+                                />
+                              </label>
+                              {o.image && (
+                                <button
+                                  type="button"
+                                  className="cms-secondary danger"
+                                  onClick={() => mutate(n => { n.offers[i].image = ''; })}
+                                >
+                                  <Trash2 size={13} /> {t('إزالة الصورة', 'Remove image')}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <SettingInput
+                            showErrors={validationIssues.length > 0}
+                            label={t('رابط أو مسار صورة العرض', 'Offer image URL or file path')}
+                            value={o.image || ''}
+                            validator={secureImageSchema}
+                            errorText={t('أدخل رابط https:// كاملًا أو مسار صورة من ملفات الموقع مثل /assets/systems/viara-ris-pro.jpg', 'Enter a complete https:// URL or asset path.')}
+                            placeholder="/assets/systems/viara-ris-pro.jpg"
+                            onChange={val => mutate(n => { n.offers[i].image = val; })}
+                          />
+                          <small style={{ display: 'block', fontSize: '11.5px', color: '#577265', marginTop: '6px' }}>
+                            {t('نصيحة: استخدم صورة عرضية بنسبة 16:9 بدقة فائقة تبرز محطة العمل أو العرض الطبي (PNG, JPEG, WebP حتى 3MB).', 'Tip: Use a 16:9 high-res landscape image highlighting the medical suite (PNG, JPEG, WebP up to 3MB).')}
+                          </small>
+                        </div>
+
+                        <div style={{ marginTop: '16px' }}>
+                          <button type="button" className="cms-secondary danger" onClick={() => mutate(n => { n.offers.splice(i, 1); })}>
+                            <Trash2 size={14} />{t('حذف العرض', 'Remove offer')}
+                          </button>
+                        </div>
                       </div>
                     </details>
                   ))}
@@ -915,7 +1103,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                   className="cms-secondary"
                   disabled={draft.offers.length >= 20}
                   onClick={() => mutate(n => {
-                    n.offers.push({ id: crypto.randomUUID(), title: L('', ''), description: L('', ''), badge: L('عرض خاص', 'SPECIAL OFFER'), endDate: '', active: false, plan: 'لم أحدد بعد' });
+                    n.offers.push({ id: crypto.randomUUID(), title: L('', ''), description: L('', ''), badge: L('عرض خاص', 'SPECIAL OFFER'), endDate: '', active: false, plan: 'لم أحدد بعد', image: '' });
                   })}
                 >
                   <Plus size={16} />{t('إضافة عرض', 'Add offer')}
@@ -925,71 +1113,67 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
 
             {tab === 'settings' && (
               <>
-                <Panel id="cms-section-brand" title={t('الهوية البصرية', 'Brand identity')}>
+                <SettingsSummary content={draft} locale={locale} current={activeSection} onNavigate={section => navigate('settings', section)} />
+                <Panel id="cms-section-brand" title={t('الهوية البصرية', 'Brand identity')} description={t('الاسم والشعار يظهران في التنقل والتذييل، والجملة التعريفية في التذييل. اللون الأساسي يخص العناصر المرتبطة بلون البراند؛ لا يغير كل ألوان التصميم.', 'The name and logo appear in navigation and the footer; the tagline appears in the footer. The primary color affects brand-linked elements, rather than every design color.')}>
+                  <BrandPreview content={draft} locale={locale} />
                   <div className="cms-logo-editor">
-                    <div><img src={draft.brand.logo} alt={draft.brand.name} width={96} height={84} loading="lazy" /></div>
+                    <div><SettingsImage key={draft.brand.logo} src={draft.brand.logo} alt={draft.brand.name} locale={locale} /></div>
                     <label className="cms-secondary">
                       {uploading ? <LoaderCircle size={16} className="spin" /> : <Upload size={16} />}
                       {t('رفع شعار', 'Upload logo')}
-                      <input hidden type="file" accept="image/png,image/jpeg,image/webp" disabled={uploading} onChange={e => { void upload(e.target.files?.[0]); e.target.value = ''; }} />
+                      <input className="cms-file-input" type="file" accept="image/png,image/jpeg,image/webp" disabled={uploading} onChange={e => { void upload(e.target.files?.[0]); e.target.value = ''; }} />
                     </label>
                     <small>PNG, JPEG, WebP · 3 MB</small>
                   </div>
                   <div className="cms-grid-fields">
-                    <label className="cms-field">{t('الاسم التجاري', 'Brand name')}
-                      <input value={draft.brand.name} maxLength={35} onChange={e => mutate(n => { n.brand.name = e.target.value; })} />
-                    </label>
+                    <SettingInput showErrors={validationIssues.length > 0} label={t('الاسم التجاري', 'Brand name')} value={draft.brand.name} validator={siteContentSchema.shape.brand.shape.name} errorText={t('أدخل اسمًا من حرف واحد إلى 35 حرفًا.', 'Enter a name between 1 and 35 characters.')} maxLength={35} dir={en ? 'ltr' : 'rtl'} onChange={value => mutate(n => { n.brand.name = value; })} />
                     <label className="cms-field">{t('اللون الأساسي', 'Primary color')}
                       <div className="cms-color">
-                        <input type="color" value={draft.brand.primary} onChange={e => mutate(n => { n.brand.primary = e.target.value; })} />
+                        <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(draft.brand.primary) ? draft.brand.primary : '#007b61'} onChange={e => mutate(n => { n.brand.primary = e.target.value; })} />
                         <code>{draft.brand.primary}</code>
                       </div>
                     </label>
                   </div>
-                  <label className="cms-field">{t('رابط الشعار', 'Logo URL')}
-                    <input dir="ltr" value={draft.brand.logo} maxLength={600} onChange={e => mutate(n => { n.brand.logo = e.target.value; })} />
-                  </label>
+                  <SettingInput showErrors={validationIssues.length > 0} label={t('رابط الشعار', 'Logo URL')} value={draft.brand.logo} validator={secureImageSchema} errorText={t('استخدم رابط https:// كاملًا أو مسار صورة من ملفات الموقع.', 'Use a complete https:// URL or a website image asset path.')} onChange={value => mutate(n => { n.brand.logo = value; })} />
+                  <SettingInput showErrors={validationIssues.length > 0} label={t('كود اللون الأساسي', 'Primary color code')} value={draft.brand.primary} validator={siteContentSchema.shape.brand.shape.primary} errorText={t('استخدم ست خانات بعد #، مثل #007b61.', 'Use six hexadecimal digits after #, such as #007b61.')} maxLength={7} placeholder="#007b61" onChange={value => mutate(n => { n.brand.primary = value; })} />
                   <Pair label={t('الجملة التعريفية', 'Brand tagline')} value={draft.brand.tagline} onChange={v => mutate(n => { n.brand.tagline = v; })} />
                 </Panel>
 
-                <Panel id="cms-section-imagery" title={t('صور الصفحة', 'Page photography')} description={t('صور توضيحية قابلة للاستبدال بصور منشأتك المعتمدة.', 'Replace these illustrative scenes with your approved photography.')}>
+                <Panel id="cms-section-imagery" title={t('صور الصفحة', 'Page photography')} description={t('الصورة الأولى لمعاينة مشاركة الرئيسية، والثانية لصفحة عن VIARA. صور أنظمة الهيرو تُدار من الأنظمة والباقات. ارفع PNG أو JPEG أو WebP حتى 3 ميجابايت، ثم انشر التعديلات.', 'The first image is used when sharing the homepage; the second appears on About VIARA. Manage hero system images under Systems & packages. Upload PNG, JPEG or WebP up to 3 MB, then publish.')}>
                   <div className="cms-scene-editors">
                     {(['hero', 'care'] as const).map(key => (
                       <div className="cms-scene-editor" key={key}>
-                        <img src={draft.imagery[key]} alt={key === 'hero' ? t('الصورة الرئيسية', 'Hero image') : t('صورة الفريق', 'Team image')} width={640} height={427} loading="lazy" />
-                        <label className="cms-field">
-                          {key === 'hero' ? t('الصورة الرئيسية', 'Hero photography') : t('صورة قسم من نحن', 'About section photography')}
-                          <input dir="ltr" value={draft.imagery[key]} maxLength={600} onChange={e => mutate(n => { n.imagery[key] = e.target.value; })} />
-                        </label>
+                        <SettingsImage key={draft.imagery[key]} src={draft.imagery[key]} alt={key === 'hero' ? t('صورة مشاركة الرئيسية', 'Homepage social image') : t('صورة الفريق', 'Team image')} locale={locale} />
+                        <SettingInput showErrors={validationIssues.length > 0} label={key === 'hero' ? t('صورة مشاركة الصفحة الرئيسية', 'Homepage social sharing image') : t('صورة صفحة عن VIARA', 'About VIARA page image')} value={draft.imagery[key]} validator={secureImageSchema} errorText={t('أدخل رابط صورة https:// كاملًا أو مسار ملف من الموقع.', 'Enter a complete https:// image URL or website asset path.')} onChange={value => mutate(n => { n.imagery[key] = value; })} />
                         <label className="cms-secondary">
                           {uploading ? <LoaderCircle size={15} className="spin" /> : <Upload size={15} />}
                           {t('استبدال الصورة', 'Replace image')}
-                          <input hidden type="file" accept="image/png,image/jpeg,image/webp" disabled={uploading} onChange={e => { void upload(e.target.files?.[0], key); e.target.value = ''; }} />
+                          <input className="cms-file-input" type="file" accept="image/png,image/jpeg,image/webp" disabled={uploading} onChange={e => { void upload(e.target.files?.[0], key); e.target.value = ''; }} />
                         </label>
                       </div>
                     ))}
                   </div>
                 </Panel>
 
-                <Panel id="cms-section-contact" title={t('بيانات التواصل', 'Contact information')} description={t('بيانات التواصل المعروضة للزوار على الموقع.', 'Only configured channels are displayed.')}>
+                <Panel id="cms-section-contact" title={t('بيانات التواصل', 'Contact information')} description={t('اترك القنوات غير المتاحة فارغة لإخفائها. أدخل الهاتف وواتساب برمز الدولة، وروابط الشبكات كاملة بدءًا من https://.', 'Leave unavailable channels blank to hide them. Include country codes for phone and WhatsApp, and full social URLs starting with https://.')}>
                   <div className="cms-grid-fields">
                     {([['email', t('البريد الإلكتروني', 'Email')], ['phone', t('الهاتف', 'Phone')], ['whatsapp', t('واتساب — رمز الدولة والرقم', 'WhatsApp — country code & number')]] as const).map(([key, label]) => (
-                      <label className="cms-field" key={key}>{label}
-                        <input dir="ltr" type={key === 'email' ? 'email' : 'tel'} value={draft.contact[key]} maxLength={key === 'email' ? 200 : 30} onChange={e => mutate(n => { n.contact[key] = e.target.value; })} />
-                      </label>
+                      <SettingInput showErrors={validationIssues.length > 0} key={key} label={label} value={draft.contact[key]} validator={siteContentSchema.shape.contact.shape[key]} type={key === 'email' ? 'email' : 'tel'} maxLength={key === 'email' ? 200 : 30} placeholder={key === 'email' ? 'contact@company.com' : '+20…'} errorText={key === 'email' ? t('أدخل بريدًا إلكترونيًا صحيحًا أو اترك الحقل فارغًا.', 'Enter a valid email address or leave it blank.') : t('استخدم أرقامًا ورمز الدولة، مثل +20، أو اترك الحقل فارغًا.', 'Use digits with a country code, such as +20, or leave it blank.')} onChange={value => mutate(n => { n.contact[key] = value; })} />
+
                     ))}
                   </div>
                   <Pair label={t('العنوان — اختياري', 'Address — optional')} value={draft.contact.address} area onChange={v => mutate(n => { n.contact.address = v; })} />
                   <div className="cms-grid-fields">
                     {(['facebook', 'instagram', 'linkedin', 'youtube', 'x', 'telegram', 'snapchat', 'github'] as const).map(key => (
-                      <label className="cms-field" key={key}>{key.toUpperCase()}
-                        <input type="url" dir="ltr" value={draft.contact[key]} placeholder="https://…" maxLength={600} onChange={e => mutate(n => { n.contact[key] = e.target.value; })} />
-                      </label>
+                      <SettingInput showErrors={validationIssues.length > 0} key={key} label={key.toUpperCase()} value={draft.contact[key]} validator={secureLinkSchema} type="url" placeholder="https://…" errorText={t('أدخل رابط https:// كاملًا وصحيحًا أو اتركه فارغًا.', 'Enter a complete valid https:// URL or leave it blank.')} onChange={value => mutate(n => { n.contact[key] = value; })} />
+
                     ))}
                   </div>
+                  <ContactPreview content={draft} locale={locale} />
                 </Panel>
 
-                <Panel id="cms-section-seo" title={t('بيانات محركات البحث', 'Search engine metadata')}>
+                <Panel id="cms-section-seo" title={t('بيانات محركات البحث', 'Search engine metadata')} description={t('عنوان ووصف الصفحة الرئيسية بالعربية والإنجليزية. قد تختار محركات البحث نصًا مختلفًا.', 'Homepage title and description in both languages. Search engines may display different text.')}>
+                  <SearchPreview content={draft} locale={locale} siteUrl={siteUrl} />
                   <Pair label={t('عنوان الموقع', 'Page title')} value={draft.seo.title} onChange={v => mutate(n => { n.seo.title = v; })} />
                   <Pair label={t('وصف الموقع', 'Page description')} value={draft.seo.description} area onChange={v => mutate(n => { n.seo.description = v; })} />
                 </Panel>
@@ -1219,7 +1403,7 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
                 )}
               </Panel>
             )}
-          </fieldset>
+          </fieldset></AdminSectionContext.Provider>
 
           <div className="cms-bottom-note">
             <ShieldCheck size={15} />
@@ -1227,6 +1411,12 @@ export default function AdminClient({ initial, name }: { initial: Initial; name:
           </div>
         </main>
       </div>
+      <dialog className="cms-command-dialog" ref={commandDialog} aria-labelledby="cms-command-title" onClose={() => { setCommandOpen(false); setNavSearch(''); }} onClick={event => { if (event.target === event.currentTarget) commandDialog.current?.close(); }}>
+        <header><div><span>{t('وصول مباشر', 'DIRECT ACCESS')}</span><h2 id="cms-command-title">{t('إلى أين تريد الانتقال؟', 'Where would you like to go?')}</h2></div><button type="button" className="cms-icon" onClick={() => commandDialog.current?.close()} aria-label={t('إغلاق البحث', 'Close search')}><X size={20} /></button></header>
+        <label className="cms-command-input"><Search size={20} /><input ref={navSearchRef} type="search" value={navSearch} onChange={event => setNavSearch(event.target.value)} placeholder={t('الشعار، الألوان، واتساب، الباقات، SEO…', 'Logo, colors, WhatsApp, packages, SEO…')} aria-label={t('ابحث في جميع أدوات الإدارة', 'Search all administration tools')} onKeyDown={event => { if (event.key === 'Enter' && searchResults[0]) { event.preventDefault(); navigate(searchResults[0].tab, searchResults[0].section); } if (event.key === 'ArrowDown') { event.preventDefault(); commandDialog.current?.querySelector<HTMLButtonElement>('.cms-command-results button')?.focus(); } }} /></label>
+        <div className="cms-command-results">{searchResults.map(result => { const Icon = adminIcons[result.tab]; return <button type="button" key={`${result.tab}/${result.section}`} onClick={() => navigate(result.tab, result.section)}><Icon size={20} /><span><strong>{txt(result.label, locale)}</strong><small>{txt(result.parent, locale)}{result.section ? ` · ${t('إعداد مباشر', 'Direct setting')}` : ''}</small></span><ArrowUpLeft size={16} /></button>; })}{searchResults.length === 0 && <p>{t('لا توجد نتائج. جرّب اسم الإعداد أو القسم بالعربية أو الإنجليزية.', 'No results. Try a setting or section name in Arabic or English.')}</p>}</div>
+        <footer><span>{t('Enter لفتح أول نتيجة', 'Enter opens the first result')}</span><kbd>Esc</kbd><span>{t('للإغلاق', 'to close')}</span></footer>
+      </dialog>
     </div>
   );
 }
