@@ -1,6 +1,7 @@
 {
-  "name": "site-creator-vinext-starter",
-  "version": "0.1.0",
+  "name": "viara-marketing-site",
+  "version": "1.0.0",
+  "description": "VIARA Enterprise Radiology - Official Marketing Website & CMS",
   "private": true,
   "engines": {
     "node": ">=22.13.0"

@@ -1,0 +1,47 @@
+# =============================================================================
+# VIARA Marketing Site — Standalone Docker Compose
+# =============================================================================
+# The marketing website runs independently of the PACS backend.
+# It targets Cloudflare Workers infrastructure (D1 database, R2 storage).
+# =============================================================================
+
+services:
+  # ── Marketing Worker (Cloudflare Miniflare) ──────────────────────────────
+  marketing-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: viara-marketing-worker:latest
+    container_name: VIARA_marketing_worker
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8787:8787"  # Miniflare inspector port (local dev only)
+    networks:
+      - marketing-net
+    environment:
+      # Cloudflare D1 database binding
+      - D1_DATABASE_URL=${MARKETING_D1_URL:-}
+      - D1_AUTHENTICATION=${MARKETING_D1_AUTH:-}
+      # Cloudflare R2 storage binding
+      - R2_BUCKET_NAME=${MARKETING_R2_BUCKET:-}
+      - R2_ACCESS_KEY_ID=${MARKETING_R2_ACCESS_KEY:-}
+      - R2_SECRET_ACCESS_KEY=${MARKETING_R2_SECRET:-}
+      - R2_ENDPOINT_URL=${MARKETING_R2_ENDPOINT:-}
+      # Application settings
+      - VITE_SITE_URL=${MARKETING_SITE_URL:-http://localhost}
+      - VITE_API_BASE=${MARKETING_API_BASE:-http://localhost:8787}
+      - NODE_ENV=${NODE_ENV:-development}
+    # Miniflare needs specific capabilities
+    privileged: false
+    # Health check for the worker
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8787/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  marketing-net:
+    driver: bridge
+    internal: false
