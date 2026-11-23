@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "trialQuotas": { "MAX_PATIENTS": 50, "MAX_APPOINTMENTS_PER_MONTH": 100, "MAX_USERS": 3, "MAX_REPORTS_PER_DAY": 10 },
+  "coreFeatures": ["profile", "settings", "rbac", "privacy"],
+  "packages": {
+    "essential": {
+      "id": "أساس", "name": "Essential", "edition": "standard",
+      "defaultDays": 365, "defaultMaxUsers": 25, "defaultMaxBranches": 1,
+      "modules": ["appointments", "patients", "reception", "display", "chat", "notifications", "profile", "attendance", "clinical", "safety", "finance", "end-of-day", "settings", "rbac", "privacy"]
+    },
+    "growth": {
+      "id": "نمو", "name": "Growth", "edition": "standard",
+      "defaultDays": 365, "defaultMaxUsers": 25, "defaultMaxBranches": 1,
+      "modules": ["appointments", "patients", "reception", "display", "chat", "notifications", "profile", "attendance", "finance", "insurance", "clinical", "hr", "crm", "inventory", "equipment", "analytics", "backup", "import", "pacs", "portal", "audit", "rbac", "privacy", "settings", "safety", "end-of-day", "export"]
+    },
+    "multisite": {
+      "id": "مؤسسات", "name": "Multi-site", "edition": "enterprise",
+      "defaultDays": 0, "defaultMaxUsers": -1, "defaultMaxBranches": -1,
+      "modules": ["appointments", "patients", "reception", "display", "chat", "notifications", "profile", "attendance", "finance", "insurance", "clinical", "hr", "crm", "inventory", "equipment", "analytics", "backup", "import", "pacs", "portal", "audit", "rbac", "privacy", "settings", "safety", "end-of-day", "export", "multi-branch", "sso", "advanced-analytics", "custom-integrations"]
+    },
+    "trial": {
+      "id": "تجريبي", "name": "Trial", "edition": "trial",
+      "defaultDays": 30, "defaultMaxUsers": 3, "defaultMaxBranches": 1,
+      "modules": ["appointments", "patients", "reception", "display", "chat", "notifications", "profile", "attendance", "hr", "finance", "clinical", "safety", "settings", "rbac", "privacy"]
+    }
+  }
+}

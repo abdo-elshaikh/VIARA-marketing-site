@@ -7,12 +7,12 @@ import {matchesAdmin} from '../lib/access.ts';
 import {jsonLd,organizationSchema} from '../lib/seo.ts';
 import {readFileSync} from 'node:fs';
 const copy=()=>structuredClone(defaultContent);
-test('public package IDs and technical specifications use the backend issuance catalog',()=>{
- const catalog=JSON.parse(readFileSync(new URL('../../backend/src/config/packageCatalog.json',import.meta.url),'utf8'));
+test('public package IDs and technical specifications use the package catalog',()=>{
+ const catalog=JSON.parse(readFileSync(new URL('../config/packageCatalog.json',import.meta.url),'utf8'));
  const plans=Object.values(catalog.packages);
  for(const plan of defaultContent.plans) assert.ok(plans.some(p=>p.id===plan.id));
  const view=readFileSync(new URL('../app/planning/planning-view.tsx',import.meta.url),'utf8');
- assert.match(view,/backend\/src\/config\/packageCatalog\.json/);
+ assert.match(view,/config\/packageCatalog\.json/);
  assert.match(view,/plan\.defaultMaxUsers/);
  assert.match(view,/plan\.modules/);
  assert.equal(view.includes('commercialPlanFeature'),false);

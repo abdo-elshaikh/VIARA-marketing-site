@@ -30,7 +30,7 @@ import '../planning-enhanced.css';
 import PlanningGovernanceCard from '../planning-governance-card';
 import PlanningPackagesMatrix from '../planning-packages-matrix';
 import PlanningRolloutRoadmap from '../planning-rollout-roadmap';
-import packageCatalog from '../../../backend/src/config/packageCatalog.json';
+import packageCatalog from '../../config/packageCatalog.json';
 
 const planLicenseDetails = Object.fromEntries(
   Object.values(packageCatalog.packages).map(plan => [
